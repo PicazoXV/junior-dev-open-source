@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createClient } from "@/lib/supabase/server";
 import TaskCard from "@/components/task-card";
+import Navbar from "@/components/navbar";
 
 type ProjectDetailPageProps = {
   params: { slug: string };
@@ -30,7 +31,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const user = await createProfileIfNeeded();
 
   if (!user) {
-    redirect("/login");
+    redirect("/");
   }
 
   const { slug } = params;
@@ -64,6 +65,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
+      <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-6">
           <Link

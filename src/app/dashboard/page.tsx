@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { redirect } from "next/navigation";
-import LogoutButton from "@/components/logout-button";
-import Link from "next/link";
+import Navbar from "@/components/navbar";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -25,23 +24,14 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
+      <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="mb-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="mt-1 text-sm text-gray-500">
               Tu perfil dentro de la plataforma
             </p>
-          </div>
-
-          <div className="flex gap-3">
-            <Link
-              href="/profile/edit"
-              className="rounded-xl border px-4 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Editar perfil
-            </Link>
-            <LogoutButton />
           </div>
         </div>
 

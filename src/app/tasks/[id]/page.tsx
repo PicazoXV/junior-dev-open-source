@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createClient } from "@/lib/supabase/server";
+import Navbar from "@/components/navbar";
+import RequestTaskForm from "@/components/request-task-form";
 
 type TaskDetailPageProps = {
   params: { id: string };
@@ -28,7 +30,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   const user = await createProfileIfNeeded();
 
   if (!user) {
-    redirect("/login");
+    redirect("/");
   }
 
   const { id } = params;
@@ -63,6 +65,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
+      <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-6 flex flex-wrap gap-3">
           <Link
@@ -139,15 +142,11 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         <section className="mt-8 rounded-2xl border border-dashed p-6">
           <h2 className="text-xl font-semibold text-gray-900">Solicitar esta tarea</h2>
           <p className="mt-2 text-sm text-gray-500">
-            El flujo de solicitud se implementará en el siguiente paso.
+            Envía tu solicitud para que un maintainer pueda revisarla.
           </p>
-          <button
-            type="button"
-            disabled
-            className="mt-4 cursor-not-allowed rounded-lg border px-4 py-2 text-sm font-medium text-gray-500"
-          >
-            Solicitar tarea (próximamente)
-          </button>
+          <div className="mt-4">
+            <RequestTaskForm taskId={task.id} isTaskOpen={task.status === "open"} />
+          </div>
         </section>
       </div>
     </main>

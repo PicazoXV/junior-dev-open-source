@@ -11,17 +11,20 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({ project }: ProjectCardProps) {
+  const safeName = project.name?.trim() || "Proyecto sin nombre";
+  const safeDescription =
+    project.short_description?.trim() || "Sin descripción corta disponible.";
+  const techStack = project.tech_stack?.filter((tech) => tech.trim().length > 0) || [];
+
   return (
     <article className="rounded-xl border p-5">
-      <h2 className="text-xl font-semibold text-gray-900">{project.name}</h2>
+      <h2 className="text-xl font-semibold text-gray-900">{safeName}</h2>
 
-      <p className="mt-2 text-sm text-gray-600">
-        {project.short_description || "Sin descripción corta disponible."}
-      </p>
+      <p className="mt-2 text-sm text-gray-600">{safeDescription}</p>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {project.tech_stack && project.tech_stack.length > 0 ? (
-          project.tech_stack.map((tech) => (
+        {techStack.length > 0 ? (
+          techStack.map((tech) => (
             <span
               key={`${project.id}-${tech}`}
               className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
