@@ -39,8 +39,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, slug, name, short_description, description, repo_url, tech_stack")
-    .returns<Project[]>()
     .eq("slug", slug)
+    .returns<Project[]>()
     .maybeSingle();
 
   if (projectError) {
@@ -55,7 +55,6 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
     .select("id, title, description, status, difficulty")
-    .returns<Task[]>()
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
