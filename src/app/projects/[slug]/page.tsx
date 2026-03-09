@@ -75,17 +75,33 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     console.error("Error cargando tareas:", tasksError.message);
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const canEdit = profile?.role === "admin" || profile?.role === "maintainer";
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           <Link
             href="/projects"
             className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
           >
             Volver a proyectos
           </Link>
+          {canEdit ? (
+            <Link
+              href={`/dashboard/projects/${project.id}/edit`}
+              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+            >
+              Editar proyecto
+            </Link>
+          ) : null}
         </div>
 
         <section className="rounded-2xl border p-6">

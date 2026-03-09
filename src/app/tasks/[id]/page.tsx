@@ -6,7 +6,7 @@ import Navbar from "@/components/navbar";
 import RequestTaskForm from "@/components/request-task-form";
 
 type TaskDetailPageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 type Task = {
@@ -33,7 +33,13 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     redirect("/");
   }
 
-  const { id } = params;
+  const resolvedParams = await params;
+  const id = resolvedParams?.id;
+
+  if (!id || typeof id !== "string") {
+    notFound();
+  }
+
   const supabase = await createClient();
 
   const { data: task, error: taskError } = await supabase
@@ -63,6 +69,14 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     console.error("Error cargando proyecto de la tarea:", projectError.message);
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const canEdit = profile?.role === "admin" || profile?.role === "maintainer";
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <Navbar />
@@ -81,6 +95,14 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
               className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
             >
               Volver a {project.name}
+            </Link>
+          ) : null}
+          {canEdit ? (
+            <Link
+              href={`/dashboard/tasks/${task.id}/edit`}
+              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+            >
+              Editar tarea
             </Link>
           ) : null}
         </div>

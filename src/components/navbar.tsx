@@ -33,6 +33,18 @@ export default async function Navbar({ containerClassName = "max-w-4xl" }: Navba
             Proyectos
           </Link>
           <Link
+            href="/dashboard/my-requests"
+            className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+          >
+            Mis solicitudes
+          </Link>
+          <Link
+            href="/dashboard/my-tasks"
+            className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+          >
+            Mis tareas
+          </Link>
+          <Link
             href="/profile/edit"
             className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
           >

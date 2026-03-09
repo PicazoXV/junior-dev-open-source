@@ -38,12 +38,36 @@ export default async function DashboardPage() {
           </div>
 
           {canReviewRequests ? (
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap gap-2">
               <Link
                 href="/dashboard/requests"
                 className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
               >
                 Ver solicitudes
+              </Link>
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              >
+                Nuevo proyecto
+              </Link>
+              <Link
+                href="/dashboard/projects"
+                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              >
+                Manage projects
+              </Link>
+              <Link
+                href="/dashboard/tasks/new"
+                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              >
+                Nueva tarea
+              </Link>
+              <Link
+                href="/dashboard/tasks"
+                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              >
+                Manage tasks
               </Link>
             </div>
           ) : null}

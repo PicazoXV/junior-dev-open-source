@@ -73,6 +73,23 @@ export async function approveRequest(requestId: string) {
     throw new Error("No se pudo asignar la tarea");
   }
 
+  const reviewedAt = new Date().toISOString();
+
+  const { error: cancelOthersError } = await supabase
+    .from("task_requests")
+    .update({
+      status: "cancelled",
+      reviewed_at: reviewedAt,
+      reviewed_by: user.id,
+    })
+    .eq("task_id", request.task_id)
+    .neq("id", request.id)
+    .eq("status", "pending");
+
+  if (cancelOthersError) {
+    throw new Error("No se pudieron cancelar las solicitudes pendientes");
+  }
+
   revalidatePath("/dashboard/requests");
 }
 
@@ -98,4 +115,3 @@ export async function rejectRequest(requestId: string) {
 
   revalidatePath("/dashboard/requests");
 }
-
