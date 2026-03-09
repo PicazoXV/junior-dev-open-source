@@ -4,14 +4,6 @@ import ProjectsListSection from "@/components/projects-list-section";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 
-type Project = {
-  id: string;
-  slug: string | null;
-  name: string;
-  short_description: string | null;
-  tech_stack: string[] | null;
-};
-
 export default async function HomePage() {
   const user = await createProfileIfNeeded();
 
@@ -32,8 +24,7 @@ export default async function HomePage() {
     .from("projects")
     .select("id, slug, name, short_description, tech_stack")
     .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .returns<Project[]>();
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error cargando proyectos:", error.message);

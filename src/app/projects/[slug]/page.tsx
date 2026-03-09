@@ -6,7 +6,7 @@ import TaskCard from "@/components/task-card";
 import Navbar from "@/components/navbar";
 
 type ProjectDetailPageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 type Project = {
@@ -34,15 +34,27 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     redirect("/");
   }
 
-  const { slug } = params;
+  const resolvedParams = await params;
+  const rawSlug = resolvedParams?.slug;
+
+  if (!rawSlug || typeof rawSlug !== "string") {
+    notFound();
+  }
+
+  const slug = rawSlug.trim().toLowerCase();
   const supabase = await createClient();
+
+  if (!slug) {
+    notFound();
+  }
 
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, slug, name, short_description, description, repo_url, tech_stack")
     .eq("slug", slug)
-    .returns<Project[]>()
     .maybeSingle();
+
+  console.log({ rawSlug, slug, project });
 
   if (projectError) {
     console.error("Error cargando proyecto:", projectError.message);
@@ -89,7 +101,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tech_stack && project.tech_stack.length > 0 ? (
-              project.tech_stack.map((tech) => (
+              project.tech_stack.map((tech: string) => (
                 <span
                   key={`${project.id}-${tech}`}
                   className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"

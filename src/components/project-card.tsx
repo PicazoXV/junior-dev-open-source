@@ -15,6 +15,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const safeDescription =
     project.short_description?.trim() || "Sin descripción corta disponible.";
   const techStack = project.tech_stack?.filter((tech) => tech.trim().length > 0) || [];
+  const safeSlug = project.slug?.trim();
 
   return (
     <article className="rounded-xl border p-5">
@@ -37,9 +38,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         )}
       </div>
 
-      {project.slug ? (
+      {safeSlug ? (
         <Link
-          href={`/projects/${project.slug}`}
+          href={`/projects/${encodeURIComponent(safeSlug)}`}
           className="mt-5 inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
         >
           Ver proyecto

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { redirect } from "next/navigation";
 import Navbar from "@/components/navbar";
+import Link from "next/link";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -22,6 +23,8 @@ export default async function DashboardPage() {
     console.error("Error cargando perfil:", error.message);
   }
 
+  const canReviewRequests = profile?.role === "admin" || profile?.role === "maintainer";
+
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <Navbar />
@@ -33,6 +36,17 @@ export default async function DashboardPage() {
               Tu perfil dentro de la plataforma
             </p>
           </div>
+
+          {canReviewRequests ? (
+            <div className="mt-4">
+              <Link
+                href="/dashboard/requests"
+                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              >
+                Ver solicitudes
+              </Link>
+            </div>
+          ) : null}
         </div>
 
         <div className="rounded-2xl border p-6">

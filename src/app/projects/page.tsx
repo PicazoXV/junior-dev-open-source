@@ -4,14 +4,6 @@ import { redirect } from "next/navigation";
 import Navbar from "@/components/navbar";
 import ProjectsListSection from "@/components/projects-list-section";
 
-type Project = {
-  id: string;
-  slug: string | null;
-  name: string;
-  short_description: string | null;
-  tech_stack: string[] | null;
-};
-
 export default async function ProjectsPage() {
   const user = await createProfileIfNeeded();
 
@@ -25,8 +17,7 @@ export default async function ProjectsPage() {
     .from("projects")
     .select("id, slug, name, short_description, tech_stack")
     .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .returns<Project[]>();
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error cargando proyectos:", error.message);
