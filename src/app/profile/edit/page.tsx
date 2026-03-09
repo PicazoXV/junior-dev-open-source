@@ -26,7 +26,7 @@ export default async function EditProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="app-bg min-h-screen p-8 lg:pr-72">
       <Navbar containerClassName="max-w-2xl" />
       <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-6">

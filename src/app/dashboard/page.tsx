@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const canReviewRequests = profile?.role === "admin" || profile?.role === "maintainer";
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="app-bg min-h-screen p-8 lg:pr-72">
       <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-8">

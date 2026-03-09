@@ -9,11 +9,17 @@ export default async function HomePage() {
 
   if (!user) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <div className="space-y-4 text-center">
-          <h1 className="text-3xl font-bold">Junior Dev Open Source</h1>
-          <p>Conecta tu GitHub y empieza a colaborar.</p>
-          <GitHubLoginButton />
+      <main className="app-bg flex min-h-screen items-center justify-center p-6">
+        <div className="app-shell w-full max-w-xl rounded-2xl p-8 text-center">
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <span className="accent-dot" />
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Open Source Hub</p>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-100">Junior Dev Open Source</h1>
+          <p className="mt-2 text-gray-500">Conecta tu GitHub y empieza a colaborar.</p>
+          <div className="mt-6">
+            <GitHubLoginButton />
+          </div>
         </div>
       </main>
     );
@@ -31,7 +37,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="app-bg min-h-screen p-8 lg:pr-72">
       <Navbar />
       <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
         <ProjectsListSection projects={projects} />

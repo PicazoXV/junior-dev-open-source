@@ -21,7 +21,7 @@ export default function GitHubLoginButton() {
   return (
     <button
       onClick={handleLogin}
-      className="rounded-xl bg-black px-4 py-2 text-white"
+      className="rounded-xl border border-orange-300/40 bg-orange-500/10 px-4 py-2 text-white hover:bg-orange-500/20"
     >
       Continuar con GitHub
     </button>

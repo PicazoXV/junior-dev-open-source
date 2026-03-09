@@ -111,7 +111,7 @@ export default async function DashboardRequestsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="app-bg min-h-screen p-8 lg:pr-72">
       <Navbar />
       <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
         <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

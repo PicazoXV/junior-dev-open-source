@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ffffff;
 }
 
 @theme inline {
@@ -12,15 +12,129 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+}
+
+.app-bg {
+  background:
+    radial-gradient(60rem 35rem at 0% 0%, rgba(249, 115, 22, 0.08), transparent 55%),
+    radial-gradient(45rem 25rem at 100% 100%, rgba(249, 115, 22, 0.05), transparent 60%),
+    #000;
+}
+
+.app-shell {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 15, 15, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 22px rgba(255, 255, 255, 0.07),
+    0 0 40px rgba(249, 115, 22, 0.06);
+}
+
+.sidebar-shell {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(17, 17, 17, 0.94);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 20px rgba(255, 255, 255, 0.05),
+    0 0 28px rgba(249, 115, 22, 0.08);
+}
+
+.accent-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 9999px;
+  background: #fb923c;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.7);
+}
+
+/* Dark reinterpretation of currently used Tailwind utility classes in this app */
+.bg-white {
+  background-color: rgba(18, 18, 18, 0.92) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 20px rgba(255, 255, 255, 0.06),
+    0 0 34px rgba(249, 115, 22, 0.06);
+}
+
+.bg-gray-50 {
+  background-color: transparent !important;
+}
+
+.bg-gray-100 {
+  background-color: rgba(249, 115, 22, 0.1) !important;
+}
+
+.bg-gray-200 {
+  background-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.border {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.border-dashed {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.text-gray-900 {
+  color: #ffffff !important;
+}
+
+.text-gray-800 {
+  color: #e5e7eb !important;
+}
+
+.text-gray-700 {
+  color: #d1d5db !important;
+}
+
+.text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.hover\:bg-gray-100:hover {
+  background-color: rgba(249, 115, 22, 0.14) !important;
+}
+
+.hover\:text-orange-400:hover {
+  color: #fb923c !important;
+}
+
+.ring-orange-400\/20 {
+  --tw-ring-color: rgb(251 146 60 / 0.2) !important;
+}
+
+input,
+textarea,
+select {
+  background: rgba(23, 23, 23, 0.95);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(251, 146, 60, 0.75) !important;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.2);
+}
+
+a,
+button {
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease;
 }
