@@ -16,6 +16,7 @@ type Profile = {
   location?: string | null;
   tech_stack?: string | null;
   github_url?: string | null;
+  
 };
 
 export default function EditProfileForm({ profile }: { profile: Profile }) {
