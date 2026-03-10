@@ -4,6 +4,8 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/client";
+import TagAutocompleteInput from "@/components/profile/tag-autocomplete-input";
+import { parseTechStack, PROFILE_ROLE_OPTIONS, TECH_STACK_OPTIONS } from "@/lib/profile-options";
 
 type Profile = {
   id: string;
@@ -17,45 +19,67 @@ type Profile = {
   location?: string | null;
   tech_stack?: string | null;
   github_url?: string | null;
-  
+  roles?: string[] | null;
 };
 
 export default function EditProfileForm({ profile }: { profile: Profile }) {
-  const { locale } = useI18n();
+  const { messages } = useI18n();
   const router = useRouter();
   const supabase = createClient();
 
   const [fullName, setFullName] = useState(profile.full_name || "");
   const [bio, setBio] = useState(profile.bio || "");
   const [location, setLocation] = useState(profile.location || "");
-  const [techStack, setTechStack] = useState(profile.tech_stack || "");
+  const [roles, setRoles] = useState<string[]>(profile.roles || []);
+  const [techStack, setTechStack] = useState<string[]>(parseTechStack(profile.tech_stack));
   const [githubUrl, setGithubUrl] = useState(profile.github_url || "");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const isMissingRolesColumnError = (error: { code?: string; message?: string } | null) => {
+    if (!error) return false;
+    const code = error.code || "";
+    const messageText = (error.message || "").toLowerCase();
+    return code === "42703" || messageText.includes("roles");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: fullName,
-        bio,
-        location,
-        tech_stack: techStack,
-        github_url: githubUrl,
-      })
-      .eq("id", profile.id);
+    const payload = {
+      full_name: fullName,
+      bio,
+      location,
+      roles,
+      tech_stack: techStack.join(", "),
+      github_url: githubUrl,
+    };
+
+    const firstTry = await supabase.from("profiles").update(payload).eq("id", profile.id);
+    const fallbackTry = isMissingRolesColumnError(firstTry.error)
+      ? await supabase
+          .from("profiles")
+          .update({
+            full_name: fullName,
+            bio,
+            location,
+            tech_stack: techStack.join(", "),
+            github_url: githubUrl,
+          })
+          .eq("id", profile.id)
+      : null;
+
+    const error = fallbackTry?.error || firstTry.error;
 
     if (error) {
-      setMessage(locale === "en" ? "Error saving changes" : "Error al guardar los cambios");
+      setMessage(messages.profileEditor.saveError);
       setLoading(false);
       return;
     }
 
-    setMessage(locale === "en" ? "Profile updated successfully" : "Perfil actualizado correctamente");
+    setMessage(messages.profileEditor.saveSuccess);
     setLoading(false);
     router.refresh();
   };
@@ -64,60 +88,71 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-300">
-          {locale === "en" ? "Full name" : "Nombre completo"}
+          {messages.profileEditor.fullName}
         </label>
         <input
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="w-full rounded-xl border px-4 py-2"
-          placeholder={locale === "en" ? "Your name" : "Tu nombre"}
+          className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+          placeholder={messages.profileEditor.fullNamePlaceholder}
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-300">Bio</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">{messages.profileEditor.bio}</label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          className="w-full rounded-xl border px-4 py-2"
-          placeholder={locale === "en" ? "Tell us about yourself" : "Cuéntanos algo sobre ti"}
+          className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+          placeholder={messages.profileEditor.bioPlaceholder}
           rows={4}
         />
       </div>
 
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-300">
-          {locale === "en" ? "Location" : "Ubicación"}
+          {messages.profileEditor.location}
         </label>
         <input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="w-full rounded-xl border px-4 py-2"
-          placeholder={locale === "en" ? "Madrid, Spain" : "Madrid, España"}
+          className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+          placeholder={messages.profileEditor.locationPlaceholder}
         />
       </div>
 
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-300">Tech stack</label>
-        <input
-          type="text"
-          value={techStack}
-          onChange={(e) => setTechStack(e.target.value)}
-          className="w-full rounded-xl border px-4 py-2"
-          placeholder="React, Next.js, TypeScript"
-        />
-      </div>
+      <TagAutocompleteInput
+        label={messages.profileEditor.position}
+        placeholder={messages.profileEditor.positionPlaceholder}
+        selected={roles}
+        options={PROFILE_ROLE_OPTIONS}
+        maxSelected={3}
+        limitText={messages.profileEditor.positionMax}
+        emptyText={messages.profileEditor.positionEmpty}
+        onChange={setRoles}
+      />
+
+      <TagAutocompleteInput
+        label={messages.profileEditor.techStack}
+        placeholder={messages.profileEditor.techStackPlaceholder}
+        selected={techStack}
+        options={TECH_STACK_OPTIONS}
+        maxSelected={10}
+        limitText={messages.profileEditor.techStackMax}
+        emptyText={messages.profileEditor.techStackEmpty}
+        onChange={setTechStack}
+      />
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-300">GitHub URL</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">{messages.profileEditor.githubUrl}</label>
         <input
           type="url"
           value={githubUrl}
           onChange={(e) => setGithubUrl(e.target.value)}
-          className="w-full rounded-xl border px-4 py-2"
-          placeholder={locale === "en" ? "https://github.com/your-user" : "https://github.com/tuusuario"}
+          className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+          placeholder={messages.profileEditor.githubUrlPlaceholder}
         />
       </div>
 
@@ -127,16 +162,12 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
         className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading
-          ? locale === "en"
-            ? "Saving..."
-            : "Guardando..."
-          : locale === "en"
-            ? "Save changes"
-            : "Guardar cambios"}
+          ? messages.profileEditor.saving
+          : messages.profileEditor.saveChanges}
       </button>
 
       {message && (
-        <p className={`text-sm ${message.includes("Error") ? "text-rose-300" : "text-emerald-300"}`}>
+        <p className={`text-sm ${message === messages.profileEditor.saveError ? "text-rose-300" : "text-emerald-300"}`}>
           {message}
         </p>
       )}

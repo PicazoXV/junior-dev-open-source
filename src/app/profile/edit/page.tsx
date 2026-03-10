@@ -16,6 +16,8 @@ import UserTimelineCard from "@/components/timeline/user-timeline-card";
 import { getVerifiedContributions } from "@/lib/verified-contributions";
 import EmptyState from "@/components/ui/empty-state";
 import { getUserStreaks } from "@/lib/user-streaks";
+import { parseTechStack } from "@/lib/profile-options";
+import Badge from "@/components/ui/badge";
 
 export default async function EditProfilePage() {
   const locale = await getCurrentLocale();
@@ -49,6 +51,8 @@ export default async function EditProfilePage() {
     limit: 6,
   });
   const streaks = await getUserStreaks(supabase, user.id);
+  const profileRoles = ((profile?.roles as string[] | null | undefined) || []).filter(Boolean);
+  const techStackTags = parseTechStack(profile?.tech_stack);
 
   return (
     <AppLayout containerClassName="mx-auto max-w-2xl">
@@ -104,6 +108,36 @@ export default async function EditProfilePage() {
             {badges.map((badge) => (
               <AchievementBadge key={badge.id} badge={badge} />
             ))}
+          </div>
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-white/20 bg-black/20 p-4">
+          <h3 className="text-base font-semibold text-white">
+            {locale === "en" ? "Specialization" : "Especialización"}
+          </h3>
+          <div className="mt-3">
+            <p className="text-sm text-gray-400">{locale === "en" ? "Position" : "Puesto"}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profileRoles.length > 0 ? (
+                profileRoles.map((role) => <Badge key={role}>{role}</Badge>)
+              ) : (
+                <span className="text-sm text-gray-500">
+                  {locale === "en" ? "No positions selected" : "Sin puestos seleccionados"}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-gray-400">Tech stack</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {techStackTags.length > 0 ? (
+                techStackTags.map((tech) => <Badge key={tech}>{tech}</Badge>)
+              ) : (
+                <span className="text-sm text-gray-500">
+                  {locale === "en" ? "No technologies selected" : "Sin tecnologías seleccionadas"}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

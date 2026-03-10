@@ -30,6 +30,7 @@ import { getVerifiedContributions } from "@/lib/verified-contributions";
 import { getUserStreaks } from "@/lib/user-streaks";
 import DashboardRoadmapGuide from "@/components/roadmap/dashboard-roadmap-guide";
 import DashboardInfoPanels from "@/components/dashboard/dashboard-info-panels";
+import { parseTechStack } from "@/lib/profile-options";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -85,6 +86,8 @@ export default async function DashboardPage() {
   const streaks = await getUserStreaks(supabase, user.id);
   const githubUsername = profile?.github_username || (locale === "en" ? "your-username" : "tu-username");
   const readmeBadgeSnippet = `[![Contributing via PrimerIssue](https://img.shields.io/badge/Contributing%20via-PrimerIssue-orange)](https://primerissue.dev/dev/${githubUsername})`;
+  const profileRoles = ((profile?.roles as string[] | null | undefined) || []).filter(Boolean);
+  const techStackTags = parseTechStack(profile?.tech_stack);
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
@@ -222,10 +225,32 @@ export default async function DashboardPage() {
             }
           />
           <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
-            <p className="text-sm text-gray-400">Tech stack</p>
-            <p className="mt-1 text-lg font-medium text-white">
-              {progress.techStack || (locale === "en" ? "Not specified" : "No especificado")}
-            </p>
+            <p className="text-sm text-gray-400">{locale === "en" ? "Position" : "Puesto"}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profileRoles.length > 0 ? (
+                profileRoles.map((role) => (
+                  <Badge key={role}>{role}</Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-500">
+                  {locale === "en" ? "No positions selected" : "Sin puestos seleccionados"}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
+            <p className="text-sm text-gray-400">{locale === "en" ? "Tech stack" : "Tech stack"}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {techStackTags.length > 0 ? (
+                techStackTags.map((tech) => (
+                  <Badge key={tech}>{tech}</Badge>
+                ))
+              ) : (
+                <span className="text-sm text-gray-500">
+                  {locale === "en" ? "No technologies selected" : "Sin tecnologías seleccionadas"}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

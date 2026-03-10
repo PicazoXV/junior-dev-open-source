@@ -152,4 +152,26 @@ export type MessageDictionary = {
     includedBadge: string;
     viewCourse: string;
   };
+  profileEditor: {
+    fullName: string;
+    fullNamePlaceholder: string;
+    bio: string;
+    bioPlaceholder: string;
+    location: string;
+    locationPlaceholder: string;
+    position: string;
+    positionPlaceholder: string;
+    positionMax: string;
+    positionEmpty: string;
+    techStack: string;
+    techStackPlaceholder: string;
+    techStackMax: string;
+    techStackEmpty: string;
+    githubUrl: string;
+    githubUrlPlaceholder: string;
+    saving: string;
+    saveChanges: string;
+    saveError: string;
+    saveSuccess: string;
+  };
 };
