@@ -7,6 +7,7 @@ type CollapsibleCardProps = {
   title: string;
   description?: string;
   defaultOpen?: boolean;
+  accent?: boolean;
   children: ReactNode;
 };
 
@@ -14,12 +15,13 @@ export default function CollapsibleCard({
   title,
   description,
   defaultOpen = false,
+  accent = false,
   children,
 }: CollapsibleCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <section className="rounded-2xl border border-white/20 bg-neutral-900/80 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_20px_rgba(255,255,255,0.06)]">
+    <section className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl`}>
       <button
         type="button"
         onClick={() => setIsOpen((previous) => !previous)}

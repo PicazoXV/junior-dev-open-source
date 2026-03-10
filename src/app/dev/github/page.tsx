@@ -118,8 +118,8 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
         ) : null}
 
         {resolvedSearch.error ? (
-          <div className="mb-4 rounded-lg border border-rose-500/25 bg-rose-500/10 p-3">
-            <p className="text-sm text-rose-300">
+          <div className="mb-4 rounded-lg border border-orange-500/30 bg-orange-500/10 p-3">
+            <p className="text-sm text-orange-300">
               {locale === "en" ? "Error" : "Error"}: {resolvedSearch.error}
             </p>
           </div>

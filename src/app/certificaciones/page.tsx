@@ -50,7 +50,7 @@ export default async function CertificationsPage() {
 
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
-      <SectionCard className="p-8 md:p-10">
+      <SectionCard className="surface-accent p-8 md:p-10">
         <PageHeader title={messages.certifications.title} description={messages.certifications.subtitle} />
         <p className="max-w-4xl text-sm text-gray-300 md:text-base">{messages.certifications.intro}</p>
       </SectionCard>
@@ -75,4 +75,3 @@ export default async function CertificationsPage() {
     </AppLayout>
   );
 }
-

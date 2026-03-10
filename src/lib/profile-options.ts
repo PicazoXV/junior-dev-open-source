@@ -60,9 +60,13 @@ export const TECH_STACK_OPTIONS = [
   "Svelte",
 ];
 
-export function parseTechStack(value: string | null | undefined) {
+export function parseTechStack(value: string | string[] | null | undefined) {
   if (!value) {
     return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
   }
 
   return value
@@ -70,4 +74,3 @@ export function parseTechStack(value: string | null | undefined) {
     .map((item) => item.trim())
     .filter(Boolean);
 }
-

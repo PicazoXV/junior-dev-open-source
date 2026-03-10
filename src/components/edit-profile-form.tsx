@@ -40,7 +40,24 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
     if (!error) return false;
     const code = error.code || "";
     const messageText = (error.message || "").toLowerCase();
-    return code === "42703" || messageText.includes("roles");
+    return (
+      code === "42703" ||
+      code.toUpperCase() === "PGRST204" ||
+      messageText.includes("roles") ||
+      messageText.includes("could not find the") ||
+      messageText.includes("column")
+    );
+  };
+
+  const isTechStackArrayTypeError = (error: { code?: string; message?: string } | null) => {
+    if (!error) return false;
+    const code = error.code || "";
+    const messageText = (error.message || "").toLowerCase();
+    return (
+      code === "22P02" ||
+      messageText.includes("malformed array literal") ||
+      (messageText.includes("tech_stack") && messageText.includes("array"))
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,23 +74,66 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       github_url: githubUrl,
     };
 
+    const updateWithoutRolesString = {
+      full_name: fullName,
+      bio,
+      location,
+      tech_stack: techStack.join(", "),
+      github_url: githubUrl,
+    };
+
+    const updateWithRolesArray = {
+      full_name: fullName,
+      bio,
+      location,
+      roles,
+      tech_stack: techStack,
+      github_url: githubUrl,
+    };
+
+    const updateWithoutRolesArray = {
+      full_name: fullName,
+      bio,
+      location,
+      tech_stack: techStack,
+      github_url: githubUrl,
+    };
+
     const firstTry = await supabase.from("profiles").update(payload).eq("id", profile.id);
-    const fallbackTry = isMissingRolesColumnError(firstTry.error)
-      ? await supabase
+    let finalError = firstTry.error;
+
+    if (finalError && isMissingRolesColumnError(finalError)) {
+      const withoutRolesTry = await supabase
+        .from("profiles")
+        .update(updateWithoutRolesString)
+        .eq("id", profile.id);
+      finalError = withoutRolesTry.error;
+
+      if (finalError && isTechStackArrayTypeError(finalError)) {
+        const withoutRolesArrayTry = await supabase
           .from("profiles")
-          .update({
-            full_name: fullName,
-            bio,
-            location,
-            tech_stack: techStack.join(", "),
-            github_url: githubUrl,
-          })
-          .eq("id", profile.id)
-      : null;
+          .update(updateWithoutRolesArray)
+          .eq("id", profile.id);
+        finalError = withoutRolesArrayTry.error;
+      }
+    } else if (finalError && isTechStackArrayTypeError(finalError)) {
+      const withRolesArrayTry = await supabase
+        .from("profiles")
+        .update(updateWithRolesArray)
+        .eq("id", profile.id);
+      finalError = withRolesArrayTry.error;
 
-    const error = fallbackTry?.error || firstTry.error;
+      if (finalError && isMissingRolesColumnError(finalError)) {
+        const withoutRolesArrayTry = await supabase
+          .from("profiles")
+          .update(updateWithoutRolesArray)
+          .eq("id", profile.id);
+        finalError = withoutRolesArrayTry.error;
+      }
+    }
 
-    if (error) {
+    if (finalError) {
+      console.error("Error actualizando perfil:", finalError);
       setMessage(messages.profileEditor.saveError);
       setLoading(false);
       return;
@@ -81,6 +141,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
 
     setMessage(messages.profileEditor.saveSuccess);
     setLoading(false);
+    router.push("/dashboard");
     router.refresh();
   };
 
@@ -167,7 +228,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       </button>
 
       {message && (
-        <p className={`text-sm ${message === messages.profileEditor.saveError ? "text-rose-300" : "text-emerald-300"}`}>
+        <p className={`text-sm ${message === messages.profileEditor.saveError ? "text-orange-300" : "text-emerald-300"}`}>
           {message}
         </p>
       )}

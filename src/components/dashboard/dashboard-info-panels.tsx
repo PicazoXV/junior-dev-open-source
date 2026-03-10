@@ -22,6 +22,7 @@ export default function DashboardInfoPanels({
       <CollapsibleCard
         title={messages.dashboardPanels.primerIssueTitle}
         description={messages.dashboardPanels.primerIssueDesc}
+        accent
       >
         {primerIssuePanel}
       </CollapsibleCard>
@@ -42,4 +43,3 @@ export default function DashboardInfoPanels({
     </div>
   );
 }
-

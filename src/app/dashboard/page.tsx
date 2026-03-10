@@ -145,7 +145,7 @@ export default async function DashboardPage() {
           }
         />
 
-        <section className="rounded-2xl border border-white/20 bg-black/20 p-6">
+        <section className="surface-subcard rounded-2xl p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             {profile?.avatar_url ? (
               <Image
@@ -173,6 +173,15 @@ export default async function DashboardPage() {
               <p className="text-sm text-gray-400">
                 {profile?.email || user.email}
               </p>
+
+              <div className="mt-3">
+                <Link
+                  href="/profile/edit"
+                  className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+                >
+                  {locale === "en" ? "Edit profile" : "Editar perfil"}
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -189,7 +198,7 @@ export default async function DashboardPage() {
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <StatCard label={locale === "en" ? "Role" : "Rol"} value={profile?.role || "junior"} />
-          <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+          <div className="surface-subcard rounded-xl p-4">
             <p className="text-sm text-gray-400">{locale === "en" ? "Current level" : "Nivel actual"}</p>
             <div className="mt-2">
               <LevelBadge level={progress.level} />
@@ -224,7 +233,7 @@ export default async function DashboardPage() {
                 : "Sigue completando tareas para desbloquear más logros."
             }
           />
-          <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
+          <div className="surface-subcard rounded-xl p-4 md:col-span-2">
             <p className="text-sm text-gray-400">{locale === "en" ? "Position" : "Puesto"}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {profileRoles.length > 0 ? (
@@ -238,7 +247,7 @@ export default async function DashboardPage() {
               )}
             </div>
           </div>
-          <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
+          <div className="surface-subcard rounded-xl p-4 md:col-span-2">
             <p className="text-sm text-gray-400">{locale === "en" ? "Tech stack" : "Tech stack"}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {techStackTags.length > 0 ? (
@@ -254,7 +263,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-5">
+        <div className="surface-subcard mt-6 rounded-2xl p-5">
           <h3 className="text-base font-semibold text-white">
             {locale === "en" ? "Badges & achievements" : "Badges y logros"}
           </h3>
@@ -270,7 +279,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-5">
+        <div className="surface-subcard mt-6 rounded-2xl p-5">
           <h3 className="text-base font-semibold text-white">
             {locale === "en" ? "Recent activity" : "Actividad reciente"}
           </h3>
@@ -289,7 +298,7 @@ export default async function DashboardPage() {
                 (locale === "en" ? "No contributions yet" : "Sin contribuciones todavía")
               }
             />
-            <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <div className="surface-subcard rounded-xl p-4">
                 <p className="text-sm text-gray-400">
                   {locale === "en" ? "Latest linked PR" : "Último PR asociado"}
                 </p>
@@ -382,7 +391,7 @@ export default async function DashboardPage() {
         </SectionCard>
       ) : null}
 
-      <SectionCard className="p-8">
+      <SectionCard className="surface-accent p-8">
         <PageHeader
           title={locale === "en" ? "🎯 First Issue Challenge" : "🎯 First Issue Challenge"}
           description={

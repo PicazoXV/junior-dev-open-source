@@ -256,7 +256,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
 
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard className="surface-accent p-8">
         <PageHeader
           title={locale === "en" ? "Good First Issues" : "Good First Issues"}
           description={

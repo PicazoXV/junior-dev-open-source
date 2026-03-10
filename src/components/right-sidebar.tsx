@@ -166,7 +166,7 @@ export default function RightSidebar({
 
   return (
     <aside className="group fixed right-3 top-1/2 z-40 -translate-y-1/2 md:right-8">
-      <nav className="w-20 max-h-[92vh] overflow-hidden overflow-y-auto rounded-3xl border border-white/20 bg-neutral-900/95 p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_0_24px_rgba(255,255,255,0.07),0_0_34px_rgba(249,115,22,0.09)] backdrop-blur transition-all duration-300 group-hover:w-72">
+      <nav className="sidebar-shell w-20 max-h-[92vh] overflow-hidden overflow-y-auto rounded-3xl p-3 backdrop-blur transition-all duration-300 group-hover:w-72">
         <div className="mb-4 flex items-center justify-center px-1 group-hover:justify-between">
           <div className="hidden group-hover:block">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">

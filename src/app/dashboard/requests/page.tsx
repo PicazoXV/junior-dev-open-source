@@ -216,7 +216,7 @@ export default async function DashboardRequestsPage() {
                             <form action={rejectRequest.bind(null, request.id)}>
                               <button
                                 type="submit"
-                                className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/15"
+                                className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-300 transition hover:bg-orange-500/15"
                               >
                                 {locale === "en" ? "Reject" : "Rechazar"}
                               </button>
