@@ -9,6 +9,7 @@ export type MessageDictionary = {
     home: string;
     projects: string;
     goodFirstIssues: string;
+    certifications: string;
     developers: string;
     activity: string;
     stats: string;
@@ -128,5 +129,27 @@ export type MessageDictionary = {
     onboardingDesc: string;
     roadmapTitle: string;
     roadmapDesc: string;
+  };
+  certifications: {
+    title: string;
+    subtitle: string;
+    intro: string;
+    categoryEnglish: string;
+    categoryEnglishDesc: string;
+    categoryProgramming: string;
+    categoryProgrammingDesc: string;
+    categoryAi: string;
+    categoryAiDesc: string;
+    categoryCloud: string;
+    categoryCloudDesc: string;
+    categoryData: string;
+    categoryDataDesc: string;
+    platformLabel: string;
+    levelLabel: string;
+    durationLabel: string;
+    levelBeginner: string;
+    levelIntermediate: string;
+    includedBadge: string;
+    viewCourse: string;
   };
 };

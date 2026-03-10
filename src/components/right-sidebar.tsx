@@ -18,6 +18,7 @@ import {
   BarChart3,
   Users,
   UserRound,
+  GraduationCap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/client";
@@ -59,6 +60,7 @@ export default function RightSidebar({
         { href: "/", label: messages.sidebar.home, icon: Home },
         { href: "/good-first-issues", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
         { href: "/projects", label: messages.sidebar.projects, icon: FolderKanban },
+        { href: "/certificaciones", label: messages.sidebar.certifications, icon: GraduationCap },
         { href: "/first-contribution", label: messages.sidebar.firstContribution, icon: SquarePen },
       ],
     },
