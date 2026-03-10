@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import SidebarNav from "@/components/sidebar-nav";
+import RightSidebar from "@/components/right-sidebar";
 
 type NavbarProps = {
   containerClassName?: string;
 };
 
-export default async function Navbar({ containerClassName: _containerClassName = "max-w-4xl" }: NavbarProps) {
+export default async function Navbar({ containerClassName }: NavbarProps = {}) {
+  void containerClassName;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,6 +20,6 @@ export default async function Navbar({ containerClassName: _containerClassName =
   const isReviewer = profile?.role === "admin" || profile?.role === "maintainer";
 
   return (
-    <SidebarNav isAuthenticated={!!user} isReviewer={isReviewer} />
+    <RightSidebar isAuthenticated={!!user} isReviewer={isReviewer} />
   );
 }
