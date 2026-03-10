@@ -41,7 +41,7 @@ export default async function EditProfilePage() {
       <SectionCard className="p-8">
         <PageHeader
           title="Editar perfil"
-          description="Actualiza tu información pública dentro de la plataforma."
+          description="Actualiza tu información pública en MiPrimerIssue."
           actions={
             <Link
               href="/dashboard"

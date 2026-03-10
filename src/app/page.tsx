@@ -5,15 +5,17 @@ import SectionCard from "@/components/ui/section-card";
 import HeroSection from "@/components/hero-section";
 import ProjectExplorer from "@/components/project-explorer";
 import PageHeader from "@/components/ui/page-header";
+import HomeMarketingSections from "@/components/home-marketing-sections";
 
 export default async function HomePage() {
   const user = await createProfileIfNeeded();
 
   if (!user) {
     return (
-      <main className="app-bg flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-5xl">
+      <main className="app-bg min-h-screen p-6">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
           <HeroSection isAuthenticated={false} />
+          <HomeMarketingSections isAuthenticated={false} />
         </div>
       </main>
     );
@@ -60,9 +62,10 @@ export default async function HomePage() {
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <HeroSection isAuthenticated />
+      <HomeMarketingSections isAuthenticated />
       <SectionCard className="p-8">
         <PageHeader
-          title="Explorador de proyectos"
+          title="Explorador de proyectos en MiPrimerIssue"
           description="Selecciona un proyecto y abre sus tareas sin salir de esta vista."
         />
         <ProjectExplorer projects={explorerProjects} />

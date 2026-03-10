@@ -138,3 +138,11 @@ button {
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
     box-shadow 0.2s ease, transform 0.2s ease;
 }
+
+/* Consistent white glow for bordered containers across the app */
+:is(div, section, article, nav, aside)[class*="border"] {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 0 18px rgba(255, 255, 255, 0.06),
+    0 0 26px rgba(249, 115, 22, 0.05) !important;
+}

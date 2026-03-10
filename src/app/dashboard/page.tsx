@@ -42,7 +42,7 @@ export default async function DashboardPage() {
       <SectionCard className="p-8">
         <PageHeader
           title="Dashboard"
-          description="Tu perfil dentro de la plataforma"
+          description="Tu perfil de progreso en MiPrimerIssue"
           actions={
             canReviewRequests ? (
               <>
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         <div className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-5">
           <h3 className="text-base font-semibold text-white">Badges y logros</h3>
           <p className="mt-1 text-sm text-gray-400">
-            Tus hitos dentro de la plataforma de contribución open source.
+            Tus hitos dentro de MiPrimerIssue para construir experiencia open source real.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {badges.map((badge) => (
