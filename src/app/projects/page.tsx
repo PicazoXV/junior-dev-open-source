@@ -5,6 +5,10 @@ import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
 import EmptyState from "@/components/ui/empty-state";
+import { getCurrentLocale } from "@/lib/i18n/server";
+import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import FavoriteToggle from "@/components/favorites/favorite-toggle";
+import { getFavoriteIdsByType } from "@/lib/favorites";
 
 type ProjectRow = {
   id: string;
@@ -22,15 +26,58 @@ type TaskRow = {
   project_id: string;
   status: "open" | "assigned" | "in_review" | "completed" | "closed";
   assigned_to: string | null;
+  labels?: string[] | null;
+  estimated_minutes?: number | null;
 };
 
-export default async function ProjectsPage() {
+function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const code = error.code || "";
+  const message = (error.message || "").toLowerCase();
+  return (
+    code === "42703" ||
+    message.includes("estimated_minutes") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
+type ProjectsPageProps = {
+  searchParams: Promise<{
+    tech?: string;
+    difficulty?: string;
+    status?: string;
+    track?: string;
+    estimate?: string;
+    favorites?: string;
+  }>;
+};
+
+function hasAnyTrackLabel(labels: string[] | null | undefined, track: string) {
+  if (!track || !labels || labels.length === 0) return true;
+  const normalized = labels.map((item) => item.toLowerCase());
+  if (track === "frontend") return normalized.some((label) => ["frontend", "ui", "react", "css"].includes(label));
+  if (track === "backend") return normalized.some((label) => ["backend", "api", "server", "database"].includes(label));
+  if (track === "docs") return normalized.some((label) => ["docs", "documentation", "readme"].includes(label));
+  if (track === "testing") return normalized.some((label) => ["testing", "test", "qa", "e2e"].includes(label));
+  return true;
+}
+
+export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
+  const locale = await getCurrentLocale();
+  const user = await createProfileIfNeeded();
+  const { tech = "", difficulty = "", status = "active", track = "", estimate = "", favorites = "" } =
+    await searchParams;
   const supabase = await createClient();
+  const favoriteProjectIds = await getFavoriteIdsByType({
+    supabase,
+    userId: user?.id || null,
+    itemType: "project",
+  });
 
   const { data: projects, error: projectsError } = await supabase
     .from("projects")
     .select("id, slug, name, short_description, description, repo_url, difficulty, tech_stack")
-    .eq("status", "active")
+    .eq("status", status === "archived" ? "archived" : "active")
     .order("created_at", { ascending: false });
 
   if (projectsError) {
@@ -40,13 +87,29 @@ export default async function ProjectsPage() {
   const projectRows = (projects || []) as ProjectRow[];
   const projectIds = projectRows.map((project) => project.id);
 
-  const { data: tasks, error: tasksError } =
+  const tasksResult =
     projectIds.length > 0
       ? await supabase
           .from("tasks")
-          .select("id, project_id, status, assigned_to")
+          .select("id, project_id, status, assigned_to, labels, estimated_minutes")
           .in("project_id", projectIds)
       : { data: [], error: null };
+
+  let tasks = tasksResult.data;
+  let tasksError = tasksResult.error;
+
+  if (tasksError && isMissingEstimatedColumnError(tasksError)) {
+    const fallback =
+      projectIds.length > 0
+        ? await supabase
+            .from("tasks")
+            .select("id, project_id, status, assigned_to, labels")
+            .in("project_id", projectIds)
+        : { data: [], error: null };
+
+    tasks = (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null }));
+    tasksError = fallback.error;
+  }
 
   if (tasksError) {
     console.error("Error cargando métricas de tareas:", tasksError.message);
@@ -59,22 +122,160 @@ export default async function ProjectsPage() {
     tasksByProject.set(task.project_id, current);
   });
 
+  const matchesEstimate = (relatedTasks: TaskRow[]) => {
+    if (!estimate) return true;
+    const estimates = relatedTasks
+      .map((task) => task.estimated_minutes)
+      .filter((value): value is number => typeof value === "number");
+    if (estimates.length === 0) return false;
+    const min = Math.min(...estimates);
+    if (estimate === "short") return min <= 30;
+    if (estimate === "medium") return min > 30 && min <= 90;
+    if (estimate === "long") return min > 90;
+    return true;
+  };
+  const matchesTrack = (relatedTasks: TaskRow[]) =>
+    !track || relatedTasks.some((task) => hasAnyTrackLabel(task.labels || null, track));
+
+  const filteredProjects = projectRows.filter((project) => {
+    const relatedTasks = tasksByProject.get(project.id) || [];
+    const techMatch =
+      !tech ||
+      (project.tech_stack || []).some((item) => item.toLowerCase() === tech.toLowerCase());
+    const difficultyMatch = !difficulty || project.difficulty === difficulty;
+    const favoriteMatch = favorites !== "1" || favoriteProjectIds.has(project.id);
+    const estimateMatch = matchesEstimate(relatedTasks);
+    const trackMatch = matchesTrack(relatedTasks);
+
+    return techMatch && difficultyMatch && favoriteMatch && estimateMatch && trackMatch;
+  });
+
+  const availableTech = [
+    ...new Set(projectRows.flatMap((project) => project.tech_stack || [])),
+  ].sort((a, b) => a.localeCompare(b));
+
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title="Proyectos open source"
-          description="Explora proyectos reales, tareas abiertas y oportunidades para contribuir con experiencia demostrable."
+          title={locale === "en" ? "Open source projects" : "Proyectos open source"}
+          description={
+            locale === "en"
+              ? "Explore real projects, open tasks, and opportunities to contribute with demonstrable experience."
+              : "Explora proyectos reales, tareas abiertas y oportunidades para contribuir con experiencia demostrable."
+          }
         />
 
-        {projectRows.length === 0 ? (
+        <form className="mb-6 grid gap-3 md:grid-cols-6">
+          <div>
+            <label htmlFor="tech" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Technology" : "Tecnología"}
+            </label>
+            <select
+              id="tech"
+              name="tech"
+              defaultValue={tech}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="">{locale === "en" ? "All" : "Todas"}</option>
+              {availableTech.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="difficulty" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Difficulty" : "Dificultad"}
+            </label>
+            <select
+              id="difficulty"
+              name="difficulty"
+              defaultValue={difficulty}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="">{locale === "en" ? "All" : "Todas"}</option>
+              <option value="beginner">{locale === "en" ? "Beginner" : "Principiante"}</option>
+              <option value="intermediate">{locale === "en" ? "Intermediate" : "Intermedia"}</option>
+              <option value="advanced">{locale === "en" ? "Advanced" : "Avanzada"}</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="status" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Status" : "Estado"}
+            </label>
+            <select
+              id="status"
+              name="status"
+              defaultValue={status}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="active">{locale === "en" ? "Active" : "Activos"}</option>
+              <option value="archived">{locale === "en" ? "Archived" : "Archivados"}</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="track" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Task type" : "Tipo de tarea"}
+            </label>
+            <select
+              id="track"
+              name="track"
+              defaultValue={track}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="">{locale === "en" ? "All" : "Todos"}</option>
+              <option value="frontend">Frontend</option>
+              <option value="backend">Backend</option>
+              <option value="docs">Docs</option>
+              <option value="testing">Testing</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="estimate" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Estimated time" : "Tiempo estimado"}
+            </label>
+            <select
+              id="estimate"
+              name="estimate"
+              defaultValue={estimate}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="">{locale === "en" ? "All" : "Todos"}</option>
+              <option value="short">{locale === "en" ? "Up to 30 min" : "Hasta 30 min"}</option>
+              <option value="medium">{locale === "en" ? "30-90 min" : "30-90 min"}</option>
+              <option value="long">{locale === "en" ? "90+ min" : "90+ min"}</option>
+            </select>
+          </div>
+          <div className="flex items-end gap-2">
+            {user ? (
+              <label className="flex items-center gap-2 text-sm text-gray-300">
+                <input type="checkbox" name="favorites" value="1" defaultChecked={favorites === "1"} />
+                {locale === "en" ? "Only favorites" : "Solo favoritos"}
+              </label>
+            ) : null}
+            <button
+              type="submit"
+              className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+            >
+              {locale === "en" ? "Apply" : "Aplicar"}
+            </button>
+          </div>
+        </form>
+
+        {filteredProjects.length === 0 ? (
           <EmptyState
-            title="No hay proyectos activos por ahora"
-            description="Vuelve pronto. Nuevos repositorios y tareas se publican continuamente."
+            title={locale === "en" ? "No active projects yet" : "No hay proyectos activos por ahora"}
+            description={
+              locale === "en"
+                ? "Come back soon. New repositories and tasks are published continuously."
+                : "Vuelve pronto. Nuevos repositorios y tareas se publican continuamente."
+            }
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {projectRows.map((project) => {
+            {filteredProjects.map((project) => {
               const relatedTasks = tasksByProject.get(project.id) || [];
               const openTasks = relatedTasks.filter((task) => task.status === "open").length;
               const contributors = new Set(
@@ -89,19 +290,21 @@ export default async function ProjectsPage() {
                   className="rounded-2xl border border-white/20 bg-black/20 p-5"
                 >
                   <h2 className="text-xl font-semibold text-white">
-                    {project.name || "Proyecto sin nombre"}
+                    {project.name || (locale === "en" ? "Untitled project" : "Proyecto sin nombre")}
                   </h2>
                   <p className="mt-2 text-sm text-gray-300">
                     {project.short_description ||
                       project.description ||
-                      "Sin descripción disponible."}
+                      (locale === "en" ? "No description available." : "Sin descripción disponible.")}
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Badge tone="info">{openTasks} tareas abiertas</Badge>
-                    <Badge tone="default">{contributors} developers contribuyendo</Badge>
+                    <Badge tone="default">
+                      {contributors} {locale === "en" ? "developers contributing" : "developers contribuyendo"}
+                    </Badge>
                     <Badge tone="warning">
-                      Dificultad: {project.difficulty || "no especificada"}
+                      {locale === "en" ? "Difficulty" : "Dificultad"}: {project.difficulty || (locale === "en" ? "not specified" : "no especificada")}
                     </Badge>
                   </div>
 
@@ -110,21 +313,30 @@ export default async function ProjectsPage() {
                       <Badge key={`${project.id}-${tech}`}>{tech}</Badge>
                     ))}
                     {(project.tech_stack || []).length === 0 ? (
-                      <span className="text-xs text-gray-500">Tech stack no especificado</span>
+                      <span className="text-xs text-gray-500">
+                        {locale === "en" ? "Tech stack not specified" : "Tech stack no especificado"}
+                      </span>
                     ) : null}
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">
+                    {user ? (
+                      <FavoriteToggle
+                        itemType="project"
+                        itemId={project.id}
+                        initiallyFavorite={favoriteProjectIds.has(project.id)}
+                      />
+                    ) : null}
                     {project.slug ? (
                       <Link
                         href={`/projects/${project.slug}`}
                         className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
                       >
-                        Ver proyecto
+                        {locale === "en" ? "View project" : "Ver proyecto"}
                       </Link>
                     ) : (
                       <span className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-sm text-gray-500">
-                        Proyecto sin slug
+                        {locale === "en" ? "Project without slug" : "Proyecto sin slug"}
                       </span>
                     )}
                     {project.repo_url ? (
@@ -134,7 +346,7 @@ export default async function ProjectsPage() {
                         rel="noreferrer"
                         className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
                       >
-                        Repo GitHub
+                        {locale === "en" ? "GitHub repo" : "Repo GitHub"}
                       </Link>
                     ) : null}
                   </div>
@@ -147,4 +359,3 @@ export default async function ProjectsPage() {
     </AppLayout>
   );
 }
-

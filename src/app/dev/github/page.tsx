@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isReviewerRole } from "@/lib/roles";
 import { createGitHubTestIssueAction } from "@/app/dev/github/actions";
 import { GITHUB_TEST_REPOSITORY_URL, runGitHubAppDiagnostics } from "@/lib/github/diagnostics";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type GitHubDevPageProps = {
   searchParams: Promise<{
@@ -40,6 +41,7 @@ function DiagnosticRow({
 }
 
 export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps) {
+  const locale = await getCurrentLocale();
   if (process.env.NODE_ENV !== "development") {
     notFound();
   }
@@ -68,14 +70,18 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
     <AppLayout containerClassName="mx-auto max-w-4xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title="GitHub App Diagnostics (Dev)"
-          description="Diagnóstico interno para verificar integración con GitHub App y el repositorio de prueba."
+          title={locale === "en" ? "GitHub App diagnostics (Dev)" : "GitHub App Diagnostics (Dev)"}
+          description={
+            locale === "en"
+              ? "Internal diagnostics to verify GitHub App integration and the test repository."
+              : "Diagnóstico interno para verificar integración con GitHub App y el repositorio de prueba."
+          }
           actions={
             <Link
               href="/dashboard"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver al dashboard
+              {locale === "en" ? "Back to dashboard" : "Volver al dashboard"}
             </Link>
           }
         />
@@ -91,21 +97,21 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             type="submit"
             className="rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
           >
-            Re-ejecutar diagnóstico
+            {locale === "en" ? "Run diagnostics again" : "Re-ejecutar diagnóstico"}
           </button>
         </form>
 
         {resolvedSearch.result === "issue_created" && resolvedSearch.issue_url ? (
           <div className="mb-4 rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-3">
             <p className="text-sm text-emerald-300">
-              Issue de prueba creado:{" "}
+              {locale === "en" ? "Test issue created:" : "Issue de prueba creado:"}{" "}
               <Link
                 href={resolvedSearch.issue_url}
                 target="_blank"
                 rel="noreferrer"
                 className="underline"
               >
-                abrir en GitHub
+                {locale === "en" ? "open on GitHub" : "abrir en GitHub"}
               </Link>
             </p>
           </div>
@@ -113,21 +119,23 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
 
         {resolvedSearch.error ? (
           <div className="mb-4 rounded-lg border border-rose-500/25 bg-rose-500/10 p-3">
-            <p className="text-sm text-rose-300">Error: {resolvedSearch.error}</p>
+            <p className="text-sm text-rose-300">
+              {locale === "en" ? "Error" : "Error"}: {resolvedSearch.error}
+            </p>
           </div>
         ) : null}
 
         <div className="grid gap-3">
           <DiagnosticRow
-            label="GITHUB_APP_ID configurado"
+            label={locale === "en" ? "GITHUB_APP_ID configured" : "GITHUB_APP_ID configurado"}
             ok={diagnostics.env.appIdConfigured}
           />
           <DiagnosticRow
-            label="GITHUB_APP_PRIVATE_KEY configurada"
+            label={locale === "en" ? "GITHUB_APP_PRIVATE_KEY configured" : "GITHUB_APP_PRIVATE_KEY configurada"}
             ok={diagnostics.env.privateKeyConfigured}
           />
           <DiagnosticRow
-            label="Repo parseado (owner/repo)"
+            label={locale === "en" ? "Parsed repo (owner/repo)" : "Repo parseado (owner/repo)"}
             ok={diagnostics.repository.parsed}
             detail={
               diagnostics.repository.parsed
@@ -136,12 +144,12 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             }
           />
           <DiagnosticRow
-            label="JWT de GitHub App generado"
+            label={locale === "en" ? "GitHub App JWT generated" : "JWT de GitHub App generado"}
             ok={diagnostics.auth.jwtGenerated}
             detail={diagnostics.auth.error}
           />
           <DiagnosticRow
-            label="Instalación encontrada en el repositorio"
+            label={locale === "en" ? "Installation found on repository" : "Instalación encontrada en el repositorio"}
             ok={diagnostics.installation.resolved}
             detail={
               diagnostics.installation.resolved
@@ -150,12 +158,12 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             }
           />
           <DiagnosticRow
-            label="Installation token obtenido"
+            label={locale === "en" ? "Installation token obtained" : "Installation token obtenido"}
             ok={diagnostics.token.resolved}
             detail={diagnostics.token.error}
           />
           <DiagnosticRow
-            label="Acceso al repositorio válido"
+            label={locale === "en" ? "Valid repository access" : "Acceso al repositorio válido"}
             ok={diagnostics.repositoryAccess.ok}
             detail={diagnostics.repositoryAccess.error}
           />
@@ -164,8 +172,12 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Crear issue de prueba"
-          description="Utilidad solo para desarrollo. No usar en producción."
+          title={locale === "en" ? "Create test issue" : "Crear issue de prueba"}
+          description={
+            locale === "en"
+              ? "Development-only utility. Do not use in production."
+              : "Utilidad solo para desarrollo. No usar en producción."
+          }
         />
 
         <form action={createGitHubTestIssueAction} className="space-y-4">
@@ -180,7 +192,9 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-gray-300">Título</label>
+            <label className="mb-1 block text-sm text-gray-300">
+              {locale === "en" ? "Title" : "Título"}
+            </label>
             <input
               type="text"
               name="title"
@@ -194,7 +208,11 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             <textarea
               name="body"
               rows={5}
-              defaultValue={`Issue de diagnóstico para validar integración GitHub App.\n\nRepositorio objetivo: ${repoUrl}`}
+              defaultValue={
+                locale === "en"
+                  ? `Diagnostics issue to validate GitHub App integration.\n\nTarget repository: ${repoUrl}`
+                  : `Issue de diagnóstico para validar integración GitHub App.\n\nRepositorio objetivo: ${repoUrl}`
+              }
               className="w-full rounded-lg border px-3 py-2 text-sm"
             />
           </div>
@@ -203,7 +221,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             type="submit"
             className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
           >
-            Crear issue de prueba
+            {locale === "en" ? "Create test issue" : "Crear issue de prueba"}
           </button>
         </form>
       </SectionCard>

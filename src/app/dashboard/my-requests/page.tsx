@@ -7,6 +7,7 @@ import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import StatusBadge from "@/components/ui/status-badge";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type MyRequest = {
   id: string;
@@ -27,6 +28,7 @@ type RequestProject = {
 };
 
 export default async function MyRequestsPage() {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -77,28 +79,40 @@ export default async function MyRequestsPage() {
     <AppLayout containerClassName="mx-auto max-w-6xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Mis solicitudes"
-          description="Consulta el estado de las tareas que solicitaste."
+          title={locale === "en" ? "My requests" : "Mis solicitudes"}
+          description={
+            locale === "en"
+              ? "Check the status of the tasks you requested."
+              : "Consulta el estado de las tareas que solicitaste."
+          }
           actions={
             <Link
               href="/dashboard"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver al dashboard
+              {locale === "en" ? "Back to dashboard" : "Volver al dashboard"}
             </Link>
           }
         />
 
         {myRequests.length === 0 ? (
           <EmptyState
-            title="Todavía no has enviado solicitudes"
-            description="Explora proyectos activos y solicita una tarea para empezar a colaborar."
+            title={
+              locale === "en"
+                ? "You have not sent requests yet"
+                : "Todavía no has enviado solicitudes"
+            }
+            description={
+              locale === "en"
+                ? "Explore active projects and request a task to start collaborating."
+                : "Explora proyectos activos y solicita una tarea para empezar a colaborar."
+            }
             action={
               <Link
                 href="/projects"
                 className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
-                Explorar proyectos
+                {locale === "en" ? "Explore projects" : "Explorar proyectos"}
               </Link>
             }
           />
@@ -107,11 +121,11 @@ export default async function MyRequestsPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="px-4 py-3 font-medium">Tarea</th>
-                  <th className="px-4 py-3 font-medium">Proyecto</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Fecha</th>
-                  <th className="px-4 py-3 font-medium">Detalle</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Task" : "Tarea"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Project" : "Proyecto"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Status" : "Estado"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Date" : "Fecha"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Detail" : "Detalle"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -121,22 +135,30 @@ export default async function MyRequestsPage() {
 
                   return (
                     <tr key={request.id} className="border-t border-white/10">
-                      <td className="px-4 py-3 align-top text-white">{task?.title || "Tarea no disponible"}</td>
-                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-white">
+                        {task?.title || (locale === "en" ? "Task not available" : "Tarea no disponible")}
+                      </td>
+                      <td className="px-4 py-3 align-top text-gray-300">
+                        {project?.name || (locale === "en" ? "Project not available" : "Proyecto no disponible")}
+                      </td>
                       <td className="px-4 py-3 align-top">
                         <StatusBadge status={request.status} />
                       </td>
                       <td className="px-4 py-3 align-top text-gray-400">
                         {request.created_at
-                          ? new Date(request.created_at).toLocaleString("es-ES")
-                          : "No disponible"}
+                          ? new Date(request.created_at).toLocaleString(
+                              locale === "en" ? "en-US" : "es-ES"
+                            )
+                          : locale === "en"
+                            ? "Not available"
+                            : "No disponible"}
                       </td>
                       <td className="px-4 py-3 align-top">
                         <Link
                           href={`/tasks/${request.task_id}`}
                           className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                         >
-                          Ver tarea
+                          {locale === "en" ? "View task" : "Ver tarea"}
                         </Link>
                       </td>
                     </tr>

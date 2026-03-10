@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/lib/notifications";
 
 export type RequestTaskResult = {
   status: "idle" | "success" | "error";
@@ -84,6 +86,15 @@ export async function requestTask(taskId: string): Promise<RequestTaskResult> {
     };
   }
 
+  await createNotification({
+    supabase,
+    userId: user.id,
+    type: "request_sent",
+    title: "Solicitud enviada",
+    body: "Tu solicitud fue enviada correctamente. Te avisaremos cuando se revise.",
+    link: `/tasks/${task.id}`,
+  });
+
   return {
     status: "success",
     message: "Solicitud enviada. Un maintainer revisará tu petición.",
@@ -104,4 +115,35 @@ export async function requestTaskAction(
   }
 
   return requestTask(taskId);
+}
+
+export async function addTaskCommentAction(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return;
+  }
+
+  const taskId = String(formData.get("taskId") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+
+  if (!taskId || !body) {
+    return;
+  }
+
+  const { error } = await supabase.from("task_comments").insert({
+    task_id: taskId,
+    user_id: user.id,
+    body,
+  });
+
+  if (error) {
+    console.error("Error creating task comment:", error.message);
+    return;
+  }
+
+  revalidatePath(`/tasks/${taskId}`);
 }

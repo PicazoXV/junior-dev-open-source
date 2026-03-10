@@ -7,11 +7,15 @@ import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import EmptyState from "@/components/ui/empty-state";
+import { getCurrentLocale } from "@/lib/i18n/server";
+import FavoriteToggle from "@/components/favorites/favorite-toggle";
+import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import { getFavoriteIdsByType } from "@/lib/favorites";
 
 export const metadata: Metadata = {
   title: "Good First Issues | PrimerIssue",
   description:
-    "Encuentra tareas beginner-friendly para hacer tu primera contribución open source con PrimerIssue.",
+    "Find beginner-friendly tasks to make your first open source contribution with PrimerIssue.",
 };
 
 type GoodFirstIssuesPageProps = {
@@ -19,6 +23,8 @@ type GoodFirstIssuesPageProps = {
     tech?: string;
     track?: string;
     difficulty?: string;
+    estimate?: string;
+    favorites?: string;
   }>;
 };
 
@@ -27,6 +33,7 @@ type TaskRow = {
   title: string | null;
   description: string | null;
   difficulty: "beginner" | "intermediate" | "advanced" | null;
+  estimated_minutes: number | null;
   labels: string[] | null;
   project:
     | {
@@ -47,6 +54,7 @@ type NormalizedTaskRow = {
   title: string | null;
   description: string | null;
   difficulty: "beginner" | "intermediate" | "advanced" | null;
+  estimated_minutes: number | null;
   labels: string[] | null;
   project: {
     name: string | null;
@@ -54,6 +62,17 @@ type NormalizedTaskRow = {
     tech_stack: string[] | null;
   } | null;
 };
+
+function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const code = error.code || "";
+  const message = (error.message || "").toLowerCase();
+  return (
+    code === "42703" ||
+    message.includes("estimated_minutes") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
 
 function normalizeLabel(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "-");
@@ -88,19 +107,23 @@ function isGoodFirstTask(task: NormalizedTaskRow) {
 }
 
 function getEstimatedTime(task: NormalizedTaskRow) {
+  if (task.estimated_minutes) {
+    return `${task.estimated_minutes} min`;
+  }
+
   if (hasAnyLabel(task.labels, ["good-first-issue", "good first issue", "first issue"])) {
     return "30-90 min";
   }
 
   if (task.difficulty === "beginner") {
-    return "1-3 horas";
+    return "1-3h";
   }
 
   if (task.difficulty === "intermediate") {
-    return "3-6 horas";
+    return "3-6h";
   }
 
-  return "6+ horas";
+  return "6+h";
 }
 
 function matchesTrack(task: NormalizedTaskRow, track: string) {
@@ -156,16 +179,61 @@ function matchesTechnology(task: NormalizedTaskRow, technologyFilter: string) {
   return techStack.includes(technologyFilter.toLowerCase());
 }
 
+function matchesEstimate(task: NormalizedTaskRow, estimateFilter: string) {
+  if (!estimateFilter) {
+    return true;
+  }
+
+  if (!task.estimated_minutes) {
+    return false;
+  }
+
+  if (estimateFilter === "short") {
+    return task.estimated_minutes <= 30;
+  }
+
+  if (estimateFilter === "medium") {
+    return task.estimated_minutes > 30 && task.estimated_minutes <= 90;
+  }
+
+  if (estimateFilter === "long") {
+    return task.estimated_minutes > 90;
+  }
+
+  return true;
+}
+
 export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIssuesPageProps) {
-  const { tech = "", track = "", difficulty = "" } = await searchParams;
+  const locale = await getCurrentLocale();
+  const user = await createProfileIfNeeded();
+  const { tech = "", track = "", difficulty = "", estimate = "", favorites = "" } = await searchParams;
 
   const supabase = await createClient();
+  const favoriteTaskIds = await getFavoriteIdsByType({
+    supabase,
+    userId: user?.id || null,
+    itemType: "task",
+  });
 
-  const { data, error } = await supabase
+  const withEstimate = await supabase
     .from("tasks")
-    .select("id, title, description, difficulty, labels, project:projects(name, slug, tech_stack)")
+    .select("id, title, description, difficulty, estimated_minutes, labels, project:projects(name, slug, tech_stack)")
     .eq("status", "open")
     .order("created_at", { ascending: false });
+
+  let data = withEstimate.data;
+  let error = withEstimate.error;
+
+  if (error && isMissingEstimatedColumnError(error)) {
+    const fallback = await supabase
+      .from("tasks")
+      .select("id, title, description, difficulty, labels, project:projects(name, slug, tech_stack)")
+      .eq("status", "open")
+      .order("created_at", { ascending: false });
+
+    data = (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null }));
+    error = fallback.error;
+  }
 
   if (error) {
     console.error("Error cargando Good First Issues:", error.message);
@@ -179,7 +247,9 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
     (task) =>
       matchesTechnology(task, tech) &&
       matchesTrack(task, track) &&
-      matchesDifficulty(task, difficulty)
+      matchesDifficulty(task, difficulty) &&
+      matchesEstimate(task, estimate) &&
+      (favorites !== "1" || favoriteTaskIds.has(task.id))
   );
 
   const availableTech = [...new Set(tasks.flatMap((task) => task.project?.tech_stack || []))].sort();
@@ -188,23 +258,31 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title="Good First Issues"
-          description="Start contributing to open source today. Encuentra tareas curadas para developers que comienzan su journey."
+          title={locale === "en" ? "Good First Issues" : "Good First Issues"}
+          description={
+            locale === "en"
+              ? "Start contributing to open source today. Find beginner-friendly tasks curated for your journey."
+              : "Empieza hoy a contribuir en open source. Encuentra tareas curadas para developers que comienzan su journey."
+          }
         />
 
         <p className="max-w-3xl text-sm text-gray-300">
-          Solo mostramos tareas aptas para empezar: dificultad beginner o etiquetas tipo good first issue.
-          Explora, filtra y da tu primer paso en open source con experiencia demostrable.
+          {locale === "en"
+            ? "We only show beginner-friendly tasks: beginner difficulty or good-first-issue labels. Explore, filter, and take your first step in open source."
+            : "Solo mostramos tareas aptas para empezar: dificultad beginner o etiquetas tipo good first issue. Explora, filtra y da tu primer paso en open source con experiencia demostrable."}
         </p>
       </SectionCard>
 
       <SectionCard className="p-8">
-        <PageHeader title="Filtros" description="Ajusta tecnología, track y dificultad recomendada." />
+        <PageHeader
+          title={locale === "en" ? "Filters" : "Filtros"}
+          description={locale === "en" ? "Adjust technology, track and recommended difficulty." : "Ajusta tecnología, track y dificultad recomendada."}
+        />
 
-        <form className="grid gap-3 md:grid-cols-4">
+        <form className="grid gap-3 md:grid-cols-5">
           <div>
             <label htmlFor="tech" className="mb-1 block text-xs text-gray-400">
-              Technology
+              {locale === "en" ? "Technology" : "Tecnología"}
             </label>
             <select
               id="tech"
@@ -212,7 +290,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
               defaultValue={tech}
               className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
             >
-              <option value="">Todas</option>
+              <option value="">{locale === "en" ? "All" : "Todas"}</option>
               {availableTech.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -223,7 +301,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
 
           <div>
             <label htmlFor="track" className="mb-1 block text-xs text-gray-400">
-              Track
+              {locale === "en" ? "Track" : "Track"}
             </label>
             <select
               id="track"
@@ -231,7 +309,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
               defaultValue={track}
               className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
             >
-              <option value="">Todos</option>
+              <option value="">{locale === "en" ? "All" : "Todos"}</option>
               <option value="frontend">Frontend</option>
               <option value="backend">Backend</option>
               <option value="docs">Docs</option>
@@ -241,7 +319,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
 
           <div>
             <label htmlFor="difficulty" className="mb-1 block text-xs text-gray-400">
-              Difficulty
+              {locale === "en" ? "Difficulty" : "Dificultad"}
             </label>
             <select
               id="difficulty"
@@ -249,19 +327,53 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
               defaultValue={difficulty}
               className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
             >
-              <option value="">Todas</option>
-              <option value="very-easy">Very easy</option>
-              <option value="beginner">Beginner</option>
-              <option value="junior">Junior</option>
+              <option value="">{locale === "en" ? "All" : "Todas"}</option>
+              <option value="very-easy">{locale === "en" ? "Very easy" : "Muy fácil"}</option>
+              <option value="beginner">{locale === "en" ? "Beginner" : "Principiante"}</option>
+              <option value="junior">{locale === "en" ? "Junior" : "Junior"}</option>
             </select>
           </div>
+
+          <div>
+            <label htmlFor="estimate" className="mb-1 block text-xs text-gray-400">
+              {locale === "en" ? "Estimated time" : "Tiempo estimado"}
+            </label>
+            <select
+              id="estimate"
+              name="estimate"
+              defaultValue={estimate}
+              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            >
+              <option value="">{locale === "en" ? "All" : "Todos"}</option>
+              <option value="short">{locale === "en" ? "Up to 30 min" : "Hasta 30 min"}</option>
+              <option value="medium">{locale === "en" ? "30-90 min" : "30-90 min"}</option>
+              <option value="long">{locale === "en" ? "90+ min" : "90+ min"}</option>
+            </select>
+          </div>
+
+          {user ? (
+            <div>
+              <label htmlFor="favorites" className="mb-1 block text-xs text-gray-400">
+                {locale === "en" ? "Favorites" : "Favoritos"}
+              </label>
+              <select
+                id="favorites"
+                name="favorites"
+                defaultValue={favorites}
+                className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+              >
+                <option value="">{locale === "en" ? "All" : "Todos"}</option>
+                <option value="1">{locale === "en" ? "Only favorites" : "Solo favoritos"}</option>
+              </select>
+            </div>
+          ) : null}
 
           <div className="flex items-end">
             <button
               type="submit"
               className="w-full rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
             >
-              Aplicar filtros
+              {locale === "en" ? "Apply filters" : "Aplicar filtros"}
             </button>
           </div>
         </form>
@@ -269,20 +381,28 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Tareas beginner-friendly"
-          description="Selecciona una tarea y empieza hoy tu primera contribución open source real."
+          title={locale === "en" ? "Beginner-friendly tasks" : "Tareas beginner-friendly"}
+          description={
+            locale === "en"
+              ? "Pick a task and start your first real open source contribution today."
+              : "Selecciona una tarea y empieza hoy tu primera contribución open source real."
+          }
         />
 
         {filteredTasks.length === 0 ? (
           <EmptyState
-            title="No hay tareas para estos filtros"
-            description="Prueba otra combinación o vuelve pronto. Se publican nuevas oportunidades cada semana."
+            title={locale === "en" ? "No tasks for these filters" : "No hay tareas para estos filtros"}
+            description={
+              locale === "en"
+                ? "Try another filter combination or come back soon. New opportunities are posted every week."
+                : "Prueba otra combinación o vuelve pronto. Se publican nuevas oportunidades cada semana."
+            }
             action={
               <Link
                 href="/projects"
                 className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
               >
-                Ver todos los proyectos
+                {locale === "en" ? "View all projects" : "Ver todos los proyectos"}
               </Link>
             }
           />
@@ -293,17 +413,21 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
                 key={task.id}
                 className="rounded-2xl border border-white/20 bg-black/20 p-5"
               >
-                <h2 className="text-lg font-semibold text-white">{task.title || "Tarea sin título"}</h2>
+                <h2 className="text-lg font-semibold text-white">
+                  {task.title || (locale === "en" ? "Untitled task" : "Tarea sin título")}
+                </h2>
                 <p className="mt-1 text-sm text-gray-400">
-                  {task.project?.name || "Proyecto"}
+                  {task.project?.name || (locale === "en" ? "Project" : "Proyecto")}
                 </p>
                 <p className="mt-3 text-sm text-gray-300">
-                  {task.description || "Sin descripción disponible."}
+                  {task.description || (locale === "en" ? "No description available." : "Sin descripción disponible.")}
                 </p>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   <DifficultyBadge difficulty={task.difficulty} />
-                  <Badge tone="info">Estimated time: {getEstimatedTime(task)}</Badge>
+                  <Badge tone="info">
+                    {locale === "en" ? "Estimated time" : "Tiempo estimado"}: {getEstimatedTime(task)}
+                  </Badge>
                   {(task.labels || []).slice(0, 4).map((label) => (
                     <Badge key={`${task.id}-${label}`}>{label}</Badge>
                   ))}
@@ -318,18 +442,23 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
                 </div>
 
                 <div className="mt-5 flex gap-2">
+                  <FavoriteToggle
+                    itemType="task"
+                    itemId={task.id}
+                    initiallyFavorite={favoriteTaskIds.has(task.id)}
+                  />
                   <Link
                     href={`/tasks/${task.id}`}
                     className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
                   >
-                    View task
+                    {locale === "en" ? "View task" : "Ver tarea"}
                   </Link>
                   {task.project?.slug ? (
                     <Link
                       href={`/projects/${task.project.slug}`}
                       className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
                     >
-                      Ver proyecto
+                      {locale === "en" ? "View project" : "Ver proyecto"}
                     </Link>
                   ) : null}
                 </div>

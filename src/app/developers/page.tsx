@@ -7,8 +7,10 @@ import LevelBadge from "@/components/ui/level-badge";
 import Badge from "@/components/ui/badge";
 import EmptyState from "@/components/ui/empty-state";
 import { getDevelopersLeaderboard } from "@/lib/developer-stats";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 export default async function DevelopersPage() {
+  const locale = await getCurrentLocale();
   const supabase = await createClient();
   const leaderboard = await getDevelopersLeaderboard(supabase);
 
@@ -16,24 +18,36 @@ export default async function DevelopersPage() {
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title="Leaderboard de developers"
-          description="Ranking público basado en tareas completadas, PRs merged y proyectos contribuidos."
+          title={locale === "en" ? "Developers leaderboard" : "Leaderboard de developers"}
+          description={
+            locale === "en"
+              ? "Public ranking based on completed tasks, merged PRs, and contributed projects."
+              : "Ranking público basado en tareas completadas, PRs merged y proyectos contribuidos."
+          }
         />
 
         {leaderboard.length === 0 ? (
           <EmptyState
-            title="Aún no hay developers en el leaderboard"
-            description="Cuando haya actividad en la plataforma, el ranking aparecerá aquí."
+            title={
+              locale === "en"
+                ? "There are no developers in the leaderboard yet"
+                : "Aún no hay developers en el leaderboard"
+            }
+            description={
+              locale === "en"
+                ? "When there is activity in the platform, the ranking will appear here."
+                : "Cuando haya actividad en la plataforma, el ranking aparecerá aquí."
+            }
           />
         ) : (
           <div className="overflow-x-auto rounded-xl border border-white/15 bg-black/20">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="px-4 py-3">Developer</th>
+                  <th className="px-4 py-3">{locale === "en" ? "Developer" : "Developer"}</th>
                   <th className="px-4 py-3">Tasks</th>
                   <th className="px-4 py-3">PRs merged</th>
-                  <th className="px-4 py-3">Proyectos</th>
+                  <th className="px-4 py-3">{locale === "en" ? "Projects" : "Proyectos"}</th>
                   <th className="px-4 py-3">Level</th>
                   <th className="px-4 py-3">Badges</th>
                 </tr>
@@ -47,13 +61,13 @@ export default async function DevelopersPage() {
                           #{index + 1} @{developer.githubUsername}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {developer.fullName || "Developer en MiPrimerIssue"}
+                          {developer.fullName || (locale === "en" ? "Developer on PrimerIssue" : "Developer en PrimerIssue")}
                         </p>
                         <Link
                           href={`/dev/${developer.githubUsername}`}
                           className="mt-1 inline-flex text-xs text-orange-300 hover:underline"
                         >
-                          Ver perfil público
+                          {locale === "en" ? "View public profile" : "Ver perfil público"}
                         </Link>
                       </div>
                     </td>
@@ -71,7 +85,9 @@ export default async function DevelopersPage() {
                           </Badge>
                         ))}
                         {developer.badges.length === 0 ? (
-                          <span className="text-xs text-gray-500">Sin badges por ahora</span>
+                          <span className="text-xs text-gray-500">
+                            {locale === "en" ? "No badges yet" : "Sin badges por ahora"}
+                          </span>
                         ) : null}
                       </div>
                     </td>
@@ -85,4 +101,3 @@ export default async function DevelopersPage() {
     </AppLayout>
   );
 }
-

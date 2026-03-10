@@ -7,8 +7,10 @@ import { isReviewerRole } from "@/lib/roles";
 import AppLayout from "@/components/layout/app-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 export default async function NewProjectPage() {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -36,14 +38,18 @@ export default async function NewProjectPage() {
     <AppLayout containerClassName="mx-auto max-w-4xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Nuevo proyecto"
-          description="Define los datos base para publicar un proyecto en la plataforma."
+          title={locale === "en" ? "New project" : "Nuevo proyecto"}
+          description={
+            locale === "en"
+              ? "Define the base data to publish a project in the platform."
+              : "Define los datos base para publicar un proyecto en la plataforma."
+          }
           actions={
             <Link
               href="/dashboard"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver al dashboard
+              {locale === "en" ? "Back to dashboard" : "Volver al dashboard"}
             </Link>
           }
         />
@@ -52,7 +58,7 @@ export default async function NewProjectPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">
-                Nombre
+                {locale === "en" ? "Name" : "Nombre"}
               </label>
               <input id="name" name="name" required className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
@@ -73,21 +79,21 @@ export default async function NewProjectPage() {
 
           <div>
             <label htmlFor="short_description" className="mb-1 block text-sm font-medium text-gray-300">
-              Descripción corta
+              {locale === "en" ? "Short description" : "Descripción corta"}
             </label>
             <input id="short_description" name="short_description" className="w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
 
           <div>
             <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
-              Descripción
+              {locale === "en" ? "Description" : "Descripción"}
             </label>
             <textarea id="description" name="description" rows={5} className="w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
 
           <div>
             <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-300">
-              URL del repositorio
+              {locale === "en" ? "Repository URL" : "URL del repositorio"}
             </label>
             <input
               id="repo_url"
@@ -101,7 +107,7 @@ export default async function NewProjectPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
-                Estado
+                {locale === "en" ? "Status" : "Estado"}
               </label>
               <select id="status" name="status" defaultValue="active" className="w-full rounded-lg border px-3 py-2 text-sm">
                 <option value="active">active</option>
@@ -111,7 +117,7 @@ export default async function NewProjectPage() {
 
             <div>
               <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
-                Dificultad
+                {locale === "en" ? "Difficulty" : "Dificultad"}
               </label>
               <select id="difficulty" name="difficulty" defaultValue="beginner" className="w-full rounded-lg border px-3 py-2 text-sm">
                 <option value="beginner">beginner</option>
@@ -123,7 +129,7 @@ export default async function NewProjectPage() {
 
           <div>
             <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-300">
-              Tech stack (separado por comas)
+              {locale === "en" ? "Tech stack (comma separated)" : "Tech stack (separado por comas)"}
             </label>
             <input
               id="tech_stack"
@@ -138,7 +144,7 @@ export default async function NewProjectPage() {
               type="submit"
               className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
             >
-              Crear proyecto
+              {locale === "en" ? "Create project" : "Crear proyecto"}
             </button>
           </div>
         </form>

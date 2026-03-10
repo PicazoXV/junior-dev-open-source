@@ -14,12 +14,18 @@ import {
   ShieldCheck,
   SquarePen,
   LogOut,
+  Bell,
+  BarChart3,
+  Users,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useI18n } from "@/lib/i18n/client";
+import HardModeToggle from "@/components/language/hard-mode-toggle";
 
 type RightSidebarProps = {
   isAuthenticated: boolean;
   isReviewer: boolean;
+  unreadNotifications: number;
 };
 
 type NavItem = {
@@ -29,54 +35,62 @@ type NavItem = {
   reviewerOnly?: boolean;
 };
 
-export default function RightSidebar({ isAuthenticated, isReviewer }: RightSidebarProps) {
+export default function RightSidebar({
+  isAuthenticated,
+  isReviewer,
+  unreadNotifications,
+}: RightSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { messages } = useI18n();
 
   const items: NavItem[] = [
-    { href: "/", label: "Inicio", icon: Home },
-    { href: "/projects", label: "Proyectos", icon: FolderKanban },
-    { href: "/good-first-issues", label: "Good First Issues", icon: Sparkles },
-    { href: "/developers", label: "Developers", icon: Briefcase },
-    { href: "/activity", label: "Actividad", icon: ClipboardList },
-    { href: "/stats", label: "Stats", icon: ListTodo },
-    { href: "/dashboard/my-tasks", label: "Mis tareas", icon: Briefcase },
-    { href: "/dashboard/my-requests", label: "Mis solicitudes", icon: ClipboardList },
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/first-contribution", label: "Primera contribución", icon: SquarePen },
+    { href: "/", label: messages.sidebar.home, icon: Home },
+    { href: "/projects", label: messages.sidebar.projects, icon: FolderKanban },
+    { href: "/good-first-issues", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
+    { href: "/developers", label: messages.sidebar.developers, icon: Briefcase },
+    { href: "/activity", label: messages.sidebar.activity, icon: ClipboardList },
+    { href: "/stats", label: messages.sidebar.stats, icon: ListTodo },
+    { href: "/developers/tech", label: messages.sidebar.techRanking, icon: BarChart3 },
+    { href: "/dashboard/notifications", label: messages.sidebar.notifications, icon: Bell },
+    { href: "/dashboard/my-tasks", label: messages.sidebar.myTasks, icon: Briefcase },
+    { href: "/dashboard/my-requests", label: messages.sidebar.myRequests, icon: ClipboardList },
+    { href: "/dashboard", label: messages.sidebar.dashboard, icon: LayoutDashboard },
+    { href: "/for-maintainers", label: messages.sidebar.forMaintainers, icon: Users },
+    { href: "/first-contribution", label: messages.sidebar.firstContribution, icon: SquarePen },
     {
       href: "/dashboard/requests",
-      label: "Ver solicitudes",
+      label: messages.sidebar.reviewRequests,
       icon: ShieldCheck,
       reviewerOnly: true,
     },
     {
       href: "/dashboard/projects/new",
-      label: "Nuevo proyecto",
+      label: messages.sidebar.newProject,
       icon: PlusSquare,
       reviewerOnly: true,
     },
     {
       href: "/projects/new",
-      label: "Registrar proyecto",
+      label: messages.sidebar.registerProject,
       icon: PlusSquare,
       reviewerOnly: true,
     },
     {
       href: "/dashboard/tasks/new",
-      label: "Nueva tarea",
+      label: messages.sidebar.newTask,
       icon: SquarePen,
       reviewerOnly: true,
     },
     {
       href: "/dashboard/projects",
-      label: "Gestionar proyectos",
+      label: messages.sidebar.manageProjects,
       icon: FolderKanban,
       reviewerOnly: true,
     },
     {
       href: "/dashboard/tasks",
-      label: "Gestionar tareas",
+      label: messages.sidebar.manageTasks,
       icon: ListTodo,
       reviewerOnly: true,
     },
@@ -116,14 +130,18 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
         <div className="mb-4 flex items-center justify-center px-1 group-hover:justify-between">
           <div className="hidden group-hover:block">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">
-              MiPrimerIssue
+              {messages.brand.name}
             </p>
-            <p className="text-[10px] text-gray-500">miprimerissue.dev</p>
+            <p className="text-[10px] text-gray-500">{messages.brand.domain}</p>
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 group-hover:hidden">
             PI
           </p>
           <span className="h-2.5 w-2.5 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.7)]" />
+        </div>
+
+        <div className="mb-3">
+          <HardModeToggle />
         </div>
 
         <div className="space-y-2">
@@ -136,7 +154,7 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
+                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
                   isActive
                     ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
                     : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"
@@ -144,6 +162,11 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
                 title={item.label}
               >
                 <Icon className="h-5 w-5 shrink-0" />
+                {item.href === "/dashboard/notifications" && unreadNotifications > 0 ? (
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-black">
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                ) : null}
                 <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[200px] group-hover:opacity-100">
                   {item.label}
                 </span>
@@ -155,12 +178,12 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
             <button
               type="button"
               onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-xl border border-white/10 px-3 py-2.5 text-sm text-gray-300 transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300"
-              title="Logout"
+              className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 px-3 py-2.5 text-sm text-gray-300 transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300"
+              title={messages.sidebar.logout}
             >
               <LogOut className="h-5 w-5 shrink-0" />
               <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[200px] group-hover:opacity-100">
-                Logout
+                {messages.sidebar.logout}
               </span>
             </button>
           ) : null}

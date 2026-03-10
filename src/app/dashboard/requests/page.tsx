@@ -9,6 +9,7 @@ import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import StatusBadge from "@/components/ui/status-badge";
 import { isReviewerRole, normalizeRole } from "@/lib/roles";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type PendingRequest = {
   id: string;
@@ -37,6 +38,7 @@ type RequestProject = {
 };
 
 export default async function DashboardRequestsPage() {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -124,34 +126,42 @@ export default async function DashboardRequestsPage() {
     <AppLayout containerClassName="mx-auto max-w-6xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Solicitudes de tareas"
-          description="Revisa las solicitudes pendientes y asigna la tarea al colaborador adecuado."
+          title={locale === "en" ? "Task requests" : "Solicitudes de tareas"}
+          description={
+            locale === "en"
+              ? "Review pending requests and assign each task to the right collaborator."
+              : "Revisa las solicitudes pendientes y asigna la tarea al colaborador adecuado."
+          }
           actions={
             <Link
               href="/dashboard"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver al dashboard
+              {locale === "en" ? "Back to dashboard" : "Volver al dashboard"}
             </Link>
           }
         />
 
         {pendingRequests.length === 0 ? (
           <EmptyState
-            title="No hay solicitudes pendientes"
-            description="Cuando un junior solicite una tarea abierta, aparecerá aquí para revisión."
+            title={locale === "en" ? "No pending requests" : "No hay solicitudes pendientes"}
+            description={
+              locale === "en"
+                ? "When a junior requests an open task, it will appear here for review."
+                : "Cuando un junior solicite una tarea abierta, aparecerá aquí para revisión."
+            }
           />
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="px-4 py-3 font-medium">Usuario</th>
-                  <th className="px-4 py-3 font-medium">Tarea</th>
-                  <th className="px-4 py-3 font-medium">Proyecto</th>
-                  <th className="px-4 py-3 font-medium">Solicitada</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Acciones</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "User" : "Usuario"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Task" : "Tarea"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Project" : "Proyecto"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Requested at" : "Solicitada"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Status" : "Estado"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Actions" : "Acciones"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,16 +173,30 @@ export default async function DashboardRequestsPage() {
                   return (
                     <tr key={request.id} className="border-t border-white/10">
                       <td className="px-4 py-3 align-top">
-                        <p className="font-medium text-white">{requester?.full_name || "Sin nombre"}</p>
-                        <p className="text-gray-300">@{requester?.github_username || "sin-username"}</p>
-                        <p className="text-gray-500">{requester?.email || "Sin email"}</p>
+                        <p className="font-medium text-white">
+                          {requester?.full_name || (locale === "en" ? "No name" : "Sin nombre")}
+                        </p>
+                        <p className="text-gray-300">
+                          @{requester?.github_username || (locale === "en" ? "no-username" : "sin-username")}
+                        </p>
+                        <p className="text-gray-500">
+                          {requester?.email || (locale === "en" ? "No email" : "Sin email")}
+                        </p>
                       </td>
-                      <td className="px-4 py-3 align-top text-gray-200">{task?.title || "Tarea no disponible"}</td>
-                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-gray-200">
+                        {task?.title || (locale === "en" ? "Task not available" : "Tarea no disponible")}
+                      </td>
+                      <td className="px-4 py-3 align-top text-gray-300">
+                        {project?.name || (locale === "en" ? "Project not available" : "Proyecto no disponible")}
+                      </td>
                       <td className="px-4 py-3 align-top text-gray-400">
                         {request.created_at
-                          ? new Date(request.created_at).toLocaleString("es-ES")
-                          : "No disponible"}
+                          ? new Date(request.created_at).toLocaleString(
+                              locale === "en" ? "en-US" : "es-ES"
+                            )
+                          : locale === "en"
+                            ? "Not available"
+                            : "No disponible"}
                       </td>
                       <td className="px-4 py-3 align-top">
                         <StatusBadge status={request.status} />
@@ -185,7 +209,7 @@ export default async function DashboardRequestsPage() {
                                 type="submit"
                                 className="rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/15"
                               >
-                                Aprobar
+                                {locale === "en" ? "Approve" : "Aprobar"}
                               </button>
                             </form>
 
@@ -194,12 +218,14 @@ export default async function DashboardRequestsPage() {
                                 type="submit"
                                 className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/15"
                               >
-                                Rechazar
+                                {locale === "en" ? "Reject" : "Rechazar"}
                               </button>
                             </form>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-500">Solicitud revisada</span>
+                          <span className="text-xs text-gray-500">
+                            {locale === "en" ? "Request reviewed" : "Solicitud revisada"}
+                          </span>
                         )}
                       </td>
                     </tr>

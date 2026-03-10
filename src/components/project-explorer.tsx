@@ -8,6 +8,7 @@ import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
 import Badge from "@/components/ui/badge";
 import GitHubIssueBadge from "@/components/ui/github-issue-badge";
+import { useI18n } from "@/lib/i18n/client";
 
 type ExplorerTask = {
   id: string;
@@ -15,6 +16,7 @@ type ExplorerTask = {
   description: string | null;
   status: "open" | "assigned" | "in_review" | "completed" | "closed";
   difficulty: "beginner" | "intermediate" | "advanced" | null;
+  estimated_minutes?: number | null;
   labels: string[] | null;
   github_issue_url: string | null;
   project_id: string;
@@ -32,13 +34,14 @@ type ProjectExplorerProps = {
   projects: ExplorerProject[];
 };
 
-function getPreview(text: string | null, maxLength = 120) {
-  if (!text) return "Sin descripción disponible.";
+function getPreview(text: string | null, locale: "es" | "en", maxLength = 120) {
+  if (!text) return locale === "en" ? "No description available." : "Sin descripción disponible.";
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength).trim()}...`;
 }
 
 export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
+  const { locale } = useI18n();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     projects[0]?.id ?? null
   );
@@ -57,12 +60,15 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
       <SectionCard className="p-5">
-        <h2 className="mb-4 text-lg font-semibold text-white">Proyectos activos</h2>
+        <h2 className="mb-4 text-lg font-semibold text-white">
+          {locale === "en" ? "Active projects" : "Proyectos activos"}
+        </h2>
         <div className="space-y-3">
           {projects.map((project) => {
-            const safeName = project.name?.trim() || "Proyecto sin nombre";
+            const safeName = project.name?.trim() || (locale === "en" ? "Untitled project" : "Proyecto sin nombre");
             const safeDescription =
-              project.short_description?.trim() || "Sin resumen disponible.";
+              project.short_description?.trim() ||
+              (locale === "en" ? "No summary available." : "Sin resumen disponible.");
             const safeSlug = project.slug?.trim();
 
             return (
@@ -79,11 +85,11 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                       href={`/projects/${encodeURIComponent(safeSlug)}`}
                       className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                     >
-                      Ver proyecto
+                      {locale === "en" ? "View project" : "Ver proyecto"}
                     </Link>
                   ) : (
                     <span className="inline-flex rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 text-xs text-gray-500">
-                      Sin slug
+                      {locale === "en" ? "No slug" : "Sin slug"}
                     </span>
                   )}
 
@@ -92,7 +98,7 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                     onClick={() => openTasksPanel(project.id)}
                     className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
                   >
-                    Ver tareas
+                    {locale === "en" ? "View tasks" : "Ver tareas"}
                   </button>
                 </div>
               </article>
@@ -107,17 +113,21 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
         <div className="mb-4 flex items-center gap-2">
           <FileCode2 className="h-4 w-4 text-orange-300" />
           <h2 className="text-sm uppercase tracking-[0.16em] text-gray-400">
-            Explorador de tareas
+            {locale === "en" ? "Task explorer" : "Explorador de tareas"}
           </h2>
         </div>
 
         {!selectedProject ? (
           <p className="rounded-xl border border-dashed border-white/20 bg-black/20 p-4 text-sm text-gray-400">
-            Selecciona un proyecto para explorar sus tareas.
+            {locale === "en"
+              ? "Select a project to explore its tasks."
+              : "Selecciona un proyecto para explorar sus tareas."}
           </p>
         ) : selectedProject.tasks.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/20 bg-black/20 p-4 text-sm text-gray-400">
-            Este proyecto todavía no tiene tareas publicadas.
+            {locale === "en"
+              ? "This project does not have published tasks yet."
+              : "Este proyecto todavía no tiene tareas publicadas."}
           </p>
         ) : (
           <div className="space-y-3">
@@ -130,11 +140,18 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                   href={`/tasks/${task.id}`}
                   className="text-sm font-semibold text-white transition hover:text-orange-300"
                 >
-                  {">"} {task.title || "Tarea sin título"}
+                  {">"} {task.title || (locale === "en" ? "Untitled task" : "Tarea sin título")}
                 </Link>
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <DifficultyBadge difficulty={task.difficulty} />
+                  {task.estimated_minutes ? (
+                    <Badge tone="info">
+                      {locale === "en"
+                        ? `${task.estimated_minutes} min`
+                        : `${task.estimated_minutes} min`}
+                    </Badge>
+                  ) : null}
                   <StatusBadge status={task.status} />
                   <GitHubIssueBadge issueUrl={task.github_issue_url} compact />
                   {(task.labels || []).slice(0, 2).map((label) => (
@@ -142,7 +159,7 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                   ))}
                 </div>
 
-                <p className="mt-3 text-xs text-gray-300">{getPreview(task.description)}</p>
+                <p className="mt-3 text-xs text-gray-300">{getPreview(task.description, locale)}</p>
 
                 {task.github_issue_url ? (
                   <Link
@@ -151,7 +168,7 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                     rel="noreferrer"
                     className="mt-3 inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-300 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                   >
-                    Ver issue en GitHub
+                    {locale === "en" ? "View issue on GitHub" : "Ver issue en GitHub"}
                   </Link>
                 ) : null}
               </article>

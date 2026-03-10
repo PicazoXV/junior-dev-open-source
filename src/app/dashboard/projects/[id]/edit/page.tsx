@@ -8,6 +8,7 @@ import AppLayout from "@/components/layout/app-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type ProjectEditPageProps = {
   params: Promise<{ id: string }>;
@@ -26,6 +27,7 @@ type Project = {
 };
 
 export default async function EditProjectPage({ params }: ProjectEditPageProps) {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -66,22 +68,30 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
     <AppLayout containerClassName="mx-auto max-w-4xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Editar proyecto"
-          description="Actualiza la información visible para los colaboradores."
+          title={locale === "en" ? "Edit project" : "Editar proyecto"}
+          description={
+            locale === "en"
+              ? "Update visible information for contributors."
+              : "Actualiza la información visible para los colaboradores."
+          }
           actions={
             <Link
               href="/dashboard/projects"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver a gestión
+              {locale === "en" ? "Back to management" : "Volver a gestión"}
             </Link>
           }
         />
 
         {!currentProject ? (
           <EmptyState
-            title="Proyecto no encontrado"
-            description="No existe un proyecto con el ID proporcionado."
+            title={locale === "en" ? "Project not found" : "Proyecto no encontrado"}
+            description={
+              locale === "en"
+                ? "No project exists with the provided ID."
+                : "No existe un proyecto con el ID proporcionado."
+            }
           />
         ) : (
           <form action={updateProjectAction} className="space-y-5">
@@ -90,7 +100,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">
-                  Nombre
+                  {locale === "en" ? "Name" : "Nombre"}
                 </label>
                 <input
                   id="name"
@@ -117,7 +127,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
             <div>
               <label htmlFor="short_description" className="mb-1 block text-sm font-medium text-gray-300">
-                Descripción corta
+                {locale === "en" ? "Short description" : "Descripción corta"}
               </label>
               <input
                 id="short_description"
@@ -129,7 +139,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
             <div>
               <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
-                Descripción
+                {locale === "en" ? "Description" : "Descripción"}
               </label>
               <textarea
                 id="description"
@@ -142,7 +152,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
             <div>
               <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-300">
-                URL del repositorio
+                {locale === "en" ? "Repository URL" : "URL del repositorio"}
               </label>
               <input
                 id="repo_url"
@@ -156,7 +166,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
-                  Estado
+                  {locale === "en" ? "Status" : "Estado"}
                 </label>
                 <select id="status" name="status" defaultValue={currentProject.status} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="active">active</option>
@@ -166,7 +176,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
               <div>
                 <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
-                  Dificultad
+                  {locale === "en" ? "Difficulty" : "Dificultad"}
                 </label>
                 <select id="difficulty" name="difficulty" defaultValue={currentProject.difficulty} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="beginner">beginner</option>
@@ -178,7 +188,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
             <div>
               <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-300">
-                Tech stack (separado por comas)
+                {locale === "en" ? "Tech stack (comma separated)" : "Tech stack (separado por comas)"}
               </label>
               <input
                 id="tech_stack"
@@ -193,7 +203,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 type="submit"
                 className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
-                Guardar cambios
+                {locale === "en" ? "Save changes" : "Guardar cambios"}
               </button>
             </div>
           </form>

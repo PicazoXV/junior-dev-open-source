@@ -9,8 +9,20 @@ import HomeMarketingSections from "@/components/home-marketing-sections";
 import Link from "next/link";
 import EmptyState from "@/components/ui/empty-state";
 import { getRecentContributions } from "@/lib/activity-feed";
+import { getCurrentMessages } from "@/lib/i18n/server";
+function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const code = error.code || "";
+  const message = (error.message || "").toLowerCase();
+  return (
+    code === "42703" ||
+    message.includes("estimated_minutes") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
 
 export default async function HomePage() {
+  const { locale, messages } = await getCurrentMessages();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -25,7 +37,11 @@ export default async function HomePage() {
           <SectionCard className="p-8">
             <PageHeader
               title="Recent contributions"
-              description="Actividad reciente de developers construyendo experiencia real en la plataforma."
+              description={
+                locale === "en"
+                  ? "Recent developer activity building real open source experience on the platform."
+                  : "Actividad reciente de developers construyendo experiencia real en la plataforma."
+              }
             />
             {recentContributions.length > 0 ? (
               <div className="grid gap-3 md:grid-cols-2">
@@ -36,7 +52,13 @@ export default async function HomePage() {
                   >
                     <p className="text-sm text-gray-200">
                       <span className="text-orange-300">{item.actorName}</span>{" "}
-                      {item.type === "merged_pr" ? "merged PR en" : "completó tarea en"}{" "}
+                      {item.type === "merged_pr"
+                        ? locale === "en"
+                          ? "merged PR in"
+                          : "merged PR en"
+                        : locale === "en"
+                          ? "completed task in"
+                          : "completó tarea en"}{" "}
                       <span className="text-white">{item.projectName}</span>
                     </p>
                     <p className="mt-1 text-xs text-gray-400">{item.taskTitle}</p>
@@ -46,7 +68,7 @@ export default async function HomePage() {
                           href={`/projects/${item.projectSlug}`}
                           className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/30 hover:text-orange-300"
                         >
-                          Ver proyecto
+                          {locale === "en" ? "View project" : "Ver proyecto"}
                         </Link>
                       ) : null}
                       {item.githubUrl ? (
@@ -56,7 +78,7 @@ export default async function HomePage() {
                           rel="noreferrer"
                           className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
                         >
-                          Ver en GitHub
+                          {locale === "en" ? "View on GitHub" : "Ver en GitHub"}
                         </Link>
                       ) : null}
                     </div>
@@ -66,7 +88,11 @@ export default async function HomePage() {
             ) : (
               <EmptyState
                 title="Todavía no hay contribuciones recientes"
-                description="Cuando los developers completen tareas y hagan merge de PRs, aparecerán aquí."
+                description={
+                  locale === "en"
+                    ? "Once developers complete tasks and merge PRs, they will appear here."
+                    : "Cuando los developers completen tareas y hagan merge de PRs, aparecerán aquí."
+                }
               />
             )}
           </SectionCard>
@@ -88,14 +114,31 @@ export default async function HomePage() {
 
   const projectIds = (projects || []).map((project) => project.id);
 
-  const { data: tasks, error: tasksError } =
+  const tasksResult =
     projectIds.length > 0
       ? await supabase
           .from("tasks")
-          .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+          .select("id, project_id, title, description, status, difficulty, estimated_minutes, labels, github_issue_url")
           .in("project_id", projectIds)
           .order("created_at", { ascending: false })
       : { data: [], error: null };
+
+  let tasks = tasksResult.data;
+  let tasksError = tasksResult.error;
+
+  if (tasksError && isMissingEstimatedColumnError(tasksError)) {
+    const fallback =
+      projectIds.length > 0
+        ? await supabase
+            .from("tasks")
+            .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+            .in("project_id", projectIds)
+            .order("created_at", { ascending: false })
+        : { data: [], error: null };
+
+    tasks = (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null }));
+    tasksError = fallback.error;
+  }
 
   if (tasksError) {
     console.error("Error cargando tareas de proyectos:", tasksError.message);
@@ -120,15 +163,27 @@ export default async function HomePage() {
       <HomeMarketingSections isAuthenticated />
       <SectionCard className="p-8">
         <PageHeader
-          title="Explorador de proyectos en MiPrimerIssue"
-          description="Selecciona un proyecto y abre sus tareas sin salir de esta vista."
+          title={
+            locale === "en"
+              ? `Project explorer in ${messages.brand.name}`
+              : `Explorador de proyectos en ${messages.brand.name}`
+          }
+          description={
+            locale === "en"
+              ? "Select a project and open tasks without leaving this view."
+              : "Selecciona un proyecto y abre sus tareas sin salir de esta vista."
+          }
         />
         <ProjectExplorer projects={explorerProjects} />
       </SectionCard>
       <SectionCard className="p-8">
         <PageHeader
           title="Recent contributions"
-          description="Últimas tareas completadas y PRs merged por la comunidad de la plataforma."
+          description={
+            locale === "en"
+              ? "Latest completed tasks and merged PRs from the platform community."
+              : "Últimas tareas completadas y PRs merged por la comunidad de la plataforma."
+          }
         />
         {recentContributions.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
@@ -139,7 +194,13 @@ export default async function HomePage() {
               >
                 <p className="text-sm text-gray-200">
                   <span className="text-orange-300">{item.actorName}</span>{" "}
-                  {item.type === "merged_pr" ? "merged PR en" : "completó tarea en"}{" "}
+                  {item.type === "merged_pr"
+                    ? locale === "en"
+                      ? "merged PR in"
+                      : "merged PR en"
+                    : locale === "en"
+                      ? "completed task in"
+                      : "completó tarea en"}{" "}
                   <span className="text-white">{item.projectName}</span>
                 </p>
                 <p className="mt-1 text-xs text-gray-400">{item.taskTitle}</p>
@@ -149,7 +210,7 @@ export default async function HomePage() {
                       href={`/projects/${item.projectSlug}`}
                       className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/30 hover:text-orange-300"
                     >
-                      Ver proyecto
+                      {locale === "en" ? "View project" : "Ver proyecto"}
                     </Link>
                   ) : null}
                   {item.githubUrl ? (
@@ -159,7 +220,7 @@ export default async function HomePage() {
                       rel="noreferrer"
                       className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
                     >
-                      Ver en GitHub
+                      {locale === "en" ? "View on GitHub" : "Ver en GitHub"}
                     </Link>
                   ) : null}
                 </div>
@@ -169,7 +230,11 @@ export default async function HomePage() {
         ) : (
           <EmptyState
             title="Todavía no hay contribuciones recientes"
-            description="Cuando los developers completen tareas y hagan merge de PRs, aparecerán aquí."
+            description={
+              locale === "en"
+                ? "Once developers complete tasks and merge PRs, they will appear here."
+                : "Cuando los developers completen tareas y hagan merge de PRs, aparecerán aquí."
+            }
           />
         )}
       </SectionCard>

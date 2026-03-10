@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Badge from "@/components/ui/badge";
 import SectionCard from "@/components/ui/section-card";
+import { useI18n } from "@/lib/i18n/client";
 
 type ProjectCardProps = {
   project: {
@@ -13,9 +16,11 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({ project }: ProjectCardProps) {
-  const safeName = project.name?.trim() || "Proyecto sin nombre";
+  const { locale } = useI18n();
+  const safeName = project.name?.trim() || (locale === "en" ? "Untitled project" : "Proyecto sin nombre");
   const safeDescription =
-    project.short_description?.trim() || "Sin descripción corta disponible.";
+    project.short_description?.trim() ||
+    (locale === "en" ? "No short description available." : "Sin descripción corta disponible.");
   const techStack = project.tech_stack?.filter((tech) => tech.trim().length > 0) || [];
   const safeSlug = project.slug?.trim();
 
@@ -31,7 +36,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             <Badge key={`${project.id}-${tech}`}>{tech}</Badge>
           ))
         ) : (
-          <span className="text-xs text-gray-500">Tech stack no especificado.</span>
+          <span className="text-xs text-gray-500">
+            {locale === "en" ? "Tech stack not specified." : "Tech stack no especificado."}
+          </span>
         )}
       </div>
 
@@ -40,10 +47,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           href={`/projects/${encodeURIComponent(safeSlug)}`}
           className="mt-5 inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
         >
-          Ver proyecto
+          {locale === "en" ? "View project" : "Ver proyecto"}
         </Link>
       ) : (
-        <p className="mt-5 text-sm text-gray-500">Proyecto sin slug disponible.</p>
+        <p className="mt-5 text-sm text-gray-500">
+          {locale === "en" ? "Project without slug." : "Proyecto sin slug disponible."}
+        </p>
       )}
     </SectionCard>
   );

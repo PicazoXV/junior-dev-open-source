@@ -15,6 +15,7 @@ function isMissingColumnError(error: { code?: string; message?: string } | null)
   return (
     code === "42703" ||
     message.includes("learning_resources") ||
+    message.includes("estimated_minutes") ||
     (message.includes("column") && message.includes("does not exist"))
   );
 }
@@ -55,6 +56,8 @@ export async function createTaskAction(formData: FormData) {
   const githubIssueUrl = String(formData.get("github_issue_url") || "").trim();
   const learningResourcesRaw = String(formData.get("learning_resources") || "").trim();
   const status = String(formData.get("status") || "open").trim();
+  const estimatedMinutesRaw = String(formData.get("estimated_minutes") || "").trim();
+  const estimatedMinutes = estimatedMinutesRaw ? Number(estimatedMinutesRaw) : null;
 
   if (!projectId || !title) {
     redirect("/dashboard/tasks/new?error=missing_fields");
@@ -79,6 +82,7 @@ export async function createTaskAction(formData: FormData) {
     learning_resources: learningResources.length > 0 ? learningResources : null,
     github_issue_url: githubIssueUrl || null,
     status,
+    estimated_minutes: Number.isFinite(estimatedMinutes) ? estimatedMinutes : null,
     created_at: new Date().toISOString(),
   });
 

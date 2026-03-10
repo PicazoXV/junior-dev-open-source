@@ -19,6 +19,16 @@ import Badge from "@/components/ui/badge";
 import { getFirstIssueChallengeProgress } from "@/lib/first-issue-challenge";
 import { getUserOnboardingState } from "@/lib/onboarding";
 import OnboardingChecklist from "@/components/onboarding-checklist";
+import { getCurrentMessages } from "@/lib/i18n/server";
+import { getUserRoadmap } from "@/lib/roadmap";
+import UserRoadmapCard from "@/components/roadmap/user-roadmap-card";
+import { getUserTimeline } from "@/lib/user-timeline";
+import UserTimelineCard from "@/components/timeline/user-timeline-card";
+import { getDashboardFavorites } from "@/lib/favorites";
+import { getMaintainerStats } from "@/lib/maintainer-stats";
+import { getVerifiedContributions } from "@/lib/verified-contributions";
+import { getUserStreaks } from "@/lib/user-streaks";
+import DashboardRoadmapGuide from "@/components/roadmap/dashboard-roadmap-guide";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -40,6 +50,7 @@ export default async function DashboardPage() {
   }
 
   const canReviewRequests = isReviewerRole(profile?.role);
+  const { locale, messages } = await getCurrentMessages();
   const progress = await getUserProgress(supabase, user.id, profile?.tech_stack || null);
   const onboarding = await getUserOnboardingState({
     supabase,
@@ -53,22 +64,41 @@ export default async function DashboardPage() {
         }
       : null,
     progress,
+    messages,
   });
   const challenge = await getFirstIssueChallengeProgress(supabase, user.id);
   const badges = getUserBadges(progress);
   const unlockedBadges = badges.filter((badge) => badge.unlocked);
-  const recommendedTasks = await getRecommendedTasksForUser(supabase, user.id, 6);
-  const githubUsername = profile?.github_username || "tu-username";
-  const readmeBadgeSnippet = `[![Contributing via MiPrimerIssue](https://img.shields.io/badge/Contributing%20via-MiPrimerIssue-orange)](https://miprimerissue.dev/dev/${githubUsername})`;
+  const recommendedTasks = await getRecommendedTasksForUser(supabase, user.id, 6, locale);
+  const roadmap = getUserRoadmap(progress, locale);
+  const timeline = await getUserTimeline({ supabase, userId: user.id, locale, limit: 12 });
+  const favorites = await getDashboardFavorites({ supabase, userId: user.id, locale, limit: 8 });
+  const verifiedContributions = await getVerifiedContributions({
+    supabase,
+    userId: user.id,
+    limit: 6,
+  });
+  const maintainerStats = canReviewRequests
+    ? await getMaintainerStats({ supabase, maintainerId: user.id })
+    : null;
+  const streaks = await getUserStreaks(supabase, user.id);
+  const githubUsername = profile?.github_username || (locale === "en" ? "your-username" : "tu-username");
+  const readmeBadgeSnippet = `[![Contributing via PrimerIssue](https://img.shields.io/badge/Contributing%20via-PrimerIssue-orange)](https://primerissue.dev/dev/${githubUsername})`;
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+      <DashboardRoadmapGuide userId={user.id} onboardingCompleted={onboarding.isCompleted} />
       <OnboardingChecklist onboarding={onboarding} />
+      <UserRoadmapCard roadmap={roadmap} locale={locale} />
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Dashboard"
-          description="Tu perfil de progreso en MiPrimerIssue"
+          title={locale === "en" ? "Dashboard" : "Dashboard"}
+          description={
+            locale === "en"
+              ? "Your progress profile in PrimerIssue"
+              : "Tu perfil de progreso en PrimerIssue"
+          }
           actions={
             canReviewRequests ? (
               <>
@@ -76,31 +106,31 @@ export default async function DashboardPage() {
                   href="/dashboard/requests"
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
-                  Ver solicitudes
+                  {locale === "en" ? "Review requests" : "Ver solicitudes"}
                 </Link>
                 <Link
                   href="/dashboard/projects/new"
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
-                  Nuevo proyecto
+                  {locale === "en" ? "New project" : "Nuevo proyecto"}
                 </Link>
                 <Link
                   href="/dashboard/projects"
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
-                  Gestionar proyectos
+                  {locale === "en" ? "Manage projects" : "Gestionar proyectos"}
                 </Link>
                 <Link
                   href="/dashboard/tasks/new"
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
-                  Nueva tarea
+                  {locale === "en" ? "New task" : "Nueva tarea"}
                 </Link>
                 <Link
                   href="/dashboard/tasks"
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
-                  Gestionar tareas
+                  {locale === "en" ? "Manage tasks" : "Gestionar tareas"}
                 </Link>
               </>
             ) : null
@@ -112,7 +142,7 @@ export default async function DashboardPage() {
             {profile?.avatar_url ? (
               <Image
                 src={profile.avatar_url}
-                alt="Avatar del usuario"
+                alt={locale === "en" ? "User avatar" : "Avatar del usuario"}
                 className="h-20 w-20 rounded-full object-cover"
                 width={80}
                 height={80}
@@ -125,11 +155,11 @@ export default async function DashboardPage() {
 
             <div>
               <h2 className="text-2xl font-semibold text-white">
-                {profile?.full_name || "Sin nombre"}
+                {profile?.full_name || (locale === "en" ? "No name" : "Sin nombre")}
               </h2>
 
               <p className="text-gray-300">
-                @{profile?.github_username || "sin-username"}
+                @{profile?.github_username || (locale === "en" ? "no-username" : "sin-username")}
               </p>
 
               <p className="text-sm text-gray-400">
@@ -141,51 +171,67 @@ export default async function DashboardPage() {
           <div className="mt-6">
             <p className="mb-1 text-sm font-medium text-gray-400">Bio</p>
             <p className="text-gray-200">
-              {profile?.bio || "Todavía no has añadido una bio."}
+              {profile?.bio ||
+                (locale === "en"
+                  ? "You have not added a bio yet."
+                  : "Todavía no has añadido una bio.")}
             </p>
           </div>
         </section>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <StatCard label="Rol" value={profile?.role || "junior"} />
+          <StatCard label={locale === "en" ? "Role" : "Rol"} value={profile?.role || "junior"} />
           <div className="rounded-xl border border-white/20 bg-black/20 p-4">
-            <p className="text-sm text-gray-400">Nivel actual</p>
+            <p className="text-sm text-gray-400">{locale === "en" ? "Current level" : "Nivel actual"}</p>
             <div className="mt-2">
               <LevelBadge level={progress.level} />
             </div>
           </div>
           <StatCard
-            label="Fecha de alta"
+            label={locale === "en" ? "Created at" : "Fecha de alta"}
             value={
               profile?.created_at
-                ? new Date(profile.created_at).toLocaleDateString("es-ES")
-                : "No disponible"
+                ? new Date(profile.created_at).toLocaleDateString(locale === "en" ? "en-US" : "es-ES")
+                : locale === "en"
+                  ? "Not available"
+                  : "No disponible"
             }
           />
-          <StatCard label="Ubicación" value={profile?.location || "No especificada"} />
-          <StatCard label="Tareas completadas" value={progress.completedTasks} />
-          <StatCard label="Tareas en curso" value={progress.inProgressTasks} />
-          <StatCard label="Proyectos contribuidos" value={progress.contributedProjects} />
-          <StatCard label="Solicitudes enviadas" value={progress.requestsSent} />
-          <StatCard label="PRs merged" value={progress.mergedPullRequests} />
-          <StatCard label="PRs en review" value={progress.inReviewPullRequests} />
           <StatCard
-            label="Badges desbloqueados"
+            label={locale === "en" ? "Location" : "Ubicación"}
+            value={profile?.location || (locale === "en" ? "Not specified" : "No especificada")}
+          />
+          <StatCard label={locale === "en" ? "Completed tasks" : "Tareas completadas"} value={progress.completedTasks} />
+          <StatCard label={locale === "en" ? "Tasks in progress" : "Tareas en curso"} value={progress.inProgressTasks} />
+          <StatCard label={locale === "en" ? "Contributed projects" : "Proyectos contribuidos"} value={progress.contributedProjects} />
+          <StatCard label={locale === "en" ? "Requests sent" : "Solicitudes enviadas"} value={progress.requestsSent} />
+          <StatCard label="PRs merged" value={progress.mergedPullRequests} />
+          <StatCard label={locale === "en" ? "PRs in review" : "PRs en review"} value={progress.inReviewPullRequests} />
+          <StatCard
+            label={locale === "en" ? "Unlocked badges" : "Badges desbloqueados"}
             value={`${unlockedBadges.length}/${badges.length}`}
-            hint="Sigue completando tareas para desbloquear más logros."
+            hint={
+              locale === "en"
+                ? "Keep completing tasks to unlock more achievements."
+                : "Sigue completando tareas para desbloquear más logros."
+            }
           />
           <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
             <p className="text-sm text-gray-400">Tech stack</p>
             <p className="mt-1 text-lg font-medium text-white">
-              {progress.techStack || "No especificado"}
+              {progress.techStack || (locale === "en" ? "Not specified" : "No especificado")}
             </p>
           </div>
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-5">
-          <h3 className="text-base font-semibold text-white">Badges y logros</h3>
+          <h3 className="text-base font-semibold text-white">
+            {locale === "en" ? "Badges & achievements" : "Badges y logros"}
+          </h3>
           <p className="mt-1 text-sm text-gray-400">
-            Tus hitos dentro de MiPrimerIssue para construir experiencia open source real.
+            {locale === "en"
+              ? "Your milestones in PrimerIssue to build real open source experience."
+              : "Tus hitos dentro de PrimerIssue para construir experiencia open source real."}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {badges.map((badge) => (
@@ -195,20 +241,28 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-5">
-          <h3 className="text-base font-semibold text-white">Actividad reciente</h3>
+          <h3 className="text-base font-semibold text-white">
+            {locale === "en" ? "Recent activity" : "Actividad reciente"}
+          </h3>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <StatCard
               label="Última tarea completada"
-              value={progress.recentActivity.lastCompletedTaskTitle || "Sin actividad todavía"}
+              value={
+                progress.recentActivity.lastCompletedTaskTitle ||
+                (locale === "en" ? "No activity yet" : "Sin actividad todavía")
+              }
             />
             <StatCard
               label="Último proyecto contribuido"
               value={
-                progress.recentActivity.lastContributedProjectName || "Sin contribuciones todavía"
+                progress.recentActivity.lastContributedProjectName ||
+                (locale === "en" ? "No contributions yet" : "Sin contribuciones todavía")
               }
             />
             <div className="rounded-xl border border-white/20 bg-black/20 p-4">
-              <p className="text-sm text-gray-400">Último PR asociado</p>
+                <p className="text-sm text-gray-400">
+                  {locale === "en" ? "Latest linked PR" : "Último PR asociado"}
+                </p>
               {progress.recentActivity.lastPullRequestUrl ? (
                 <Link
                   href={progress.recentActivity.lastPullRequestUrl}
@@ -216,62 +270,174 @@ export default async function DashboardPage() {
                   rel="noreferrer"
                   className="mt-1 inline-flex text-sm text-orange-300 hover:underline"
                 >
-                  Ver Pull Request
+                  {locale === "en" ? "View Pull Request" : "Ver Pull Request"}
                 </Link>
               ) : (
-                <p className="mt-1 text-sm text-gray-500">Sin PR detectado todavía</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {locale === "en" ? "No PR detected yet" : "Sin PR detectado todavía"}
+                </p>
               )}
             </div>
           </div>
         </div>
       </SectionCard>
 
+      <UserTimelineCard events={timeline} locale={locale} />
+
       <SectionCard className="p-8">
         <PageHeader
-          title="🎯 First Issue Challenge"
-          description="Completa tu primera contribución open source en 7 días."
+          title={locale === "en" ? "Activity streaks" : "Rachas de actividad"}
+          description={
+            locale === "en"
+              ? "Keep your contribution momentum."
+              : "Mantén el ritmo de contribución."
+          }
+        />
+        <div className="grid gap-3 md:grid-cols-4">
+          <StatCard
+            label={locale === "en" ? "Current streak" : "Racha actual"}
+            value={`${streaks.currentStreakDays} ${locale === "en" ? "days" : "días"}`}
+          />
+          <StatCard
+            label={locale === "en" ? "Longest streak" : "Mejor racha"}
+            value={`${streaks.longestStreakDays} ${locale === "en" ? "days" : "días"}`}
+          />
+          <StatCard
+            label={locale === "en" ? "Active days (7d)" : "Días activos (7d)"}
+            value={streaks.activeDaysLast7}
+          />
+          <StatCard
+            label={locale === "en" ? "Active days (30d)" : "Días activos (30d)"}
+            value={streaks.activeDaysLast30}
+          />
+        </div>
+      </SectionCard>
+
+      {maintainerStats ? (
+        <SectionCard className="p-8">
+          <PageHeader
+            title={locale === "en" ? "Maintainer overview" : "Panel de maintainer"}
+            description={
+              locale === "en"
+                ? "Executive view of requests, task flow, and active contributors."
+                : "Vista ejecutiva de solicitudes, flujo de tareas y contributors activos."
+            }
+          />
+          <div className="grid gap-3 md:grid-cols-3">
+            <StatCard
+              label={locale === "en" ? "Pending requests" : "Solicitudes pendientes"}
+              value={maintainerStats.pendingRequests}
+            />
+            <StatCard
+              label={locale === "en" ? "Tasks without issue" : "Tareas sin issue"}
+              value={maintainerStats.tasksWithoutIssue}
+            />
+            <StatCard
+              label={locale === "en" ? "Tasks in review" : "Tareas en review"}
+              value={maintainerStats.tasksInReview}
+            />
+            <StatCard
+              label={locale === "en" ? "Completed tasks" : "Tareas completadas"}
+              value={maintainerStats.tasksCompleted}
+            />
+            <StatCard
+              label={locale === "en" ? "Active contributors" : "Contributors activos"}
+              value={maintainerStats.activeContributors}
+            />
+            <StatCard
+              label={locale === "en" ? "Managed projects" : "Proyectos gestionados"}
+              value={maintainerStats.managedProjects}
+            />
+          </div>
+        </SectionCard>
+      ) : null}
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title={locale === "en" ? "🎯 First Issue Challenge" : "🎯 First Issue Challenge"}
+          description={
+            locale === "en"
+              ? "Complete your first open source contribution in 7 days."
+              : "Completa tu primera contribución open source en 7 días."
+          }
         />
         <div className="rounded-2xl border border-white/20 bg-black/20 p-5">
           <div className="flex flex-wrap items-center gap-2">
             {challenge.completedInTime ? (
               <Badge tone="success">🏆 Challenge completed</Badge>
             ) : challenge.isExpired ? (
-              <Badge tone="danger">Challenge finalizado</Badge>
+              <Badge tone="danger">{locale === "en" ? "Challenge ended" : "Challenge finalizado"}</Badge>
             ) : (
-              <Badge tone="warning">Challenge activo</Badge>
+              <Badge tone="warning">{locale === "en" ? "Challenge active" : "Challenge activo"}</Badge>
             )}
             {challenge.deadlineAt ? (
               <Badge tone="info">
                 {challenge.isExpired
-                  ? "Fuera de ventana"
-                  : `${challenge.daysRemaining} día(s) restantes`}
+                  ? locale === "en"
+                    ? "Outside time window"
+                    : "Fuera de ventana"
+                  : locale === "en"
+                    ? `${challenge.daysRemaining} day(s) left`
+                    : `${challenge.daysRemaining} día(s) restantes`}
               </Badge>
             ) : null}
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <p className="text-sm text-gray-400">Task requested</p>
+              <p className="text-sm text-gray-400">
+                {locale === "en" ? "Task requested" : "Tarea solicitada"}
+              </p>
               <p className="mt-1 text-sm text-white">
-                {challenge.steps.taskRequested ? "✅ Completado" : "⏳ Pendiente"}
+                {challenge.steps.taskRequested
+                  ? locale === "en"
+                    ? "✅ Completed"
+                    : "✅ Completado"
+                  : locale === "en"
+                    ? "⏳ Pending"
+                    : "⏳ Pendiente"}
               </p>
             </div>
             <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <p className="text-sm text-gray-400">Task approved</p>
+              <p className="text-sm text-gray-400">
+                {locale === "en" ? "Task approved" : "Tarea aprobada"}
+              </p>
               <p className="mt-1 text-sm text-white">
-                {challenge.steps.taskApproved ? "✅ Completado" : "⏳ Pendiente"}
+                {challenge.steps.taskApproved
+                  ? locale === "en"
+                    ? "✅ Completed"
+                    : "✅ Completado"
+                  : locale === "en"
+                    ? "⏳ Pending"
+                    : "⏳ Pendiente"}
               </p>
             </div>
             <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <p className="text-sm text-gray-400">PR opened</p>
+              <p className="text-sm text-gray-400">
+                {locale === "en" ? "PR opened" : "PR abierto"}
+              </p>
               <p className="mt-1 text-sm text-white">
-                {challenge.steps.prOpened ? "✅ Completado" : "⏳ Pendiente"}
+                {challenge.steps.prOpened
+                  ? locale === "en"
+                    ? "✅ Completed"
+                    : "✅ Completado"
+                  : locale === "en"
+                    ? "⏳ Pending"
+                    : "⏳ Pendiente"}
               </p>
             </div>
             <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <p className="text-sm text-gray-400">PR merged</p>
+              <p className="text-sm text-gray-400">
+                {locale === "en" ? "PR merged" : "PR mergeado"}
+              </p>
               <p className="mt-1 text-sm text-white">
-                {challenge.steps.prMerged ? "✅ Completado" : "⏳ Pendiente"}
+                {challenge.steps.prMerged
+                  ? locale === "en"
+                    ? "✅ Completed"
+                    : "✅ Completado"
+                  : locale === "en"
+                    ? "⏳ Pending"
+                    : "⏳ Pendiente"}
               </p>
             </div>
           </div>
@@ -280,15 +446,19 @@ export default async function DashboardPage() {
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Your progress"
-          description="Vista rápida de tu avance y siguientes pasos recomendados."
+          title={locale === "en" ? "Your progress" : "Tu progreso"}
+          description={
+            locale === "en"
+              ? "Quick view of your progress and next recommended steps."
+              : "Vista rápida de tu avance y siguientes pasos recomendados."
+          }
         />
         <div className="grid gap-3 md:grid-cols-4">
-          <StatCard label="Tasks completed" value={progress.completedTasks} />
-          <StatCard label="Current tasks" value={progress.inProgressTasks} />
+          <StatCard label={locale === "en" ? "Tasks completed" : "Tareas completadas"} value={progress.completedTasks} />
+          <StatCard label={locale === "en" ? "Current tasks" : "Tareas actuales"} value={progress.inProgressTasks} />
           <StatCard label="PRs merged" value={progress.mergedPullRequests} />
           <StatCard
-            label="Next level"
+            label={locale === "en" ? "Next level" : "Siguiente nivel"}
             value={
               progress.level === "beginner"
                 ? "junior"
@@ -296,7 +466,9 @@ export default async function DashboardPage() {
                   ? "contributor"
                   : progress.level === "contributor"
                     ? "maintainer"
-                    : "max level"
+                    : locale === "en"
+                      ? "max level"
+                      : "nivel máximo"
             }
           />
         </div>
@@ -304,8 +476,12 @@ export default async function DashboardPage() {
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Recommended for you"
-          description="Tareas sugeridas según tu tech stack, nivel y actividad."
+          title={locale === "en" ? "Recommended for you" : "Recomendado para ti"}
+          description={
+            locale === "en"
+              ? "Suggested tasks based on your tech stack, level and activity."
+              : "Tareas sugeridas según tu tech stack, nivel y actividad."
+          }
         />
 
         {recommendedTasks.length > 0 ? (
@@ -318,27 +494,37 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold text-white">{task.title}</p>
                 <p className="mt-1 text-xs text-gray-400">{task.projectName}</p>
                 <p className="mt-2 text-sm text-gray-300">
-                  {task.description || "Sin descripción disponible."}
+                  {task.description || (locale === "en" ? "No description available." : "Sin descripción disponible.")}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <DifficultyBadge difficulty={task.difficulty} />
+                  {task.estimatedMinutes ? (
+                    <Badge tone="info">
+                      {locale === "en"
+                        ? `${task.estimatedMinutes} min`
+                        : `${task.estimatedMinutes} min`}
+                    </Badge>
+                  ) : null}
                   {(task.labels || []).slice(0, 3).map((label) => (
                     <Badge key={`${task.id}-${label}`}>{label}</Badge>
                   ))}
                 </div>
+                {task.reasons.length > 0 ? (
+                  <p className="mt-2 text-xs text-gray-400">{task.reasons.join(" · ")}</p>
+                ) : null}
                 <div className="mt-3 flex gap-2">
                   <Link
                     href={`/tasks/${task.id}`}
                     className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
                   >
-                    Ver tarea
+                    {locale === "en" ? "View task" : "Ver tarea"}
                   </Link>
                   {task.projectSlug ? (
                     <Link
                       href={`/projects/${task.projectSlug}`}
                       className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
                     >
-                      Ver proyecto
+                      {locale === "en" ? "View project" : "Ver proyecto"}
                     </Link>
                   ) : null}
                 </div>
@@ -347,19 +533,116 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <EmptyState
-            title="No hay recomendaciones por ahora"
-            description="Completa más tareas o añade tech stack en tu perfil para mejorar las sugerencias."
+            title={locale === "en" ? "No recommendations yet" : "No hay recomendaciones por ahora"}
+            description={
+              locale === "en"
+                ? "Complete more tasks or add tech stack in your profile to improve suggestions."
+                : "Completa más tareas o añade tech stack en tu perfil para mejorar las sugerencias."
+            }
           />
         )}
       </SectionCard>
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Badge para tu GitHub README"
-          description="Copia este snippet para mostrar que contribuyes desde MiPrimerIssue."
+          title={locale === "en" ? "Your favorites" : "Tus favoritos"}
+          description={
+            locale === "en"
+              ? "Quick access to saved projects and tasks."
+              : "Acceso rápido a proyectos y tareas guardadas."
+          }
+        />
+
+        {favorites.length === 0 ? (
+          <EmptyState
+            title={locale === "en" ? "No favorites yet" : "Todavía no tienes favoritos"}
+            description={
+              locale === "en"
+                ? "Save projects or tasks and they will appear here."
+                : "Guarda proyectos o tareas y aparecerán aquí."
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {favorites.map((favorite) => (
+              <article key={favorite.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+                <p className="text-sm font-semibold text-white">{favorite.title}</p>
+                {favorite.subtitle ? <p className="mt-1 text-xs text-gray-400">{favorite.subtitle}</p> : null}
+                <div className="mt-3">
+                  <Link
+                    href={favorite.href}
+                    className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+                  >
+                    {locale === "en" ? "Open" : "Abrir"}
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title={locale === "en" ? "Verified contributions" : "Contribuciones verificadas"}
+          description={
+            locale === "en"
+              ? "Validated by merged PRs and completed tasks synced with GitHub."
+              : "Validadas por PRs mergeados y tareas completadas sincronizadas con GitHub."
+          }
+        />
+        {verifiedContributions.length === 0 ? (
+          <EmptyState
+            title={locale === "en" ? "No verified contributions yet" : "Sin contribuciones verificadas todavía"}
+            description={
+              locale === "en"
+                ? "When your PRs are merged, they will appear here."
+                : "Cuando tus PRs se mergeen, aparecerán aquí."
+            }
+          />
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {verifiedContributions.map((item) => (
+              <article key={item.taskId} className="rounded-xl border border-white/15 bg-black/20 p-4">
+                <p className="text-sm font-semibold text-white">{item.taskTitle}</p>
+                <p className="mt-1 text-xs text-gray-400">{item.projectName}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href={`/tasks/${item.taskId}`}
+                    className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+                  >
+                    {locale === "en" ? "View task" : "Ver tarea"}
+                  </Link>
+                  {item.githubPrUrl ? (
+                    <Link
+                      href={item.githubPrUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 transition hover:border-orange-400"
+                    >
+                      {locale === "en" ? "View PR" : "Ver PR"}
+                    </Link>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title={locale === "en" ? "Badge for your GitHub README" : "Badge para tu GitHub README"}
+          description={
+            locale === "en"
+              ? "Copy this snippet to show that you contribute through PrimerIssue."
+              : "Copia este snippet para mostrar que contribuyes desde PrimerIssue."
+          }
         />
         <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-          <p className="text-xs text-gray-500">Markdown snippet</p>
+          <p className="text-xs text-gray-500">
+            {locale === "en" ? "Markdown snippet" : "Snippet Markdown"}
+          </p>
           <pre className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-black/30 p-3 text-xs text-gray-200">
             {readmeBadgeSnippet}
           </pre>

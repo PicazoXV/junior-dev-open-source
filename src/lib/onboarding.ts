@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { UserProgressMetrics } from "@/lib/user-progress";
+import type { MessageDictionary } from "@/lib/i18n/types";
 
 type MinimalSupabaseClient = SupabaseClient;
 
@@ -45,12 +46,17 @@ function isMissingColumnError(error: { code?: string; message?: string } | null)
 
   const code = error.code || "";
   const message = error.message?.toLowerCase() || "";
+  const serialized = JSON.stringify(error).toLowerCase();
 
   return (
     code === "42703" ||
     message.includes("github_pr_number") ||
     message.includes("github_pr_url") ||
-    (message.includes("column") && message.includes("does not exist"))
+    serialized.includes("github_pr_number") ||
+    serialized.includes("github_pr_url") ||
+    (message.includes("column") && message.includes("does not exist")) ||
+    serialized.includes("does not exist") ||
+    serialized.includes("could not find the")
   );
 }
 
@@ -64,6 +70,21 @@ function getProfileCompletionScore(profile: UserProfileLite | null | undefined) 
 }
 
 async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: string) {
+  // Safe baseline signal that does not depend on optional GitHub PR columns.
+  const byStatus = await supabase
+    .from("tasks")
+    .select("id", { count: "exact", head: true })
+    .eq("assigned_to", userId)
+    .in("status", ["in_review", "completed"]);
+
+  if (!byStatus.error && (byStatus.count || 0) > 0) {
+    return true;
+  }
+
+  if (byStatus.error) {
+    console.error("Error cargando onboarding PR signal (status fallback):", byStatus.error);
+  }
+
   const byNumber = await supabase
     .from("tasks")
     .select("id", { count: "exact", head: true })
@@ -75,7 +96,7 @@ async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: str
   }
 
   if (!isMissingColumnError(byNumber.error)) {
-    console.error("Error cargando onboarding PR signal:", byNumber.error.message);
+    console.error("Error cargando onboarding PR signal:", byNumber.error);
     return false;
   }
 
@@ -90,7 +111,7 @@ async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: str
   }
 
   if (!isMissingColumnError(byUrl.error)) {
-    console.error("Error cargando onboarding PR signal (url fallback):", byUrl.error.message);
+    console.error("Error cargando onboarding PR signal (url fallback):", byUrl.error);
   }
 
   return false;
@@ -116,8 +137,9 @@ export async function getUserOnboardingState(params: {
   userId: string;
   profile: UserProfileLite | null;
   progress: UserProgressMetrics;
+  messages: MessageDictionary;
 }): Promise<UserOnboardingState> {
-  const { supabase, userId, profile, progress } = params;
+  const { supabase, userId, profile, progress, messages } = params;
 
   const profileCompletionScore = getProfileCompletionScore(profile);
   const hasRequestedTask = progress.requestsSent > 0;
@@ -132,10 +154,10 @@ export async function getUserOnboardingState(params: {
   const steps: OnboardingStep[] = [
     {
       id: "complete_profile",
-      title: "Completa tu perfil",
-      description: "Añade nombre, bio, tech stack o ubicación para mejorar tus recomendaciones.",
+      title: messages.onboarding.completeProfileTitle,
+      description: messages.onboarding.completeProfileDesc,
       href: "/profile/edit",
-      ctaLabel: "Completar perfil",
+      ctaLabel: messages.onboarding.completeProfileCta,
       status: deriveStatus({
         completed: profileCompletionScore >= 2,
         inProgress: profileCompletionScore === 1,
@@ -143,30 +165,30 @@ export async function getUserOnboardingState(params: {
     },
     {
       id: "explore_projects",
-      title: "Explora proyectos",
-      description: "Revisa repos activos y encuentra tareas aptas para tu nivel.",
+      title: messages.onboarding.exploreProjectsTitle,
+      description: messages.onboarding.exploreProjectsDesc,
       href: "/good-first-issues",
-      ctaLabel: "Explorar tareas",
+      ctaLabel: messages.onboarding.exploreProjectsCta,
       status: deriveStatus({
         completed: hasExploredProjects,
       }),
     },
     {
       id: "first_request",
-      title: "Solicita tu primera tarea",
-      description: "Envía una solicitud para que un maintainer te asigne una tarea.",
+      title: messages.onboarding.firstRequestTitle,
+      description: messages.onboarding.firstRequestDesc,
       href: "/good-first-issues",
-      ctaLabel: "Solicitar tarea",
+      ctaLabel: messages.onboarding.firstRequestCta,
       status: deriveStatus({
         completed: hasRequestedTask,
       }),
     },
     {
       id: "first_pr",
-      title: "Abre tu primer Pull Request",
-      description: "Cuando abras tu PR en GitHub, lo detectaremos automáticamente.",
+      title: messages.onboarding.firstPrTitle,
+      description: messages.onboarding.firstPrDesc,
       href: "/dashboard/my-tasks",
-      ctaLabel: "Ver mis tareas",
+      ctaLabel: messages.onboarding.firstPrCta,
       status: deriveStatus({
         completed: hasOpenedPullRequest,
         inProgress: progress.inProgressTasks > 0 || hasRequestedTask,
@@ -174,10 +196,10 @@ export async function getUserOnboardingState(params: {
     },
     {
       id: "first_contribution",
-      title: "Completa tu primera contribución",
-      description: "Haz merge de tu PR y desbloquea tus primeros badges de progreso.",
+      title: messages.onboarding.firstContributionTitle,
+      description: messages.onboarding.firstContributionDesc,
       href: "/dashboard/my-tasks",
-      ctaLabel: "Seguir progreso",
+      ctaLabel: messages.onboarding.firstContributionCta,
       status: deriveStatus({
         completed: hasCompletedContribution,
         inProgress: hasOpenedPullRequest,
@@ -192,10 +214,10 @@ export async function getUserOnboardingState(params: {
   const nextStep = steps.find((step) => step.status !== "completed") || null;
 
   const motivationMessage = isCompleted
-    ? "🎉 Ya has completado tu onboarding en PrimerIssue."
+    ? messages.onboarding.completedMessage
     : completedSteps >= 4
-      ? "Estás a un paso de tu primera contribución real."
-      : "Empieza hoy y gana experiencia demostrable en open source.";
+      ? messages.onboarding.almostThereMessage
+      : messages.onboarding.startMessage;
 
   return {
     steps,

@@ -9,6 +9,7 @@ import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import GitHubIssueBadge from "@/components/ui/github-issue-badge";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type TaskEditPageProps = {
   params: Promise<{ id: string }>;
@@ -23,6 +24,7 @@ type Task = {
   difficulty: "beginner" | "intermediate" | "advanced" | null;
   labels: string[] | null;
   github_issue_url: string | null;
+  estimated_minutes?: number | null;
   learning_resources?: string[] | null;
 };
 
@@ -45,6 +47,7 @@ type ProjectOption = {
 };
 
 export default async function EditTaskPage({ params }: TaskEditPageProps) {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -72,7 +75,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
   const taskWithResources = await supabase
     .from("tasks")
     .select(
-      "id, project_id, title, description, status, difficulty, labels, github_issue_url, learning_resources"
+      "id, project_id, title, description, status, difficulty, labels, github_issue_url, estimated_minutes, learning_resources"
     )
     .eq("id", id)
     .maybeSingle();
@@ -83,7 +86,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
   if (taskError && isMissingColumnError(taskError)) {
     const fallbackTask = await supabase
       .from("tasks")
-      .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+      .select("id, project_id, title, description, status, difficulty, labels, github_issue_url, estimated_minutes")
       .eq("id", id)
       .maybeSingle();
     task = fallbackTask.data
@@ -112,27 +115,48 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
     <AppLayout containerClassName="mx-auto max-w-4xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Editar tarea"
-          description="Ajusta estado, descripción y metadatos de la tarea."
+          title={locale === "en" ? "Edit task" : "Editar tarea"}
+          description={
+            locale === "en"
+              ? "Adjust task status, description, and metadata."
+              : "Ajusta estado, descripción y metadatos de la tarea."
+          }
           actions={
             <Link
               href="/dashboard/tasks"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver a gestión
+              {locale === "en" ? "Back to management" : "Volver a gestión"}
             </Link>
           }
         />
 
         {!currentTask ? (
           <EmptyState
-            title="Tarea no encontrada"
-            description="No existe una tarea con el ID proporcionado."
+            title={locale === "en" ? "Task not found" : "Tarea no encontrada"}
+            description={
+              locale === "en"
+                ? "No task exists with the provided ID."
+                : "No existe una tarea con el ID proporcionado."
+            }
           />
         ) : (
           <form action={updateTaskAction} className="space-y-5">
             <div className="rounded-xl border border-white/15 bg-black/20 p-4">
-              <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Integración GitHub</p>
+              <p className="text-xs uppercase tracking-[0.12em] text-orange-300">
+                {locale === "en" ? "Task writing guide" : "Guía de redacción de tareas"}
+              </p>
+              <p className="mt-2 text-xs text-gray-300">
+                {locale === "en"
+                  ? "Keep context, objective, suggested steps, resources, and definition of done clear for juniors."
+                  : "Mantén claro el contexto, objetivo, pasos sugeridos, recursos y definición de terminado para juniors."}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-500">
+                {locale === "en" ? "GitHub integration" : "Integración GitHub"}
+              </p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <GitHubIssueBadge issueUrl={currentTask.github_issue_url} compact />
                 {currentTask.github_issue_url ? (
@@ -142,11 +166,13 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                     rel="noreferrer"
                     className="text-xs text-orange-300 hover:underline"
                   >
-                    Abrir issue
+                    {locale === "en" ? "Open issue" : "Abrir issue"}
                   </Link>
                 ) : (
                   <p className="text-xs text-gray-500">
-                    Se creará automáticamente al aprobar una solicitud si la tarea no tiene issue.
+                    {locale === "en"
+                      ? "It will be created automatically when a request is approved if the task has no issue."
+                      : "Se creará automáticamente al aprobar una solicitud si la tarea no tiene issue."}
                   </p>
                 )}
               </div>
@@ -156,7 +182,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
 
             <div>
               <label htmlFor="project_id" className="mb-1 block text-sm font-medium text-gray-300">
-                Proyecto
+                {locale === "en" ? "Project" : "Proyecto"}
               </label>
               <select id="project_id" name="project_id" required defaultValue={currentTask.project_id} className="w-full rounded-lg border px-3 py-2 text-sm">
                 {projectOptions.map((project) => (
@@ -169,14 +195,14 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
 
             <div>
               <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-300">
-                Título
+                {locale === "en" ? "Title" : "Título"}
               </label>
               <input id="title" name="title" required defaultValue={currentTask.title || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div>
               <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
-                Descripción
+                {locale === "en" ? "Description" : "Descripción"}
               </label>
               <textarea id="description" name="description" rows={5} defaultValue={currentTask.description || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
@@ -184,7 +210,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
-                  Dificultad
+                  {locale === "en" ? "Difficulty" : "Dificultad"}
                 </label>
                 <select id="difficulty" name="difficulty" defaultValue={currentTask.difficulty || "beginner"} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="beginner">beginner</option>
@@ -195,7 +221,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
 
               <div>
                 <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
-                  Estado
+                  {locale === "en" ? "Status" : "Estado"}
                 </label>
                 <select id="status" name="status" defaultValue={currentTask.status} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="open">open</option>
@@ -209,14 +235,29 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
 
             <div>
               <label htmlFor="labels" className="mb-1 block text-sm font-medium text-gray-300">
-                Labels (separadas por comas)
+                {locale === "en" ? "Labels (comma separated)" : "Labels (separadas por comas)"}
               </label>
               <input id="labels" name="labels" defaultValue={(currentTask.labels || []).join(", ")} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div>
+              <label htmlFor="estimated_minutes" className="mb-1 block text-sm font-medium text-gray-300">
+                {locale === "en" ? "Estimated time (minutes)" : "Tiempo estimado (minutos)"}
+              </label>
+              <input
+                id="estimated_minutes"
+                name="estimated_minutes"
+                type="number"
+                min={5}
+                step={5}
+                defaultValue={currentTask.estimated_minutes || ""}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div>
               <label htmlFor="learning_resources" className="mb-1 block text-sm font-medium text-gray-300">
-                Learning resources (links separados por comas)
+                {locale === "en" ? "Learning resources (comma-separated links)" : "Learning resources (links separados por comas)"}
               </label>
               <input
                 id="learning_resources"
@@ -228,7 +269,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
 
             <div>
               <label htmlFor="github_issue_url" className="mb-1 block text-sm font-medium text-gray-300">
-                URL del issue de GitHub
+                {locale === "en" ? "GitHub issue URL" : "URL del issue de GitHub"}
               </label>
               <input id="github_issue_url" name="github_issue_url" type="url" defaultValue={currentTask.github_issue_url || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
@@ -238,7 +279,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 type="submit"
                 className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
-                Guardar cambios
+                {locale === "en" ? "Save changes" : "Guardar cambios"}
               </button>
             </div>
           </form>

@@ -8,6 +8,7 @@ import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import StatusBadge from "@/components/ui/status-badge";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 type MyTask = {
   id: string;
@@ -24,6 +25,7 @@ type TaskProject = {
 };
 
 export default async function MyTasksPage() {
+  const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
   if (!user) {
@@ -65,28 +67,36 @@ export default async function MyTasksPage() {
     <AppLayout containerClassName="mx-auto max-w-6xl">
       <SectionCard className="p-8">
         <PageHeader
-          title="Mis tareas"
-          description="Tareas asignadas para avanzar en tus contribuciones."
+          title={locale === "en" ? "My tasks" : "Mis tareas"}
+          description={
+            locale === "en"
+              ? "Assigned tasks to keep progressing with your contributions."
+              : "Tareas asignadas para avanzar en tus contribuciones."
+          }
           actions={
             <Link
               href="/dashboard"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
-              Volver al dashboard
+              {locale === "en" ? "Back to dashboard" : "Volver al dashboard"}
             </Link>
           }
         />
 
         {myTasks.length === 0 ? (
           <EmptyState
-            title="No tienes tareas asignadas"
-            description="Cuando un maintainer apruebe tu solicitud, la tarea aparecerá en este panel."
+            title={locale === "en" ? "You have no assigned tasks" : "No tienes tareas asignadas"}
+            description={
+              locale === "en"
+                ? "When a maintainer approves your request, the task will appear here."
+                : "Cuando un maintainer apruebe tu solicitud, la tarea aparecerá en este panel."
+            }
             action={
               <Link
                 href="/dashboard/my-requests"
                 className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
               >
-                Ver mis solicitudes
+                {locale === "en" ? "View my requests" : "Ver mis solicitudes"}
               </Link>
             }
           />
@@ -95,11 +105,11 @@ export default async function MyTasksPage() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="px-4 py-3 font-medium">Tarea</th>
-                  <th className="px-4 py-3 font-medium">Proyecto</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Dificultad</th>
-                  <th className="px-4 py-3 font-medium">Detalle</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Task" : "Tarea"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Project" : "Proyecto"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Status" : "Estado"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Difficulty" : "Dificultad"}</th>
+                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Detail" : "Detalle"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,8 +118,12 @@ export default async function MyTasksPage() {
 
                   return (
                     <tr key={task.id} className="border-t border-white/10">
-                      <td className="px-4 py-3 align-top text-white">{task.title || "Tarea sin título"}</td>
-                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-white">
+                        {task.title || (locale === "en" ? "Untitled task" : "Tarea sin título")}
+                      </td>
+                      <td className="px-4 py-3 align-top text-gray-300">
+                        {project?.name || (locale === "en" ? "Project not available" : "Proyecto no disponible")}
+                      </td>
                       <td className="px-4 py-3 align-top">
                         <StatusBadge status={task.status} />
                       </td>
@@ -121,7 +135,7 @@ export default async function MyTasksPage() {
                           href={`/tasks/${task.id}`}
                           className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                         >
-                          Ver tarea
+                          {locale === "en" ? "View task" : "Ver tarea"}
                         </Link>
                       </td>
                     </tr>

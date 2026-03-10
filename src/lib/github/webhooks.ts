@@ -9,6 +9,7 @@ import {
   linkPullRequestToTaskPlaceholder,
 } from "@/lib/github/pull-requests";
 import { markFirstIssueChallengeCompleted } from "@/lib/first-issue-challenge";
+import { createNotification } from "@/lib/notifications";
 
 export type PullRequestWebhookPayload = {
   action: string;
@@ -277,6 +278,18 @@ export async function handlePullRequestWebhook(params: {
     pullRequestUrl: pullRequest.html_url,
   });
 
+  if (task.assigned_to && (action === "opened" || action === "reopened")) {
+    await createNotification({
+      supabase,
+      userId: task.assigned_to,
+      type: "pr_in_review",
+      title: "Pull Request detectado",
+      body: "Tu tarea pasó a in_review tras detectar un PR.",
+      link: pullRequest.html_url,
+      metadata: { taskId: task.id, prNumber: pullRequest.number },
+    });
+  }
+
   await linkPullRequestToTaskPlaceholder({
     taskId: task.id,
     pullRequestNumber: pullRequest.number,
@@ -291,7 +304,7 @@ export async function handlePullRequestWebhook(params: {
         installationToken,
         repository,
         task.github_issue_number,
-        "Task completed via MiPrimerIssue 🎉"
+        "Task completed via PrimerIssue 🎉"
       );
     } catch (error) {
       console.warn("Could not post merged comment on GitHub issue", {
@@ -307,6 +320,23 @@ export async function handlePullRequestWebhook(params: {
       await markFirstIssueChallengeCompleted({
         supabase,
         userId: task.assigned_to,
+      });
+      await createNotification({
+        supabase,
+        userId: task.assigned_to,
+        type: "pr_merged",
+        title: "Pull Request mergeado",
+        body: "¡Tu contribución fue mergeada y la tarea se completó!",
+        link: pullRequest.html_url,
+        metadata: { taskId: task.id, prNumber: pullRequest.number },
+      });
+      await createNotification({
+        supabase,
+        userId: task.assigned_to,
+        type: "badge_progress",
+        title: "Revisa tus badges",
+        body: "Tu progreso cambió tras el merge. Puede que hayas desbloqueado un nuevo logro.",
+        link: "/dashboard",
       });
     } catch (error) {
       console.warn("Could not update First Issue Challenge completion", {

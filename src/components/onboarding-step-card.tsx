@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import type { OnboardingStep } from "@/lib/onboarding";
+import type { MessageDictionary } from "@/lib/i18n/types";
+import { useI18n } from "@/lib/i18n/client";
 
 type OnboardingStepCardProps = {
   step: OnboardingStep;
@@ -17,13 +21,15 @@ function getStepIcon(status: OnboardingStep["status"]) {
   return "⚪";
 }
 
-function getStatusLabel(status: OnboardingStep["status"]) {
-  if (status === "completed") return "Completado";
-  if (status === "in_progress") return "En progreso";
-  return "Pendiente";
+function getStatusLabel(status: OnboardingStep["status"], messages: MessageDictionary) {
+  if (status === "completed") return messages.onboarding.stateCompleted;
+  if (status === "in_progress") return messages.onboarding.stateInProgress;
+  return messages.onboarding.statePending;
 }
 
 export default function OnboardingStepCard({ step }: OnboardingStepCardProps) {
+  const { messages } = useI18n();
+
   return (
     <article className="rounded-xl border border-white/15 bg-black/20 p-4">
       <div className="flex items-start justify-between gap-3">
@@ -42,7 +48,7 @@ export default function OnboardingStepCard({ step }: OnboardingStepCardProps) {
                 : "border-white/20 bg-white/5 text-gray-400"
           }`}
         >
-          {getStatusLabel(step.status)}
+          {getStatusLabel(step.status, messages)}
         </span>
       </div>
 

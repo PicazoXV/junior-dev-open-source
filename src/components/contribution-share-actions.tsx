@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/lib/i18n/client";
 
 type ContributionShareActionsProps = {
   contributionUrl: string;
@@ -17,13 +18,24 @@ export default function ContributionShareActions({
   prNumber,
   developerUsername,
 }: ContributionShareActionsProps) {
+  const { locale } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const shareText = useMemo(() => {
-    const developer = developerUsername ? `@${developerUsername}` : "developer";
-    const prText = prNumber ? `PR #${prNumber}` : "PR merged";
-    return `🎉 Contribution completed on PrimerIssue. ${taskTitle} · ${prText} in ${projectName}. Developer: ${developer}`;
-  }, [developerUsername, prNumber, projectName, taskTitle]);
+    const developer = developerUsername
+      ? `@${developerUsername}`
+      : locale === "en"
+        ? "developer"
+        : "developer";
+    const prText = prNumber
+      ? `PR #${prNumber}`
+      : locale === "en"
+        ? "PR merged"
+        : "PR mergeado";
+    return locale === "en"
+      ? `🎉 Contribution completed on PrimerIssue. ${taskTitle} · ${prText} in ${projectName}. Developer: ${developer}`
+      : `🎉 Contribución completada en PrimerIssue. ${taskTitle} · ${prText} en ${projectName}. Developer: ${developer}`;
+  }, [developerUsername, locale, prNumber, projectName, taskTitle]);
 
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(contributionUrl);
@@ -49,7 +61,7 @@ export default function ContributionShareActions({
         rel="noreferrer"
         className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
       >
-        Share on Twitter
+        {locale === "en" ? "Share on Twitter" : "Compartir en Twitter"}
       </a>
       <a
         href={linkedInHref}
@@ -57,14 +69,14 @@ export default function ContributionShareActions({
         rel="noreferrer"
         className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
       >
-        Share on LinkedIn
+        {locale === "en" ? "Share on LinkedIn" : "Compartir en LinkedIn"}
       </a>
       <button
         type="button"
         onClick={handleCopy}
         className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
       >
-        {copied ? "Link copiado" : "Copy link"}
+        {copied ? (locale === "en" ? "Link copied" : "Link copiado") : locale === "en" ? "Copy link" : "Copiar link"}
       </button>
     </div>
   );

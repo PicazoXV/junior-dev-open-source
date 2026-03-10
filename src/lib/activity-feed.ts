@@ -24,6 +24,17 @@ type TaskActivityRow = {
   created_at: string;
 };
 
+function isMissingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const code = error.code || "";
+  const message = (error.message || "").toLowerCase();
+  return (
+    code === "42703" ||
+    message.includes("github_pr_url") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
 export type ActivityItem = {
   id: string;
   type: "started_task" | "completed_task" | "merged_pr";
@@ -46,12 +57,26 @@ export async function getPlatformActivity(
   supabase: MinimalSupabaseClient,
   limit = 20
 ): Promise<ActivityItem[]> {
-  const { data: tasks, error: tasksError } = await supabase
+  const withPr = await supabase
     .from("tasks")
     .select("id, title, status, assigned_to, project_id, github_pr_url, created_at")
     .in("status", ["assigned", "in_review", "completed"])
     .order("created_at", { ascending: false })
     .limit(Math.max(limit * 3, 30));
+
+  let tasks = withPr.data;
+  let tasksError = withPr.error;
+
+  if (tasksError && isMissingColumnError(tasksError)) {
+    const fallback = await supabase
+      .from("tasks")
+      .select("id, title, status, assigned_to, project_id, created_at")
+      .in("status", ["assigned", "in_review", "completed"])
+      .order("created_at", { ascending: false })
+      .limit(Math.max(limit * 3, 30));
+    tasks = (fallback.data || []).map((task) => ({ ...task, github_pr_url: null }));
+    tasksError = fallback.error;
+  }
 
   if (tasksError) {
     console.error("Error cargando feed de actividad:", tasksError.message);

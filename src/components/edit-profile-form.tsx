@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n/client";
 
 type Profile = {
   id: string;
@@ -20,6 +21,7 @@ type Profile = {
 };
 
 export default function EditProfileForm({ profile }: { profile: Profile }) {
+  const { locale } = useI18n();
   const router = useRouter();
   const supabase = createClient();
 
@@ -48,12 +50,12 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       .eq("id", profile.id);
 
     if (error) {
-      setMessage("Error al guardar los cambios");
+      setMessage(locale === "en" ? "Error saving changes" : "Error al guardar los cambios");
       setLoading(false);
       return;
     }
 
-    setMessage("Perfil actualizado correctamente");
+    setMessage(locale === "en" ? "Profile updated successfully" : "Perfil actualizado correctamente");
     setLoading(false);
     router.refresh();
   };
@@ -61,13 +63,15 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-300">Nombre completo</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">
+          {locale === "en" ? "Full name" : "Nombre completo"}
+        </label>
         <input
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           className="w-full rounded-xl border px-4 py-2"
-          placeholder="Tu nombre"
+          placeholder={locale === "en" ? "Your name" : "Tu nombre"}
         />
       </div>
 
@@ -77,19 +81,21 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           className="w-full rounded-xl border px-4 py-2"
-          placeholder="Cuéntanos algo sobre ti"
+          placeholder={locale === "en" ? "Tell us about yourself" : "Cuéntanos algo sobre ti"}
           rows={4}
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-300">Ubicación</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">
+          {locale === "en" ? "Location" : "Ubicación"}
+        </label>
         <input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="w-full rounded-xl border px-4 py-2"
-          placeholder="Madrid, España"
+          placeholder={locale === "en" ? "Madrid, Spain" : "Madrid, España"}
         />
       </div>
 
@@ -111,7 +117,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
           value={githubUrl}
           onChange={(e) => setGithubUrl(e.target.value)}
           className="w-full rounded-xl border px-4 py-2"
-          placeholder="https://github.com/tuusuario"
+          placeholder={locale === "en" ? "https://github.com/your-user" : "https://github.com/tuusuario"}
         />
       </div>
 
@@ -120,7 +126,13 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
         disabled={loading}
         className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {loading ? "Guardando..." : "Guardar cambios"}
+        {loading
+          ? locale === "en"
+            ? "Saving..."
+            : "Guardando..."
+          : locale === "en"
+            ? "Save changes"
+            : "Guardar cambios"}
       </button>
 
       {message && (

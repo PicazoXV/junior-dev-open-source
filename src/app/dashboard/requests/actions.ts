@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isReviewerRole } from "@/lib/roles";
 import { ensureGitHubIssueForApprovedTask } from "@/lib/github/task-approval-integration";
+import { createNotification } from "@/lib/notifications";
 
 async function getReviewerContext() {
   const supabase = await createClient();
@@ -75,6 +76,15 @@ export async function approveRequest(requestId: string) {
     throw new Error("No se pudo asignar la tarea");
   }
 
+  await createNotification({
+    supabase,
+    userId: request.user_id,
+    type: "request_approved",
+    title: "Tu solicitud fue aprobada",
+    body: "Te asignaron la tarea. Ya puedes empezar a colaborar.",
+    link: `/tasks/${request.task_id}`,
+  });
+
   try {
     const integrationResult = await ensureGitHubIssueForApprovedTask({
       supabase,
@@ -91,6 +101,17 @@ export async function approveRequest(requestId: string) {
       issueNumber: integrationResult.issueNumber,
       reason: integrationResult.reason,
     });
+
+    if (integrationResult.issueUrl) {
+      await createNotification({
+        supabase,
+        userId: request.user_id,
+        type: "issue_created",
+        title: "Issue creado en GitHub",
+        body: "La tarea ya tiene un issue enlazado en GitHub.",
+        link: integrationResult.issueUrl,
+      });
+    }
   } catch (error) {
     console.error("GitHub integration failed while approving task request", {
       requestId: request.id,
@@ -126,6 +147,12 @@ export async function rejectRequest(requestId: string) {
     throw new Error("No autorizado");
   }
 
+  const { data: request } = await supabase
+    .from("task_requests")
+    .select("id, user_id, task_id")
+    .eq("id", requestId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("task_requests")
     .update({
@@ -137,6 +164,17 @@ export async function rejectRequest(requestId: string) {
 
   if (error) {
     throw new Error("No se pudo rechazar la solicitud");
+  }
+
+  if (request?.user_id && request?.task_id) {
+    await createNotification({
+      supabase,
+      userId: request.user_id,
+      type: "request_rejected",
+      title: "Tu solicitud fue rechazada",
+      body: "Esta solicitud no fue aprobada. Puedes intentar con otra tarea.",
+      link: `/tasks/${request.task_id}`,
+    });
   }
 
   revalidatePath("/dashboard/requests");

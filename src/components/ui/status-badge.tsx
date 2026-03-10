@@ -1,20 +1,12 @@
+"use client";
+
 import Badge from "@/components/ui/badge";
+import { useI18n } from "@/lib/i18n/client";
+import { getStatusLabel } from "@/lib/i18n/labels";
 
 type TaskStatus = "open" | "assigned" | "in_review" | "completed" | "closed";
 type RequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 type Status = TaskStatus | RequestStatus;
-
-const labels: Record<Status, string> = {
-  open: "Abierta",
-  assigned: "Asignada",
-  in_review: "En revisión",
-  completed: "Completada",
-  closed: "Cerrada",
-  pending: "Pendiente",
-  approved: "Aprobada",
-  rejected: "Rechazada",
-  cancelled: "Cancelada",
-};
 
 const tones: Record<Status, "default" | "success" | "warning" | "danger" | "info"> = {
   open: "info",
@@ -33,5 +25,7 @@ type StatusBadgeProps = {
 };
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
-  return <Badge tone={tones[status]}>{labels[status]}</Badge>;
+  const { locale } = useI18n();
+
+  return <Badge tone={tones[status]}>{getStatusLabel(status, locale)}</Badge>;
 }

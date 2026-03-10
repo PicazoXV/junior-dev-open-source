@@ -9,6 +9,8 @@ import Badge from "@/components/ui/badge";
 import EmptyState from "@/components/ui/empty-state";
 import TaskFilterPanel from "@/components/task-filter-panel";
 import { isReviewerRole } from "@/lib/roles";
+import { getCurrentLocale } from "@/lib/i18n/server";
+import FavoriteToggle from "@/components/favorites/favorite-toggle";
 
 type ProjectDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -20,6 +22,7 @@ type TaskRow = {
   description: string | null;
   status: "open" | "assigned" | "in_review" | "completed" | "closed";
   difficulty: "beginner" | "intermediate" | "advanced" | null;
+  estimated_minutes?: number | null;
   labels: string[] | null;
   github_issue_url: string | null;
   assigned_to: string | null;
@@ -32,7 +35,19 @@ type ProfileLite = {
   avatar_url: string | null;
 };
 
+function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  const code = error.code || "";
+  const message = (error.message || "").toLowerCase();
+  return (
+    code === "42703" ||
+    message.includes("estimated_minutes") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const locale = await getCurrentLocale();
   const currentUser = await createProfileIfNeeded();
   const supabase = await createClient();
 
@@ -56,11 +71,24 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
-  const { data: tasks, error: tasksError } = await supabase
+  const tasksWithEstimate = await supabase
     .from("tasks")
-    .select("id, title, description, status, difficulty, labels, github_issue_url, assigned_to")
+    .select("id, title, description, status, difficulty, estimated_minutes, labels, github_issue_url, assigned_to")
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
+
+  let tasks = tasksWithEstimate.data;
+  let tasksError = tasksWithEstimate.error;
+
+  if (tasksError && isMissingEstimatedColumnError(tasksError)) {
+    const fallback = await supabase
+      .from("tasks")
+      .select("id, title, description, status, difficulty, labels, github_issue_url, assigned_to")
+      .eq("project_id", project.id)
+      .order("created_at", { ascending: false });
+    tasks = (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null }));
+    tasksError = fallback.error;
+  }
 
   if (tasksError) {
     console.error("Error cargando tareas:", tasksError.message);
@@ -88,36 +116,54 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const contributorRows = (contributors || []) as ProfileLite[];
 
   let canEdit = false;
+  let isFavoriteProject = false;
   if (currentUser) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", currentUser.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: favoriteProject }] = await Promise.all([
+      supabase.from("profiles").select("role").eq("id", currentUser.id).maybeSingle(),
+      supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", currentUser.id)
+        .eq("item_type", "project")
+        .eq("item_id", project.id)
+        .maybeSingle(),
+    ]);
     canEdit = isReviewerRole(profile?.role);
+    isFavoriteProject = !!favoriteProject;
   }
 
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title={project.name || "Proyecto"}
-          description={project.short_description || "Proyecto open source en MiPrimerIssue."}
+          title={project.name || (locale === "en" ? "Project" : "Proyecto")}
+          description={
+            project.short_description ||
+            (locale === "en" ? "Open source project in PrimerIssue." : "Proyecto open source en PrimerIssue.")
+          }
           actions={
             <>
               <Link
                 href="/projects"
                 className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
               >
-                Volver a proyectos
+                {locale === "en" ? "Back to projects" : "Volver a proyectos"}
               </Link>
               {canEdit ? (
                 <Link
                   href={`/dashboard/projects/${project.id}/edit`}
                   className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
                 >
-                  Editar proyecto
+                  {locale === "en" ? "Edit project" : "Editar proyecto"}
                 </Link>
+              ) : null}
+              {currentUser ? (
+                <FavoriteToggle
+                  itemType="project"
+                  itemId={project.id}
+                  initiallyFavorite={isFavoriteProject}
+                  size="md"
+                />
               ) : null}
             </>
           }
@@ -125,14 +171,21 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
         <div className="rounded-2xl border border-white/20 bg-black/20 p-6">
           <p className="whitespace-pre-line text-gray-200">
-            {project.description || "Sin descripción detallada disponible."}
+            {project.description ||
+              (locale === "en"
+                ? "Detailed description not available."
+                : "Sin descripción detallada disponible.")}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Badge tone="info">{openTasks.length} tareas abiertas</Badge>
-            <Badge tone="warning">Dificultad: {project.difficulty || "no especificada"}</Badge>
+            <Badge tone="info">
+              {openTasks.length} {locale === "en" ? "open tasks" : "tareas abiertas"}
+            </Badge>
+            <Badge tone="warning">
+              {locale === "en" ? "Difficulty" : "Dificultad"}: {project.difficulty || (locale === "en" ? "not specified" : "no especificada")}
+            </Badge>
             <Badge tone="default">
-              {contributorRows.length} developers contribuyendo vía MiPrimerIssue
+              {contributorRows.length} {locale === "en" ? "developers contributing via PrimerIssue" : "developers contribuyendo vía PrimerIssue"}
             </Badge>
           </div>
 
@@ -141,7 +194,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <Badge key={`${project.id}-${tech}`}>{tech}</Badge>
             ))}
             {(project.tech_stack || []).length === 0 ? (
-              <span className="text-xs text-gray-500">Tech stack no especificado.</span>
+              <span className="text-xs text-gray-500">
+                {locale === "en" ? "Tech stack not specified." : "Tech stack no especificado."}
+              </span>
             ) : null}
           </div>
 
@@ -153,10 +208,10 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 rel="noreferrer"
                 className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
               >
-                Ver repo GitHub
+                {locale === "en" ? "View GitHub repo" : "Ver repo GitHub"}
               </Link>
             ) : (
-              <p className="text-sm text-gray-500">Repositorio no disponible.</p>
+              <p className="text-sm text-gray-500">{locale === "en" ? "Repository not available." : "Repositorio no disponible."}</p>
             )}
           </div>
         </div>
@@ -164,8 +219,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Developers contribuyendo"
-          description="Personas que ya están colaborando en este proyecto desde MiPrimerIssue."
+          title={locale === "en" ? "Contributing developers" : "Developers contribuyendo"}
+          description={
+            locale === "en"
+              ? "People already collaborating on this project through PrimerIssue."
+              : "Personas que ya están colaborando en este proyecto desde PrimerIssue."
+          }
         />
         {contributorRows.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
@@ -179,7 +238,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                     {contributor.full_name || contributor.github_username || "Developer"}
                   </p>
                   <p className="text-xs text-gray-400">
-                    @{contributor.github_username || "sin-username"}
+                    @{contributor.github_username || (locale === "en" ? "no-username" : "sin-username")}
                   </p>
                 </div>
                 {contributor.github_username ? (
@@ -187,7 +246,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                     href={`/dev/${contributor.github_username}`}
                     className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
                   >
-                    Ver perfil
+                    {locale === "en" ? "View profile" : "Ver perfil"}
                   </Link>
                 ) : null}
               </div>
@@ -196,26 +255,37 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         ) : (
           <EmptyState
             title="Todavía no hay contributors en este proyecto"
-            description="Cuando se aprueben tareas y se asignen developers, aparecerán aquí."
+            description={
+              locale === "en"
+                ? "Contributors will appear here once tasks are approved and assigned."
+                : "Cuando se aprueben tareas y se asignen developers, aparecerán aquí."
+            }
           />
         )}
       </SectionCard>
 
       <SectionCard className="p-8">
         <PageHeader
-          title="Tareas disponibles"
-          description="Filtra por dificultad o etiquetas como frontend, backend, testing o good first issue."
+          title={locale === "en" ? "Available tasks" : "Tareas disponibles"}
+          description={
+            locale === "en"
+              ? "Filter by difficulty or labels like frontend, backend, testing, or good first issue."
+              : "Filtra por dificultad o etiquetas como frontend, backend, testing o good first issue."
+          }
         />
         {taskRows.length > 0 ? (
           <TaskFilterPanel tasks={taskRows} />
         ) : (
           <EmptyState
             title="Este proyecto todavía no tiene tareas"
-            description="El maintainer aún no ha publicado tareas para colaborar."
+            description={
+              locale === "en"
+                ? "The maintainer has not published collaboration tasks yet."
+                : "El maintainer aún no ha publicado tareas para colaborar."
+            }
           />
         )}
       </SectionCard>
     </AppLayout>
   );
 }
-

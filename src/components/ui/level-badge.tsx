@@ -1,15 +1,12 @@
+"use client";
+
 import Badge from "@/components/ui/badge";
 import type { UserLevel } from "@/lib/user-progress";
+import { useI18n } from "@/lib/i18n/client";
+import { getLevelLabel } from "@/lib/i18n/labels";
 
 type LevelBadgeProps = {
   level: UserLevel;
-};
-
-const levelLabel: Record<UserLevel, string> = {
-  beginner: "Beginner",
-  junior: "Junior",
-  contributor: "Contributor",
-  maintainer: "Maintainer",
 };
 
 const levelTone: Record<UserLevel, "default" | "info" | "warning" | "success"> = {
@@ -20,5 +17,7 @@ const levelTone: Record<UserLevel, "default" | "info" | "warning" | "success"> =
 };
 
 export default function LevelBadge({ level }: LevelBadgeProps) {
-  return <Badge tone={levelTone[level]}>{levelLabel[level]}</Badge>;
+  const { locale } = useI18n();
+
+  return <Badge tone={levelTone[level]}>{getLevelLabel(level, locale)}</Badge>;
 }

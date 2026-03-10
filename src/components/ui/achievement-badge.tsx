@@ -1,11 +1,18 @@
+"use client";
+
 import Badge from "@/components/ui/badge";
 import type { UserBadge } from "@/lib/user-badges";
+import { useI18n } from "@/lib/i18n/client";
+import { getBadgeCopy } from "@/lib/i18n/labels";
 
 type AchievementBadgeProps = {
   badge: UserBadge;
 };
 
 export default function AchievementBadge({ badge }: AchievementBadgeProps) {
+  const { locale } = useI18n();
+  const copy = getBadgeCopy(badge.id, locale);
+
   return (
     <article
       className={`rounded-xl border p-4 ${
@@ -15,13 +22,18 @@ export default function AchievementBadge({ badge }: AchievementBadgeProps) {
       }`}
     >
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-white">{badge.title}</h4>
+        <h4 className="text-sm font-semibold text-white">{copy.title}</h4>
         <Badge tone={badge.unlocked ? "warning" : "default"}>
-          {badge.unlocked ? "Desbloqueado" : "Bloqueado"}
+          {badge.unlocked
+            ? locale === "en"
+              ? "Unlocked"
+              : "Desbloqueado"
+            : locale === "en"
+              ? "Locked"
+              : "Bloqueado"}
         </Badge>
       </div>
-      <p className="mt-2 text-xs text-gray-400">{badge.description}</p>
+      <p className="mt-2 text-xs text-gray-400">{copy.description}</p>
     </article>
   );
 }
-

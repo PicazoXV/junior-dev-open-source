@@ -5,8 +5,10 @@ import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import EmptyState from "@/components/ui/empty-state";
 import { getPlatformActivity } from "@/lib/activity-feed";
+import { getCurrentLocale } from "@/lib/i18n/server";
 
 export default async function ActivityPage() {
+  const locale = await getCurrentLocale();
   const supabase = await createClient();
   const activity = await getPlatformActivity(supabase, 30);
 
@@ -14,8 +16,12 @@ export default async function ActivityPage() {
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
-          title="Feed de actividad"
-          description="Actividad reciente de la comunidad contribuyendo en proyectos open source."
+          title={locale === "en" ? "Activity feed" : "Feed de actividad"}
+          description={
+            locale === "en"
+              ? "Recent activity from the community contributing to open source projects."
+              : "Actividad reciente de la comunidad contribuyendo en proyectos open source."
+          }
         />
 
         {activity.length > 0 ? (
@@ -25,10 +31,16 @@ export default async function ActivityPage() {
                 <p className="text-sm text-gray-200">
                   <span className="text-orange-300">{item.actorName}</span>{" "}
                   {item.type === "merged_pr"
-                    ? "merged PR en"
+                    ? locale === "en"
+                      ? "merged a PR in"
+                      : "merged PR en"
                     : item.type === "completed_task"
-                      ? "completó la tarea en"
-                      : "empezó una tarea en"}{" "}
+                      ? locale === "en"
+                        ? "completed a task in"
+                        : "completó la tarea en"
+                      : locale === "en"
+                        ? "started a task in"
+                        : "empezó una tarea en"}{" "}
                   <span className="text-white">{item.projectName}</span>
                 </p>
                 <p className="mt-1 text-xs text-gray-400">{item.taskTitle}</p>
@@ -38,7 +50,7 @@ export default async function ActivityPage() {
                       href={`/projects/${item.projectSlug}`}
                       className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
                     >
-                      Ver proyecto
+                      {locale === "en" ? "View project" : "Ver proyecto"}
                     </Link>
                   ) : null}
                   {item.githubUrl ? (
@@ -48,7 +60,7 @@ export default async function ActivityPage() {
                       rel="noreferrer"
                       className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
                     >
-                      Ver en GitHub
+                      {locale === "en" ? "View on GitHub" : "Ver en GitHub"}
                     </Link>
                   ) : null}
                 </div>
@@ -57,12 +69,15 @@ export default async function ActivityPage() {
           </div>
         ) : (
           <EmptyState
-            title="Aún no hay actividad reciente"
-            description="Cuando los developers avancen tareas y PRs, aparecerán los eventos aquí."
+            title={locale === "en" ? "No recent activity yet" : "Aún no hay actividad reciente"}
+            description={
+              locale === "en"
+                ? "When developers progress tasks and PRs, events will appear here."
+                : "Cuando los developers avancen tareas y PRs, aparecerán los eventos aquí."
+            }
           />
         )}
       </SectionCard>
     </AppLayout>
   );
 }
-
