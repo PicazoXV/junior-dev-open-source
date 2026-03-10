@@ -17,6 +17,8 @@ import EmptyState from "@/components/ui/empty-state";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import Badge from "@/components/ui/badge";
 import { getFirstIssueChallengeProgress } from "@/lib/first-issue-challenge";
+import { getUserOnboardingState } from "@/lib/onboarding";
+import OnboardingChecklist from "@/components/onboarding-checklist";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -39,6 +41,19 @@ export default async function DashboardPage() {
 
   const canReviewRequests = isReviewerRole(profile?.role);
   const progress = await getUserProgress(supabase, user.id, profile?.tech_stack || null);
+  const onboarding = await getUserOnboardingState({
+    supabase,
+    userId: user.id,
+    profile: profile
+      ? {
+          full_name: profile.full_name || null,
+          bio: profile.bio || null,
+          tech_stack: profile.tech_stack || null,
+          location: profile.location || null,
+        }
+      : null,
+    progress,
+  });
   const challenge = await getFirstIssueChallengeProgress(supabase, user.id);
   const badges = getUserBadges(progress);
   const unlockedBadges = badges.filter((badge) => badge.unlocked);
@@ -48,6 +63,8 @@ export default async function DashboardPage() {
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+      <OnboardingChecklist onboarding={onboarding} />
+
       <SectionCard className="p-8">
         <PageHeader
           title="Dashboard"

@@ -194,20 +194,6 @@ export async function getUserProgress(
     console.error("Error cargando métricas (requests sent):", requestsResult.error.message);
   }
 
-  if (mergedPullRequestsResult.error && !isMissingColumnError(mergedPullRequestsResult.error)) {
-    console.error(
-      "Error cargando métricas (merged pull requests):",
-      mergedPullRequestsResult.error.message
-    );
-  }
-
-  if (inReviewPullRequestsResult.error && !isMissingColumnError(inReviewPullRequestsResult.error)) {
-    console.error(
-      "Error cargando métricas (in review pull requests):",
-      inReviewPullRequestsResult.error.message
-    );
-  }
-
   if (profileChallengeResult.error && !isMissingChallengeColumnError(profileChallengeResult.error)) {
     console.error(
       "Error cargando métricas (challenge profile):",
@@ -238,13 +224,45 @@ export async function getUserProgress(
   const techStack =
     typeof techStackFromProfile === "undefined" ? null : techStackFromProfile;
 
-  const mergedPrCount = isMissingColumnError(mergedPullRequestsResult.error)
-    ? 0
-    : mergedPullRequestsResult.count || 0;
+  let mergedPrCount = 0;
+  if (!mergedPullRequestsResult.error) {
+    mergedPrCount = mergedPullRequestsResult.count || 0;
+  } else {
+    const mergedFallbackResult = await supabase
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("assigned_to", userId)
+      .eq("status", "completed");
 
-  const inReviewPrCount = isMissingColumnError(inReviewPullRequestsResult.error)
-    ? 0
-    : inReviewPullRequestsResult.count || 0;
+    if (mergedFallbackResult.error) {
+      console.error(
+        "Error cargando métricas (merged pull requests fallback):",
+        mergedFallbackResult.error.message
+      );
+    } else {
+      mergedPrCount = mergedFallbackResult.count || 0;
+    }
+  }
+
+  let inReviewPrCount = 0;
+  if (!inReviewPullRequestsResult.error) {
+    inReviewPrCount = inReviewPullRequestsResult.count || 0;
+  } else {
+    const inReviewFallbackResult = await supabase
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("assigned_to", userId)
+      .eq("status", "in_review");
+
+    if (inReviewFallbackResult.error) {
+      console.error(
+        "Error cargando métricas (in review pull requests fallback):",
+        inReviewFallbackResult.error.message
+      );
+    } else {
+      inReviewPrCount = inReviewFallbackResult.count || 0;
+    }
+  }
 
   let challengeStartedAt: string | null = null;
   let challengeCompletedAt: string | null = null;
