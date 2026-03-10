@@ -16,7 +16,7 @@ export default function UserRoadmapCard({ roadmap, locale }: UserRoadmapCardProp
             {locale === "en" ? "Roadmap" : "Roadmap"}
           </p>
           <h3 className="mt-1 text-lg font-semibold text-white">
-            {locale === "en" ? "Your path in PrimerIssue" : "Tu camino en PrimerIssue"}
+            {locale === "en" ? "Your path in MiPrimerIssue" : "Tu camino en MiPrimerIssue"}
           </h3>
         </div>
         <Badge tone="info">

@@ -21,7 +21,7 @@ function getBaseUrl() {
     return configured.replace(/\/$/, "");
   }
 
-  return "https://www.primerissue.dev";
+  return "https://www.miprimerissue.dev";
 }
 
 export default async function ContributionPage({ params }: ContributionPageProps) {
@@ -48,8 +48,8 @@ export default async function ContributionPage({ params }: ContributionPageProps
           title={locale === "en" ? "Contribution completed" : "Contribución completada"}
           description={
             locale === "en"
-              ? "Share this milestone and showcase your open source progress in PrimerIssue."
-              : "Comparte este hito y enseña tu progreso open source en PrimerIssue."
+              ? "Share this milestone and showcase your open source progress in MiPrimerIssue."
+              : "Comparte este hito y enseña tu progreso open source en MiPrimerIssue."
           }
           actions={
             contribution.projectSlug ? (
@@ -65,7 +65,7 @@ export default async function ContributionPage({ params }: ContributionPageProps
 
         <div className="rounded-2xl border border-white/20 bg-black/20 p-6">
           <p className="text-xs uppercase tracking-[0.16em] text-orange-300">
-            {locale === "en" ? "PrimerIssue Contribution" : "Contribución de PrimerIssue"}
+            {locale === "en" ? "MiPrimerIssue Contribution" : "Contribución de MiPrimerIssue"}
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{contribution.taskTitle}</h2>
           <p className="mt-2 text-sm text-gray-300">
@@ -99,7 +99,7 @@ export default async function ContributionPage({ params }: ContributionPageProps
                   : contribution.developerName || (locale === "en" ? "Developer" : "Developer")}
             </p>
             <p>
-              <span className="text-gray-400">{locale === "en" ? "Platform" : "Plataforma"}:</span> PrimerIssue · primerissue.dev
+              <span className="text-gray-400">{locale === "en" ? "Platform" : "Plataforma"}:</span> MiPrimerIssue · miprimerissue.dev
             </p>
           </div>
 

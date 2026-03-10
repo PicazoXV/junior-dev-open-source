@@ -19,10 +19,33 @@ body {
 }
 
 .app-bg {
+  position: relative;
+  isolation: isolate;
   background:
     radial-gradient(60rem 35rem at 0% 0%, rgba(249, 115, 22, 0.08), transparent 55%),
     radial-gradient(45rem 25rem at 100% 100%, rgba(249, 115, 22, 0.05), transparent 60%),
     #000;
+}
+
+.app-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2) 0.7px, transparent 1.4px),
+    radial-gradient(circle at 82% 24%, rgba(255, 255, 255, 0.18) 0.8px, transparent 1.5px),
+    radial-gradient(circle at 26% 72%, rgba(255, 255, 255, 0.16) 0.7px, transparent 1.4px),
+    radial-gradient(circle at 74% 82%, rgba(255, 255, 255, 0.18) 0.8px, transparent 1.5px),
+    radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.14) 0.7px, transparent 1.4px);
+  background-size:
+    340px 340px,
+    420px 420px,
+    500px 500px,
+    620px 620px,
+    780px 780px;
+  opacity: 0.42;
+  z-index: 0;
 }
 
 .app-shell {

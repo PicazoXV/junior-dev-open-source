@@ -51,7 +51,7 @@ export default function RoadmapModal({ open, onClose }: RoadmapModalProps) {
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.14em] text-orange-300">PrimerIssue</p>
+            <p className="text-xs uppercase tracking-[0.14em] text-orange-300">MiPrimerIssue</p>
             <h2 className="mt-1 text-2xl font-semibold text-white">{messages.roadmapGuide.title}</h2>
             <p className="mt-2 max-w-2xl text-sm text-gray-300">{messages.roadmapGuide.subtitle}</p>
           </div>

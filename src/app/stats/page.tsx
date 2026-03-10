@@ -18,8 +18,8 @@ export default async function StatsPage() {
           title={locale === "en" ? "Platform stats" : "Estadísticas de la plataforma"}
           description={
             locale === "en"
-              ? "Public activity and growth metrics for PrimerIssue."
-              : "Métricas públicas de actividad y crecimiento de PrimerIssue."
+              ? "Public activity and growth metrics for MiPrimerIssue."
+              : "Métricas públicas de actividad y crecimiento de MiPrimerIssue."
           }
         />
         <div className="grid gap-3 md:grid-cols-2">

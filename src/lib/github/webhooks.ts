@@ -304,7 +304,7 @@ export async function handlePullRequestWebhook(params: {
         installationToken,
         repository,
         task.github_issue_number,
-        "Task completed via PrimerIssue 🎉"
+        "Task completed via MiPrimerIssue 🎉"
       );
     } catch (error) {
       console.warn("Could not post merged comment on GitHub issue", {

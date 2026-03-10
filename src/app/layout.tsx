@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PrimerIssue",
+  title: "MiPrimerIssue",
   description:
-    "PrimerIssue conecta developers junior con proyectos open source reales para ganar experiencia demostrable.",
+    "MiPrimerIssue conecta developers junior con proyectos open source reales para ganar experiencia demostrable.",
 };
 
 export default async function RootLayout({

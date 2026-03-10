@@ -50,8 +50,8 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
           title={developer.fullName || `@${developer.githubUsername}`}
           description={
             locale === "en"
-              ? `Public profile for @${developer.githubUsername} on PrimerIssue`
-              : `Perfil público de @${developer.githubUsername} en PrimerIssue`
+              ? `Public profile for @${developer.githubUsername} on MiPrimerIssue`
+              : `Perfil público de @${developer.githubUsername} en MiPrimerIssue`
           }
           actions={
             <Link

@@ -13,9 +13,9 @@ import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { getFavoriteIdsByType } from "@/lib/favorites";
 
 export const metadata: Metadata = {
-  title: "Good First Issues | PrimerIssue",
+  title: "Good First Issues | MiPrimerIssue",
   description:
-    "Find beginner-friendly tasks to make your first open source contribution with PrimerIssue.",
+    "Find beginner-friendly tasks to make your first open source contribution with MiPrimerIssue.",
 };
 
 type GoodFirstIssuesPageProps = {

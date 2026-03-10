@@ -38,8 +38,8 @@ export default async function ShareProfilePage({ params }: ShareProfilePageProps
           title={profile.fullName || `@${profile.githubUsername}`}
           description={
             locale === "en"
-              ? "Shareable developer portfolio from PrimerIssue."
-              : "Portfolio compartible de developer en PrimerIssue."
+              ? "Shareable developer portfolio from MiPrimerIssue."
+              : "Portfolio compartible de developer en MiPrimerIssue."
           }
           actions={
             <Link

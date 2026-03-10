@@ -45,7 +45,7 @@ function getBaseUrl() {
     return configured.replace(/\/$/, "");
   }
 
-  return "https://www.primerissue.dev";
+  return "https://www.miprimerissue.dev";
 }
 
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {

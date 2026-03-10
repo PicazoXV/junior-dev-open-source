@@ -34,7 +34,7 @@ export function buildTaskIssueBody(params: BuildIssueBodyParams) {
     : "No disponible";
 
   const lines = [
-    "## Task creada desde PrimerIssue",
+    "## Task creada desde MiPrimerIssue",
     "",
     "Esta issue fue generada automáticamente al aprobar una solicitud en la plataforma.",
     "",
@@ -57,7 +57,7 @@ export function buildTaskIssueBody(params: BuildIssueBodyParams) {
     "### Flujo recomendado",
     "`fork` → `branch` → `pull request`",
     "",
-    "_Issue generada automáticamente por PrimerIssue (primerissue.dev)._",
+    "_Issue generada automáticamente por MiPrimerIssue (miprimerissue.dev)._",
   ];
 
   return lines.join("\n");

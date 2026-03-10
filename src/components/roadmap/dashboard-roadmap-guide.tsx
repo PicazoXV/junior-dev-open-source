@@ -78,7 +78,7 @@ export default function DashboardRoadmapGuide({
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.16em] text-orange-300">PrimerIssue</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-orange-300">MiPrimerIssue</p>
             <h2 className="mt-1 flex items-center gap-2 text-lg font-semibold text-white">
               <BookOpen className="h-4 w-4 text-orange-300" />
               {messages.roadmapGuide.cardTitle}

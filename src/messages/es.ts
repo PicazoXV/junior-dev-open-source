@@ -2,8 +2,8 @@ import type { MessageDictionary } from "@/lib/i18n/types";
 
 export const esMessages: MessageDictionary = {
   brand: {
-    name: "PrimerIssue",
-    domain: "primerissue.dev",
+    name: "MiPrimerIssue",
+    domain: "miprimerissue.dev",
   },
   sidebar: {
     home: "Inicio",
@@ -47,7 +47,7 @@ export const esMessages: MessageDictionary = {
   hero: {
     heading: "Únete a nosotros y gana experiencia demostrable",
     description:
-      "PrimerIssue conecta developers junior con proyectos open source reales para transformar tareas guiadas en contribuciones visibles, progreso medible y portfolio real en GitHub.",
+      "MiPrimerIssue conecta developers junior con proyectos open source reales para transformar tareas guiadas en contribuciones visibles, progreso medible y portfolio real en GitHub.",
     ctaAuth: "Explorar proyectos",
     ctaGuest: "Empezar con GitHub",
     footnote: "Empieza por tareas adaptadas a tu nivel y conecta tu progreso con GitHub real.",
@@ -57,11 +57,11 @@ export const esMessages: MessageDictionary = {
     howWeWorkDesc:
       "Un flujo claro para que juniors pasen de ‘quiero contribuir’ a experiencia real.",
     stepLabel: "Paso",
-    aboutLabel: "Qué es PrimerIssue",
+    aboutLabel: "Qué es MiPrimerIssue",
     aboutTitle:
       "No es solo otra web de tareas: es una ruta real hacia experiencia open source",
     aboutP1:
-      "PrimerIssue existe para resolver el salto más difícil de un developer junior: conseguir experiencia demostrable cuando todavía no tiene historial en proyectos reales.",
+      "MiPrimerIssue existe para resolver el salto más difícil de un developer junior: conseguir experiencia demostrable cuando todavía no tiene historial en proyectos reales.",
     aboutP2:
       "Aquí descubres proyectos activos, solicitas tareas con contexto, colaboras en repositorios reales y conviertes cada contribución en una señal visible de progreso.",
     aboutP3:
@@ -73,15 +73,15 @@ export const esMessages: MessageDictionary = {
     finalTitle: "Convierte contribuciones en experiencia real",
     finalDesc:
       "Empieza hoy con tu primer issue y construye un portfolio que demuestre lo que sabes hacer en proyectos open source.",
-    finalAuthCta: "Ver oportunidades en PrimerIssue",
-    finalGuestCta: "Únete a PrimerIssue con GitHub",
+    finalAuthCta: "Ver oportunidades en MiPrimerIssue",
+    finalGuestCta: "Únete a MiPrimerIssue con GitHub",
   },
   onboarding: {
     label: "Onboarding",
-    title: "🚀 Empieza en PrimerIssue",
+    title: "🚀 Empieza en MiPrimerIssue",
     progress: "Progreso",
     nextStep: "Siguiente paso recomendado:",
-    completedMessage: "🎉 Ya has completado tu onboarding en PrimerIssue.",
+    completedMessage: "🎉 Ya has completado tu onboarding en MiPrimerIssue.",
     almostThereMessage: "Estás a un paso de tu primera contribución real.",
     startMessage: "Empieza hoy y gana experiencia demostrable en open source.",
     stateCompleted: "Completado",
@@ -107,11 +107,11 @@ export const esMessages: MessageDictionary = {
     completedCtaExplore: "Explorar nuevas tareas",
   },
   roadmapGuide: {
-    cardTitle: "Cómo funciona PrimerIssue",
+    cardTitle: "Cómo funciona MiPrimerIssue",
     cardDescription:
       "Guía rápida del flujo completo: desde descubrir tareas hasta completar contribuciones reales en GitHub.",
     cardCta: "Ver roadmap",
-    title: "Roadmap de PrimerIssue",
+    title: "Roadmap de MiPrimerIssue",
     subtitle: "Así funciona la plataforma para llevarte de tu primera solicitud a tu primera contribución completada.",
     close: "Cerrar",
     note: "Todo tu progreso queda reflejado en tu dashboard y perfil.",
@@ -127,23 +127,23 @@ export const esMessages: MessageDictionary = {
     step5Title: "Si te aprueban, se te asigna la tarea",
     step5Desc: "La tarea queda asignada para ti y se crea o enlaza su issue en GitHub si aplica.",
     step6Title: "Abres tu Pull Request",
-    step6Desc: "Cuando avances, abres tu PR en GitHub y PrimerIssue sincroniza ese progreso.",
+    step6Desc: "Cuando avances, abres tu PR en GitHub y MiPrimerIssue sincroniza ese progreso.",
     step7Title: "Completa tu contribución",
-    step7Desc: "Si el PR se mergea, tu contribución se completa y tu progreso crece en PrimerIssue.",
+    step7Desc: "Si el PR se mergea, tu contribución se completa y tu progreso crece en MiPrimerIssue.",
   },
   dashboardPanels: {
-    primerIssueTitle: "PrimerIssue",
+    primerIssueTitle: "MiPrimerIssue",
     primerIssueDesc: "Resumen rápido de cómo funciona la plataforma.",
     onboardingTitle: "Onboarding",
     onboardingDesc: "Checklist de inicio para llegar a tu primera contribución.",
     roadmapTitle: "Roadmap",
-    roadmapDesc: "Tu camino de progreso dentro de PrimerIssue.",
+    roadmapDesc: "Tu camino de progreso dentro de MiPrimerIssue.",
   },
   certifications: {
     title: "Obtener certificaciones",
     subtitle: "Aprende nuevas habilidades y consigue certificados gratuitos que refuercen tu perfil como developer.",
     intro:
-      "En PrimerIssue creemos que la experiencia real y el aprendizaje continuo van de la mano. Aquí encontrarás cursos gratuitos con certificado en programación, inglés técnico, inteligencia artificial y más.",
+      "En MiPrimerIssue creemos que la experiencia real y el aprendizaje continuo van de la mano. Aquí encontrarás cursos gratuitos con certificado en programación, inglés técnico, inteligencia artificial y más.",
     categoryEnglish: "Inglés para developers",
     categoryEnglishDesc: "Cursos recomendados para mejorar tu inglés técnico en contexto real.",
     categoryProgramming: "Programación",

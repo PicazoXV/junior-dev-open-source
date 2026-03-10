@@ -85,12 +85,88 @@ export default async function DashboardPage() {
     : null;
   const streaks = await getUserStreaks(supabase, user.id);
   const githubUsername = profile?.github_username || (locale === "en" ? "your-username" : "tu-username");
-  const readmeBadgeSnippet = `[![Contributing via PrimerIssue](https://img.shields.io/badge/Contributing%20via-PrimerIssue-orange)](https://primerissue.dev/dev/${githubUsername})`;
+  const readmeBadgeSnippet = `[![Contributing via MiPrimerIssue](https://img.shields.io/badge/Contributing%20via-MiPrimerIssue-orange)](https://miprimerissue.dev/dev/${githubUsername})`;
   const profileRoles = ((profile?.roles as string[] | null | undefined) || []).filter(Boolean);
   const techStackTags = parseTechStack(profile?.tech_stack);
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+      <SectionCard className="surface-accent p-8 lg:p-10">
+        <div className="grid gap-6 lg:grid-cols-[1.65fr_1fr] lg:items-start">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-orange-200/90">
+              MiPrimerIssue
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              {locale === "en" ? "Welcome back, keep building real experience" : "Bienvenido de nuevo, sigue construyendo experiencia real"}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm text-gray-200/90">
+              {locale === "en"
+                ? "Your control center for requests, tasks, roadmap and contribution milestones."
+                : "Tu centro de control para solicitudes, tareas, roadmap e hitos de contribución."}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <LevelBadge level={progress.level} />
+              <Badge tone="info">
+                {locale === "en" ? `${progress.completedTasks} completed tasks` : `${progress.completedTasks} tareas completadas`}
+              </Badge>
+              <Badge tone="warning">
+                {locale === "en" ? `${progress.inProgressTasks} active tasks` : `${progress.inProgressTasks} tareas activas`}
+              </Badge>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link
+                href="/profile/edit"
+                className="inline-flex rounded-lg border border-orange-500/45 bg-orange-500/15 px-3 py-2 text-sm font-medium text-orange-200 transition hover:border-orange-400 hover:bg-orange-500/20 hover:text-orange-100"
+              >
+                {locale === "en" ? "Edit profile" : "Editar perfil"}
+              </Link>
+              <Link
+                href="/good-first-issues"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900/80 px-3 py-2 text-sm font-medium text-gray-100 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-200"
+              >
+                {locale === "en" ? "Explore good first issues" : "Explorar good first issues"}
+              </Link>
+              {canReviewRequests ? (
+                <Link
+                  href="/dashboard/requests"
+                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900/80 px-3 py-2 text-sm font-medium text-gray-100 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-200"
+                >
+                  {locale === "en" ? "Review requests" : "Ver solicitudes"}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="surface-subcard rounded-xl p-4">
+              <p className="text-xs uppercase tracking-wide text-gray-400">
+                {locale === "en" ? "Merged PRs" : "PRs mergeados"}
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-white">{progress.mergedPullRequests}</p>
+            </div>
+            <div className="surface-subcard rounded-xl p-4">
+              <p className="text-xs uppercase tracking-wide text-gray-400">
+                {locale === "en" ? "Contributed projects" : "Proyectos contribuidos"}
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-white">{progress.contributedProjects}</p>
+            </div>
+            <div className="surface-subcard rounded-xl p-4">
+              <p className="text-xs uppercase tracking-wide text-gray-400">
+                {locale === "en" ? "Requests sent" : "Solicitudes enviadas"}
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-white">{progress.requestsSent}</p>
+            </div>
+            <div className="surface-subcard rounded-xl p-4">
+              <p className="text-xs uppercase tracking-wide text-gray-400">
+                {locale === "en" ? "Badges unlocked" : "Badges desbloqueados"}
+              </p>
+              <p className="mt-1 text-2xl font-semibold text-white">{unlockedBadges.length}</p>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
       <DashboardInfoPanels
         primerIssuePanel={
           <DashboardRoadmapGuide userId={user.id} onboardingCompleted={onboarding.isCompleted} />
@@ -99,50 +175,42 @@ export default async function DashboardPage() {
         roadmapPanel={<UserRoadmapCard roadmap={roadmap} locale={locale} />}
       />
 
-      <SectionCard className="p-8">
+      <SectionCard className="p-8 lg:p-9">
         <PageHeader
-          title={locale === "en" ? "Dashboard" : "Dashboard"}
+          title={locale === "en" ? "Developer profile" : "Perfil del developer"}
           description={
             locale === "en"
-              ? "Your progress profile in PrimerIssue"
-              : "Tu perfil de progreso en PrimerIssue"
+              ? "Everything about your contribution identity in one place."
+              : "Todo sobre tu identidad de contribución en un solo lugar."
           }
-          actions={
-            canReviewRequests ? (
-              <>
-                <Link
-                  href="/dashboard/requests"
-                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                >
-                  {locale === "en" ? "Review requests" : "Ver solicitudes"}
-                </Link>
-                <Link
-                  href="/dashboard/projects/new"
-                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                >
-                  {locale === "en" ? "New project" : "Nuevo proyecto"}
-                </Link>
-                <Link
-                  href="/dashboard/projects"
-                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                >
-                  {locale === "en" ? "Manage projects" : "Gestionar proyectos"}
-                </Link>
-                <Link
-                  href="/dashboard/tasks/new"
-                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                >
-                  {locale === "en" ? "New task" : "Nueva tarea"}
-                </Link>
-                <Link
-                  href="/dashboard/tasks"
-                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                >
-                  {locale === "en" ? "Manage tasks" : "Gestionar tareas"}
-                </Link>
-              </>
-            ) : null
-          }
+          actions={canReviewRequests ? (
+            <>
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                {locale === "en" ? "New project" : "Nuevo proyecto"}
+              </Link>
+              <Link
+                href="/dashboard/projects"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                {locale === "en" ? "Manage projects" : "Gestionar proyectos"}
+              </Link>
+              <Link
+                href="/dashboard/tasks/new"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                {locale === "en" ? "New task" : "Nueva tarea"}
+              </Link>
+              <Link
+                href="/dashboard/tasks"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                {locale === "en" ? "Manage tasks" : "Gestionar tareas"}
+              </Link>
+            </>
+          ) : null}
         />
 
         <section className="surface-subcard rounded-2xl p-6">
@@ -269,8 +337,8 @@ export default async function DashboardPage() {
           </h3>
           <p className="mt-1 text-sm text-gray-400">
             {locale === "en"
-              ? "Your milestones in PrimerIssue to build real open source experience."
-              : "Tus hitos dentro de PrimerIssue para construir experiencia open source real."}
+              ? "Your milestones in MiPrimerIssue to build real open source experience."
+              : "Tus hitos dentro de MiPrimerIssue para construir experiencia open source real."}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {badges.map((badge) => (
@@ -400,7 +468,7 @@ export default async function DashboardPage() {
               : "Completa tu primera contribución open source en 7 días."
           }
         />
-        <div className="rounded-2xl border border-white/20 bg-black/20 p-5">
+        <div className="surface-subcard rounded-2xl p-5">
           <div className="flex flex-wrap items-center gap-2">
             {challenge.completedInTime ? (
               <Badge tone="success">🏆 Challenge completed</Badge>
@@ -423,7 +491,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <div className="surface-subcard rounded-xl p-4">
               <p className="text-sm text-gray-400">
                 {locale === "en" ? "Task requested" : "Tarea solicitada"}
               </p>
@@ -437,7 +505,7 @@ export default async function DashboardPage() {
                     : "⏳ Pendiente"}
               </p>
             </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <div className="surface-subcard rounded-xl p-4">
               <p className="text-sm text-gray-400">
                 {locale === "en" ? "Task approved" : "Tarea aprobada"}
               </p>
@@ -451,7 +519,7 @@ export default async function DashboardPage() {
                     : "⏳ Pendiente"}
               </p>
             </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <div className="surface-subcard rounded-xl p-4">
               <p className="text-sm text-gray-400">
                 {locale === "en" ? "PR opened" : "PR abierto"}
               </p>
@@ -465,7 +533,7 @@ export default async function DashboardPage() {
                     : "⏳ Pendiente"}
               </p>
             </div>
-            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <div className="surface-subcard rounded-xl p-4">
               <p className="text-sm text-gray-400">
                 {locale === "en" ? "PR merged" : "PR mergeado"}
               </p>
@@ -528,7 +596,7 @@ export default async function DashboardPage() {
             {recommendedTasks.map((task) => (
               <article
                 key={task.id}
-                className="rounded-xl border border-white/15 bg-black/20 p-4"
+                className="surface-subcard rounded-xl p-4"
               >
                 <p className="text-sm font-semibold text-white">{task.title}</p>
                 <p className="mt-1 text-xs text-gray-400">{task.projectName}</p>
@@ -604,7 +672,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {favorites.map((favorite) => (
-              <article key={favorite.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <article key={favorite.id} className="surface-subcard rounded-xl p-4">
                 <p className="text-sm font-semibold text-white">{favorite.title}</p>
                 {favorite.subtitle ? <p className="mt-1 text-xs text-gray-400">{favorite.subtitle}</p> : null}
                 <div className="mt-3">
@@ -642,7 +710,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {verifiedContributions.map((item) => (
-              <article key={item.taskId} className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <article key={item.taskId} className="surface-subcard rounded-xl p-4">
                 <p className="text-sm font-semibold text-white">{item.taskTitle}</p>
                 <p className="mt-1 text-xs text-gray-400">{item.projectName}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -674,11 +742,11 @@ export default async function DashboardPage() {
           title={locale === "en" ? "Badge for your GitHub README" : "Badge para tu GitHub README"}
           description={
             locale === "en"
-              ? "Copy this snippet to show that you contribute through PrimerIssue."
-              : "Copia este snippet para mostrar que contribuyes desde PrimerIssue."
+              ? "Copy this snippet to show that you contribute through MiPrimerIssue."
+              : "Copia este snippet para mostrar que contribuyes desde MiPrimerIssue."
           }
         />
-        <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+        <div className="surface-subcard rounded-xl p-4">
           <p className="text-xs text-gray-500">
             {locale === "en" ? "Markdown snippet" : "Snippet Markdown"}
           </p>

@@ -61,8 +61,8 @@ export default async function EditProfilePage() {
           title={locale === "en" ? "Edit profile" : "Editar perfil"}
           description={
             locale === "en"
-              ? "Update your public information on PrimerIssue."
-              : "Actualiza tu información pública en PrimerIssue."
+              ? "Update your public information on MiPrimerIssue."
+              : "Actualiza tu información pública en MiPrimerIssue."
           }
           actions={
             <Link

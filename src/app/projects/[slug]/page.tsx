@@ -139,7 +139,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           title={project.name || (locale === "en" ? "Project" : "Proyecto")}
           description={
             project.short_description ||
-            (locale === "en" ? "Open source project in PrimerIssue." : "Proyecto open source en PrimerIssue.")
+            (locale === "en" ? "Open source project in MiPrimerIssue." : "Proyecto open source en MiPrimerIssue.")
           }
           actions={
             <>
@@ -185,7 +185,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               {locale === "en" ? "Difficulty" : "Dificultad"}: {project.difficulty || (locale === "en" ? "not specified" : "no especificada")}
             </Badge>
             <Badge tone="default">
-              {contributorRows.length} {locale === "en" ? "developers contributing via PrimerIssue" : "developers contribuyendo vía PrimerIssue"}
+              {contributorRows.length} {locale === "en" ? "developers contributing via MiPrimerIssue" : "developers contribuyendo vía MiPrimerIssue"}
             </Badge>
           </div>
 
@@ -222,8 +222,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           title={locale === "en" ? "Contributing developers" : "Developers contribuyendo"}
           description={
             locale === "en"
-              ? "People already collaborating on this project through PrimerIssue."
-              : "Personas que ya están colaborando en este proyecto desde PrimerIssue."
+              ? "People already collaborating on this project through MiPrimerIssue."
+              : "Personas que ya están colaborando en este proyecto desde MiPrimerIssue."
           }
         />
         {contributorRows.length > 0 ? (

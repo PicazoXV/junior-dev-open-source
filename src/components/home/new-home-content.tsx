@@ -127,8 +127,8 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-base text-gray-300 md:text-lg">
             {isEn
-              ? "PrimerIssue connects junior developers with real open source tasks so they can build demonstrable experience."
-              : "PrimerIssue conecta developers junior con tareas reales en proyectos open source para que construyan experiencia demostrable."}
+              ? "MiPrimerIssue connects junior developers with real open source tasks so they can build demonstrable experience."
+              : "MiPrimerIssue conecta developers junior con tareas reales en proyectos open source para que construyan experiencia demostrable."}
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -145,12 +145,19 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
                 className="rounded-xl px-7 py-3 text-sm font-semibold"
               />
             )}
-            <Link
-              href="/good-first-issues"
-              className="inline-flex items-center rounded-xl border border-white/20 px-7 py-3 text-sm font-semibold text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
-            >
-              {isEn ? "View Good First Issues" : "Ver Good First Issues"}
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                href="/good-first-issues"
+                className="inline-flex items-center rounded-xl border border-white/20 px-7 py-3 text-sm font-semibold text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+              >
+                {isEn ? "View Good First Issues" : "Ver Good First Issues"}
+              </Link>
+            ) : (
+              <GitHubLoginButton
+                label={isEn ? "View Good First Issues" : "Ver Good First Issues"}
+                className="rounded-xl border-white/20 bg-transparent px-7 py-3 text-sm font-semibold text-gray-200 hover:border-orange-500/35 hover:bg-orange-500/10 hover:text-orange-300"
+              />
+            )}
           </div>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
@@ -168,7 +175,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
 
       <SectionCard className="p-8">
         <h2 className="text-2xl font-semibold text-white md:text-3xl">
-          {isEn ? "How PrimerIssue works" : "Cómo funciona PrimerIssue"}
+          {isEn ? "How MiPrimerIssue works" : "Cómo funciona MiPrimerIssue"}
         </h2>
         <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {[
@@ -243,12 +250,19 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
           ))}
         </div>
         <div className="mt-5">
-          <Link
-            href="/good-first-issues"
-            className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-          >
-            {isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/good-first-issues"
+              className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+            >
+              {isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
+            </Link>
+          ) : (
+            <GitHubLoginButton
+              label={isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
+              className="rounded-lg px-3 py-2 text-sm font-medium"
+            />
+          )}
         </div>
       </SectionCard>
 
@@ -284,8 +298,8 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </h2>
         <p className="mt-2 text-sm text-gray-300">
           {isEn
-            ? "PrimerIssue also gives access to free certificate courses."
-            : "PrimerIssue también ofrece acceso a cursos gratuitos con certificados."}
+            ? "MiPrimerIssue also gives access to free certificate courses."
+            : "MiPrimerIssue también ofrece acceso a cursos gratuitos con certificados."}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {["Programación", "Cloud", "IA", "Inglés técnico"].map((item) => (
@@ -293,12 +307,19 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
           ))}
         </div>
         <div className="mt-5">
-          <Link
-            href="/certificaciones"
-            className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-          >
-            {isEn ? "View certifications" : "Ver certificaciones"}
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              href="/certificaciones"
+              className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+            >
+              {isEn ? "View certifications" : "Ver certificaciones"}
+            </Link>
+          ) : (
+            <GitHubLoginButton
+              label={isEn ? "View certifications" : "Ver certificaciones"}
+              className="rounded-lg px-3 py-2 text-sm font-medium"
+            />
+          )}
         </div>
       </SectionCard>
 
@@ -326,4 +347,3 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
     </div>
   );
 }
-

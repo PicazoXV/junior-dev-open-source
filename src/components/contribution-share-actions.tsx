@@ -33,8 +33,8 @@ export default function ContributionShareActions({
         ? "PR merged"
         : "PR mergeado";
     return locale === "en"
-      ? `🎉 Contribution completed on PrimerIssue. ${taskTitle} · ${prText} in ${projectName}. Developer: ${developer}`
-      : `🎉 Contribución completada en PrimerIssue. ${taskTitle} · ${prText} en ${projectName}. Developer: ${developer}`;
+      ? `🎉 Contribution completed on MiPrimerIssue. ${taskTitle} · ${prText} in ${projectName}. Developer: ${developer}`
+      : `🎉 Contribución completada en MiPrimerIssue. ${taskTitle} · ${prText} en ${projectName}. Developer: ${developer}`;
   }, [developerUsername, locale, prNumber, projectName, taskTitle]);
 
   const encodedText = encodeURIComponent(shareText);

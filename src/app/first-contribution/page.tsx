@@ -30,7 +30,7 @@ const STEPS_ES = [
       "Describe qué cambiaste, por qué y cómo probarlo. Pide revisión y responde feedback de maintainers.",
   },
   {
-    title: "Cómo te ayuda PrimerIssue",
+    title: "Cómo te ayuda MiPrimerIssue",
     description:
       "Aquí puedes descubrir proyectos, solicitar tareas, colaborar con maintainers y construir experiencia demostrable conectada a GitHub.",
   },
@@ -63,7 +63,7 @@ const STEPS_EN = [
       "Describe what changed, why, and how to test it. Request review and respond to maintainer feedback.",
   },
   {
-    title: "How PrimerIssue helps you",
+    title: "How MiPrimerIssue helps you",
     description:
       "Here you can discover projects, request tasks, collaborate with maintainers, and build demonstrable experience connected to GitHub.",
   },

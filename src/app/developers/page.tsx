@@ -61,7 +61,7 @@ export default async function DevelopersPage() {
                           #{index + 1} @{developer.githubUsername}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {developer.fullName || (locale === "en" ? "Developer on PrimerIssue" : "Developer en PrimerIssue")}
+                          {developer.fullName || (locale === "en" ? "Developer on MiPrimerIssue" : "Developer en MiPrimerIssue")}
                         </p>
                         <Link
                           href={`/dev/${developer.githubUsername}`}

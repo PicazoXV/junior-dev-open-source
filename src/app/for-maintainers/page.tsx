@@ -38,8 +38,8 @@ export default async function ForMaintainersPage() {
         <div className="mt-4 space-y-3 text-gray-300">
           <p>
             {locale === "en"
-              ? "PrimerIssue helps maintainers publish clear tasks, review incoming requests, and keep contribution flow connected to GitHub."
-              : "PrimerIssue ayuda a maintainers a publicar tareas claras, revisar solicitudes y mantener el flujo de contribución conectado con GitHub."}
+              ? "MiPrimerIssue helps maintainers publish clear tasks, review incoming requests, and keep contribution flow connected to GitHub."
+              : "MiPrimerIssue ayuda a maintainers a publicar tareas claras, revisar solicitudes y mantener el flujo de contribución conectado con GitHub."}
           </p>
           <p>
             {locale === "en"
@@ -76,7 +76,7 @@ export default async function ForMaintainersPage() {
             href="/dashboard/tasks/new"
             className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
           >
-            {locale === "en" ? "Publish tasks on PrimerIssue" : "Publica tareas en PrimerIssue"}
+            {locale === "en" ? "Publish tasks on MiPrimerIssue" : "Publica tareas en MiPrimerIssue"}
           </Link>
         </div>
       </SectionCard>

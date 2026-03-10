@@ -113,7 +113,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
           draft.repository,
           issueNumber,
           [
-            "Assigned via PrimerIssue",
+            "Assigned via MiPrimerIssue",
             "",
             `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
           ].join("\n")
@@ -188,7 +188,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
       draft.repository,
       issue.number,
       [
-        "Assigned via PrimerIssue",
+        "Assigned via MiPrimerIssue",
         "",
         `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
       ].join("\n")
