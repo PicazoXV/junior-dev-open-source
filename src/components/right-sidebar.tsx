@@ -17,6 +17,7 @@ import {
   Bell,
   BarChart3,
   Users,
+  UserRound,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/client";
@@ -35,6 +36,12 @@ type NavItem = {
   reviewerOnly?: boolean;
 };
 
+type NavGroup = {
+  id: string;
+  label: string;
+  items: NavItem[];
+};
+
 export default function RightSidebar({
   isAuthenticated,
   isReviewer,
@@ -44,59 +51,90 @@ export default function RightSidebar({
   const router = useRouter();
   const { messages } = useI18n();
 
-  const items: NavItem[] = [
-    { href: "/", label: messages.sidebar.home, icon: Home },
-    { href: "/projects", label: messages.sidebar.projects, icon: FolderKanban },
-    { href: "/good-first-issues", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
-    { href: "/developers", label: messages.sidebar.developers, icon: Briefcase },
-    { href: "/activity", label: messages.sidebar.activity, icon: ClipboardList },
-    { href: "/stats", label: messages.sidebar.stats, icon: ListTodo },
-    { href: "/developers/tech", label: messages.sidebar.techRanking, icon: BarChart3 },
-    { href: "/dashboard/notifications", label: messages.sidebar.notifications, icon: Bell },
-    { href: "/dashboard/my-tasks", label: messages.sidebar.myTasks, icon: Briefcase },
-    { href: "/dashboard/my-requests", label: messages.sidebar.myRequests, icon: ClipboardList },
-    { href: "/dashboard", label: messages.sidebar.dashboard, icon: LayoutDashboard },
-    { href: "/for-maintainers", label: messages.sidebar.forMaintainers, icon: Users },
-    { href: "/first-contribution", label: messages.sidebar.firstContribution, icon: SquarePen },
+  const navGroups: NavGroup[] = [
     {
-      href: "/dashboard/requests",
-      label: messages.sidebar.reviewRequests,
-      icon: ShieldCheck,
-      reviewerOnly: true,
+      id: "explore",
+      label: messages.sidebarGroups.explore,
+      items: [
+        { href: "/", label: messages.sidebar.home, icon: Home },
+        { href: "/good-first-issues", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
+        { href: "/projects", label: messages.sidebar.projects, icon: FolderKanban },
+        { href: "/first-contribution", label: messages.sidebar.firstContribution, icon: SquarePen },
+      ],
     },
     {
-      href: "/dashboard/projects/new",
-      label: messages.sidebar.newProject,
-      icon: PlusSquare,
-      reviewerOnly: true,
+      id: "progress",
+      label: messages.sidebarGroups.progress,
+      items: [
+        { href: "/dashboard", label: messages.sidebar.dashboard, icon: LayoutDashboard },
+        { href: "/dashboard/my-tasks", label: messages.sidebar.myTasks, icon: Briefcase },
+        { href: "/dashboard/my-requests", label: messages.sidebar.myRequests, icon: ClipboardList },
+        { href: "/profile/edit", label: messages.sidebar.profile, icon: UserRound },
+        { href: "/dashboard/notifications", label: messages.sidebar.notifications, icon: Bell },
+      ],
     },
     {
-      href: "/projects/new",
-      label: messages.sidebar.registerProject,
-      icon: PlusSquare,
-      reviewerOnly: true,
+      id: "community",
+      label: messages.sidebarGroups.community,
+      items: [
+        { href: "/activity", label: messages.sidebar.activity, icon: ClipboardList },
+        { href: "/developers", label: messages.sidebar.developers, icon: Users },
+        { href: "/developers/tech", label: messages.sidebar.techRanking, icon: BarChart3 },
+        { href: "/stats", label: messages.sidebar.stats, icon: ListTodo },
+        { href: "/for-maintainers", label: messages.sidebar.forMaintainers, icon: Users },
+      ],
     },
     {
-      href: "/dashboard/tasks/new",
-      label: messages.sidebar.newTask,
-      icon: SquarePen,
-      reviewerOnly: true,
-    },
-    {
-      href: "/dashboard/projects",
-      label: messages.sidebar.manageProjects,
-      icon: FolderKanban,
-      reviewerOnly: true,
-    },
-    {
-      href: "/dashboard/tasks",
-      label: messages.sidebar.manageTasks,
-      icon: ListTodo,
-      reviewerOnly: true,
+      id: "manage",
+      label: messages.sidebarGroups.manage,
+      items: [
+        {
+          href: "/dashboard/requests",
+          label: messages.sidebar.reviewRequests,
+          icon: ShieldCheck,
+          reviewerOnly: true,
+        },
+        {
+          href: "/dashboard/projects/new",
+          label: messages.sidebar.newProject,
+          icon: PlusSquare,
+          reviewerOnly: true,
+        },
+        {
+          href: "/projects/new",
+          label: messages.sidebar.registerProject,
+          icon: PlusSquare,
+          reviewerOnly: true,
+        },
+        {
+          href: "/dashboard/tasks/new",
+          label: messages.sidebar.newTask,
+          icon: SquarePen,
+          reviewerOnly: true,
+        },
+        {
+          href: "/dashboard/projects",
+          label: messages.sidebar.manageProjects,
+          icon: FolderKanban,
+          reviewerOnly: true,
+        },
+        {
+          href: "/dashboard/tasks",
+          label: messages.sidebar.manageTasks,
+          icon: ListTodo,
+          reviewerOnly: true,
+        },
+      ],
     },
   ];
 
-  const visibleItems = items.filter((item) => !item.reviewerOnly || isReviewer);
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.reviewerOnly || isReviewer),
+    }))
+    .filter((group) => group.items.length > 0);
+  const visibleItems = visibleGroups.flatMap((group) => group.items);
 
   const normalizePath = (value: string) => {
     if (!value) return "/";
@@ -144,35 +182,42 @@ export default function RightSidebar({
           <HardModeToggle />
         </div>
 
-        <div className="space-y-2">
-          {visibleItems.map((item) => {
-            const isActive = activeItem?.href === item.href;
-            const Icon = item.icon;
+        <div className="space-y-3">
+          {visibleGroups.map((group) => (
+            <div key={group.id} className="space-y-2">
+              <p className="max-w-0 overflow-hidden whitespace-nowrap px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 opacity-0 transition-all duration-300 group-hover:max-w-[220px] group-hover:opacity-100">
+                {group.label}
+              </p>
+              {group.items.map((item) => {
+                const isActive = activeItem?.href === item.href;
+                const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
-                  isActive
-                    ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
-                    : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"
-                }`}
-                title={item.label}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {item.href === "/dashboard/notifications" && unreadNotifications > 0 ? (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-black">
-                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                  </span>
-                ) : null}
-                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[200px] group-hover:opacity-100">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
+                      isActive
+                        ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
+                        : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {item.href === "/dashboard/notifications" && unreadNotifications > 0 ? (
+                      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-semibold text-black">
+                        {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                      </span>
+                    ) : null}
+                    <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[200px] group-hover:opacity-100">
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
 
           {isAuthenticated ? (
             <button

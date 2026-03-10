@@ -10,6 +10,7 @@ import Link from "next/link";
 import EmptyState from "@/components/ui/empty-state";
 import { getRecentContributions } from "@/lib/activity-feed";
 import { getCurrentMessages } from "@/lib/i18n/server";
+import GitHubLoginButton from "@/components/github-login-button";
 function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
   if (!error) return false;
   const code = error.code || "";
@@ -31,12 +32,60 @@ export default async function HomePage() {
 
     return (
       <main className="app-bg min-h-screen p-6">
-        <div className="mx-auto w-full max-w-6xl space-y-6">
+        <div className="mx-auto w-full max-w-6xl space-y-8">
           <HeroSection isAuthenticated={false} />
+          <SectionCard className="p-8">
+            <PageHeader
+              title={locale === "en" ? "Start here" : "Empieza aquí"}
+              description={
+                locale === "en"
+                  ? "Follow this quick path to understand PrimerIssue and make your first real contribution."
+                  : "Sigue esta ruta rápida para entender PrimerIssue y preparar tu primera contribución real."
+              }
+            />
+            <div className="grid gap-3 md:grid-cols-3">
+              <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.12em] text-orange-300">01</p>
+                <p className="mt-2 text-sm font-medium text-white">
+                  {locale === "en" ? "Read the contribution guide" : "Lee la guía de primera contribución"}
+                </p>
+                <Link
+                  href="/first-contribution"
+                  className="mt-3 inline-flex rounded-lg border border-white/20 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/35 hover:text-orange-300"
+                >
+                  {locale === "en" ? "Open guide" : "Abrir guía"}
+                </Link>
+              </article>
+              <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.12em] text-orange-300">02</p>
+                <p className="mt-2 text-sm font-medium text-white">
+                  {locale === "en" ? "Explore beginner tasks" : "Explora tareas beginner"}
+                </p>
+                <Link
+                  href="/good-first-issues"
+                  className="mt-3 inline-flex rounded-lg border border-white/20 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/35 hover:text-orange-300"
+                >
+                  {locale === "en" ? "View Good First Issues" : "Ver Good First Issues"}
+                </Link>
+              </article>
+              <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.12em] text-orange-300">03</p>
+                <p className="mt-2 text-sm font-medium text-white">
+                  {locale === "en" ? "Join and request your first task" : "Únete y solicita tu primera tarea"}
+                </p>
+                <div className="mt-3">
+                  <GitHubLoginButton
+                    label={locale === "en" ? "Continue with GitHub" : "Continuar con GitHub"}
+                    className="rounded-lg px-2.5 py-1 text-xs"
+                  />
+                </div>
+              </article>
+            </div>
+          </SectionCard>
           <HomeMarketingSections isAuthenticated={false} />
           <SectionCard className="p-8">
             <PageHeader
-              title="Recent contributions"
+              title={locale === "en" ? "Recent contributions" : "Contribuciones recientes"}
               description={
                 locale === "en"
                   ? "Recent developer activity building real open source experience on the platform."
@@ -87,7 +136,7 @@ export default async function HomePage() {
               </div>
             ) : (
               <EmptyState
-                title="Todavía no hay contribuciones recientes"
+                title={locale === "en" ? "No recent contributions yet" : "Todavía no hay contribuciones recientes"}
                 description={
                   locale === "en"
                     ? "Once developers complete tasks and merge PRs, they will appear here."
@@ -158,8 +207,56 @@ export default async function HomePage() {
   const recentContributions = await getRecentContributions(supabase, 6);
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <AppLayout containerClassName="mx-auto max-w-6xl space-y-8">
       <HeroSection isAuthenticated />
+      <SectionCard className="p-8">
+        <PageHeader
+          title={locale === "en" ? "Continue your journey" : "Continúa tu camino"}
+          description={
+            locale === "en"
+              ? "Quick shortcuts to keep momentum in PrimerIssue."
+              : "Accesos rápidos para mantener tu progreso en PrimerIssue."
+          }
+        />
+        <div className="grid gap-3 md:grid-cols-3">
+          <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.12em] text-orange-300">01</p>
+            <p className="mt-2 text-sm font-medium text-white">
+              {locale === "en" ? "Find your next beginner task" : "Encuentra tu siguiente tarea beginner"}
+            </p>
+            <Link
+              href="/good-first-issues"
+              className="mt-3 inline-flex rounded-lg border border-white/20 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/35 hover:text-orange-300"
+            >
+              {locale === "en" ? "Open issues hub" : "Abrir hub de issues"}
+            </Link>
+          </article>
+          <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.12em] text-orange-300">02</p>
+            <p className="mt-2 text-sm font-medium text-white">
+              {locale === "en" ? "Review your progress dashboard" : "Revisa tu dashboard de progreso"}
+            </p>
+            <Link
+              href="/dashboard"
+              className="mt-3 inline-flex rounded-lg border border-white/20 px-2.5 py-1 text-xs text-gray-300 hover:border-orange-500/35 hover:text-orange-300"
+            >
+              {locale === "en" ? "Open dashboard" : "Abrir dashboard"}
+            </Link>
+          </article>
+          <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <p className="text-xs uppercase tracking-[0.12em] text-orange-300">03</p>
+            <p className="mt-2 text-sm font-medium text-white">
+              {locale === "en" ? "Explore active projects" : "Explora proyectos activos"}
+            </p>
+            <Link
+              href="/projects"
+              className="mt-3 inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
+            >
+              {locale === "en" ? "Browse projects" : "Ver proyectos"}
+            </Link>
+          </article>
+        </div>
+      </SectionCard>
       <HomeMarketingSections isAuthenticated />
       <SectionCard className="p-8">
         <PageHeader
@@ -178,7 +275,7 @@ export default async function HomePage() {
       </SectionCard>
       <SectionCard className="p-8">
         <PageHeader
-          title="Recent contributions"
+          title={locale === "en" ? "Recent contributions" : "Contribuciones recientes"}
           description={
             locale === "en"
               ? "Latest completed tasks and merged PRs from the platform community."
@@ -229,7 +326,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <EmptyState
-            title="Todavía no hay contribuciones recientes"
+            title={locale === "en" ? "No recent contributions yet" : "Todavía no hay contribuciones recientes"}
             description={
               locale === "en"
                 ? "Once developers complete tasks and merge PRs, they will appear here."

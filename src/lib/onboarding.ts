@@ -81,10 +81,6 @@ async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: str
     return true;
   }
 
-  if (byStatus.error) {
-    console.error("Error cargando onboarding PR signal (status fallback):", byStatus.error);
-  }
-
   const byNumber = await supabase
     .from("tasks")
     .select("id", { count: "exact", head: true })
@@ -96,7 +92,6 @@ async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: str
   }
 
   if (!isMissingColumnError(byNumber.error)) {
-    console.error("Error cargando onboarding PR signal:", byNumber.error);
     return false;
   }
 
@@ -108,10 +103,6 @@ async function hasPullRequestSignal(supabase: MinimalSupabaseClient, userId: str
 
   if (!byUrl.error) {
     return (byUrl.count || 0) > 0;
-  }
-
-  if (!isMissingColumnError(byUrl.error)) {
-    console.error("Error cargando onboarding PR signal (url fallback):", byUrl.error);
   }
 
   return false;

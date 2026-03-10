@@ -13,6 +13,7 @@ export const enMessages: MessageDictionary = {
     activity: "Activity",
     stats: "Stats",
     notifications: "Notifications",
+    profile: "Profile",
     techRanking: "Tech ranking",
     forMaintainers: "For maintainers",
     myTasks: "My tasks",
@@ -27,8 +28,14 @@ export const enMessages: MessageDictionary = {
     manageTasks: "Manage tasks",
     logout: "Log out",
   },
+  sidebarGroups: {
+    explore: "Explore",
+    progress: "My progress",
+    community: "Community",
+    manage: "Management",
+  },
   hardMode: {
-    title: "HARD MODE",
+    title: "SWITCH TO SPANISH",
     subtitleOff: "Switch app to English",
     subtitleOn: "English mode enabled",
     ctaOff: "Enable English",
@@ -122,5 +129,13 @@ export const enMessages: MessageDictionary = {
     step6Desc: "Once you make progress, open your PR on GitHub and PrimerIssue syncs it.",
     step7Title: "Complete your contribution",
     step7Desc: "When the PR is merged, your contribution is completed and your progress grows in PrimerIssue.",
+  },
+  dashboardPanels: {
+    primerIssueTitle: "PrimerIssue",
+    primerIssueDesc: "Quick summary of how the platform works.",
+    onboardingTitle: "Onboarding",
+    onboardingDesc: "Starter checklist to reach your first contribution.",
+    roadmapTitle: "Roadmap",
+    roadmapDesc: "Your growth path inside PrimerIssue.",
   },
 };

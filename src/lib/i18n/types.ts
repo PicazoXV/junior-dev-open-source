@@ -13,6 +13,7 @@ export type MessageDictionary = {
     activity: string;
     stats: string;
     notifications: string;
+    profile: string;
     techRanking: string;
     forMaintainers: string;
     myTasks: string;
@@ -26,6 +27,12 @@ export type MessageDictionary = {
     manageProjects: string;
     manageTasks: string;
     logout: string;
+  };
+  sidebarGroups: {
+    explore: string;
+    progress: string;
+    community: string;
+    manage: string;
   };
   hardMode: {
     title: string;
@@ -113,5 +120,13 @@ export type MessageDictionary = {
     step6Desc: string;
     step7Title: string;
     step7Desc: string;
+  };
+  dashboardPanels: {
+    primerIssueTitle: string;
+    primerIssueDesc: string;
+    onboardingTitle: string;
+    onboardingDesc: string;
+    roadmapTitle: string;
+    roadmapDesc: string;
   };
 };

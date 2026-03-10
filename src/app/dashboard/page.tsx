@@ -29,6 +29,7 @@ import { getMaintainerStats } from "@/lib/maintainer-stats";
 import { getVerifiedContributions } from "@/lib/verified-contributions";
 import { getUserStreaks } from "@/lib/user-streaks";
 import DashboardRoadmapGuide from "@/components/roadmap/dashboard-roadmap-guide";
+import DashboardInfoPanels from "@/components/dashboard/dashboard-info-panels";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -87,9 +88,13 @@ export default async function DashboardPage() {
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <DashboardRoadmapGuide userId={user.id} onboardingCompleted={onboarding.isCompleted} />
-      <OnboardingChecklist onboarding={onboarding} />
-      <UserRoadmapCard roadmap={roadmap} locale={locale} />
+      <DashboardInfoPanels
+        primerIssuePanel={
+          <DashboardRoadmapGuide userId={user.id} onboardingCompleted={onboarding.isCompleted} />
+        }
+        onboardingPanel={<OnboardingChecklist onboarding={onboarding} />}
+        roadmapPanel={<UserRoadmapCard roadmap={roadmap} locale={locale} />}
+      />
 
       <SectionCard className="p-8">
         <PageHeader

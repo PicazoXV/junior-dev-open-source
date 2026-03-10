@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { BookOpen } from "lucide-react";
-import SectionCard from "@/components/ui/section-card";
 import Button from "@/components/ui/button";
 import RoadmapModal from "@/components/roadmap/roadmap-modal";
 import { useI18n } from "@/lib/i18n/client";
@@ -70,10 +69,10 @@ export default function DashboardRoadmapGuide({
 
   return (
     <>
-      <SectionCard
-        className={`p-5 ${
+      <div
+        className={`rounded-xl border p-4 ${
           onboardingCompleted
-            ? "border-white/15 bg-neutral-900/75"
+            ? "border-white/15 bg-neutral-900/55"
             : "border-orange-500/35 bg-orange-500/5"
         }`}
       >
@@ -90,7 +89,7 @@ export default function DashboardRoadmapGuide({
             {messages.roadmapGuide.cardCta}
           </Button>
         </div>
-      </SectionCard>
+      </div>
 
       <RoadmapModal open={isOpen} onClose={handleClose} />
 

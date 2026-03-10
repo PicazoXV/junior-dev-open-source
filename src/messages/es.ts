@@ -13,6 +13,7 @@ export const esMessages: MessageDictionary = {
     activity: "Actividad",
     stats: "Stats",
     notifications: "Notificaciones",
+    profile: "Perfil",
     techRanking: "Ranking tech",
     forMaintainers: "Para maintainers",
     myTasks: "Mis tareas",
@@ -27,8 +28,14 @@ export const esMessages: MessageDictionary = {
     manageTasks: "Gestionar tareas",
     logout: "Cerrar sesión",
   },
+  sidebarGroups: {
+    explore: "Explorar",
+    progress: "Mi progreso",
+    community: "Comunidad",
+    manage: "Gestión",
+  },
   hardMode: {
-    title: "HARD MODE",
+    title: "CAMBIAR A INGLÉS",
     subtitleOff: "Activa inglés global",
     subtitleOn: "English mode activo",
     ctaOff: "Cambiar a inglés",
@@ -122,5 +129,13 @@ export const esMessages: MessageDictionary = {
     step6Desc: "Cuando avances, abres tu PR en GitHub y PrimerIssue sincroniza ese progreso.",
     step7Title: "Completa tu contribución",
     step7Desc: "Si el PR se mergea, tu contribución se completa y tu progreso crece en PrimerIssue.",
+  },
+  dashboardPanels: {
+    primerIssueTitle: "PrimerIssue",
+    primerIssueDesc: "Resumen rápido de cómo funciona la plataforma.",
+    onboardingTitle: "Onboarding",
+    onboardingDesc: "Checklist de inicio para llegar a tu primera contribución.",
+    roadmapTitle: "Roadmap",
+    roadmapDesc: "Tu camino de progreso dentro de PrimerIssue.",
   },
 };
