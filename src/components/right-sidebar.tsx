@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Briefcase,
   ClipboardList,
@@ -12,8 +12,9 @@ import {
   PlusSquare,
   ShieldCheck,
   SquarePen,
+  LogOut,
 } from "lucide-react";
-import LogoutButton from "@/components/logout-button";
+import { createClient } from "@/lib/supabase/client";
 
 type RightSidebarProps = {
   isAuthenticated: boolean;
@@ -29,6 +30,7 @@ type NavItem = {
 
 export default function RightSidebar({ isAuthenticated, isReviewer }: RightSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const items: NavItem[] = [
     { href: "/", label: "Inicio", icon: Home },
@@ -70,15 +72,24 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
 
   const visibleItems = items.filter((item) => !item.reviewerOnly || isReviewer);
 
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
+
   return (
-    <aside className="fixed right-3 top-1/2 z-40 w-[248px] -translate-y-1/2 md:right-8">
-      <nav className="rounded-2xl border border-white/20 bg-neutral-900/95 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_0_20px_rgba(255,255,255,0.06),0_0_26px_rgba(249,115,22,0.08)] backdrop-blur">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-400">Navegación</p>
+    <aside className="group fixed right-3 top-1/2 z-40 -translate-y-1/2 md:right-8">
+      <nav className="w-16 overflow-hidden rounded-2xl border border-white/20 bg-neutral-900/95 p-2 shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_0_20px_rgba(255,255,255,0.06),0_0_26px_rgba(249,115,22,0.08)] backdrop-blur transition-all duration-300 group-hover:w-64">
+        <div className="mb-3 flex items-center justify-center px-1 group-hover:justify-between">
+          <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-gray-400 group-hover:block">
+            Navegación
+          </p>
           <span className="h-2 w-2 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.7)]" />
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {visibleItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -92,15 +103,28 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
                     ? "border-orange-500/30 bg-orange-500/10 text-orange-300"
                     : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300"
                 }`}
+                title={item.label}
               >
                 <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[180px] group-hover:opacity-100">
+                  {item.label}
+                </span>
               </Link>
             );
           })}
 
           {isAuthenticated ? (
-            <LogoutButton className="w-full justify-center border-white/10 bg-transparent px-3 py-2 text-sm text-gray-300 hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300" />
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-gray-300 transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300"
+              title="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 group-hover:max-w-[180px] group-hover:opacity-100">
+                Logout
+              </span>
+            </button>
           ) : null}
         </div>
       </nav>

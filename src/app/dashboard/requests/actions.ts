@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isReviewerRole } from "@/lib/roles";
+import { ensureGitHubIssueForApprovedTask } from "@/lib/github/task-approval-integration";
 
 async function getReviewerContext() {
   const supabase = await createClient();
@@ -72,6 +73,30 @@ export async function approveRequest(requestId: string) {
 
   if (taskUpdateError) {
     throw new Error("No se pudo asignar la tarea");
+  }
+
+  try {
+    const integrationResult = await ensureGitHubIssueForApprovedTask({
+      supabase,
+      taskId: request.task_id,
+      assignedUserId: request.user_id,
+      approvedByUserId: user.id,
+    });
+
+    console.info("GitHub issue integration result", {
+      requestId: request.id,
+      taskId: request.task_id,
+      status: integrationResult.status,
+      issueUrl: integrationResult.issueUrl,
+      issueNumber: integrationResult.issueNumber,
+      reason: integrationResult.reason,
+    });
+  } catch (error) {
+    console.error("GitHub integration failed while approving task request", {
+      requestId: request.id,
+      taskId: request.task_id,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 
   const reviewedAt = new Date().toISOString();

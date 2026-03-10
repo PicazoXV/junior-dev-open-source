@@ -7,6 +7,8 @@ import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import Badge from "@/components/ui/badge";
 import { isReviewerRole } from "@/lib/roles";
+import { getUserProgress } from "@/lib/user-progress";
+import LevelBadge from "@/components/ui/level-badge";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -28,6 +30,7 @@ export default async function DashboardPage() {
   }
 
   const canReviewRequests = isReviewerRole(profile?.role);
+  const progress = await getUserProgress(supabase, user.id, profile?.tech_stack || null);
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
@@ -119,6 +122,13 @@ export default async function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <p className="text-sm text-gray-400">Nivel actual</p>
+            <div className="mt-2">
+              <LevelBadge level={progress.level} />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4">
             <p className="text-sm text-gray-400">Fecha de alta</p>
             <p className="text-lg font-medium text-white">
               {profile?.created_at
@@ -135,9 +145,29 @@ export default async function DashboardPage() {
           </div>
 
           <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <p className="text-sm text-gray-400">Tareas completadas</p>
+            <p className="text-lg font-medium text-white">{progress.completedTasks}</p>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <p className="text-sm text-gray-400">Tareas en curso</p>
+            <p className="text-lg font-medium text-white">{progress.inProgressTasks}</p>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <p className="text-sm text-gray-400">Proyectos contribuidos</p>
+            <p className="text-lg font-medium text-white">{progress.contributedProjects}</p>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+            <p className="text-sm text-gray-400">Solicitudes enviadas</p>
+            <p className="text-lg font-medium text-white">{progress.requestsSent}</p>
+          </div>
+
+          <div className="rounded-xl border border-white/20 bg-black/20 p-4 md:col-span-2">
             <p className="text-sm text-gray-400">Tech stack</p>
             <p className="text-lg font-medium text-white">
-              {profile?.tech_stack || "No especificado"}
+              {progress.techStack || "No especificado"}
             </p>
           </div>
         </div>
