@@ -61,7 +61,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-1 block text-sm font-medium">Nombre completo</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">Nombre completo</label>
         <input
           type="text"
           value={fullName}
@@ -72,7 +72,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Bio</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">Bio</label>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
@@ -83,7 +83,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Ubicación</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">Ubicación</label>
         <input
           type="text"
           value={location}
@@ -94,7 +94,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Tech stack</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">Tech stack</label>
         <input
           type="text"
           value={techStack}
@@ -105,7 +105,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">GitHub URL</label>
+        <label className="mb-1 block text-sm font-medium text-gray-300">GitHub URL</label>
         <input
           type="url"
           value={githubUrl}
@@ -118,12 +118,16 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-xl bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? "Guardando..." : "Guardar cambios"}
       </button>
 
-      {message && <p className="text-sm text-gray-600">{message}</p>}
+      {message && (
+        <p className={`text-sm ${message.includes("Error") ? "text-rose-300" : "text-emerald-300"}`}>
+          {message}
+        </p>
+      )}
     </form>
   );
 }

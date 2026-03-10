@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { updateProjectAction } from "@/app/dashboard/projects/[id]/edit/actions";
+import { isReviewerRole } from "@/lib/roles";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
 
 type ProjectEditPageProps = {
   params: Promise<{ id: string }>;
@@ -42,9 +46,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
     redirect("/dashboard");
   }
 
-  const isAllowed = profile?.role === "admin" || profile?.role === "maintainer";
-
-  if (!isAllowed) {
+  if (!isReviewerRole(profile?.role)) {
     redirect("/dashboard");
   }
 
@@ -61,39 +63,33 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
   const currentProject = project as Project | null;
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Editar proyecto</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Actualiza la información del proyecto
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-4xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Editar proyecto"
+          description="Actualiza la información visible para los colaboradores."
+          actions={
+            <Link
+              href="/dashboard/projects"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver a gestión
+            </Link>
+          }
+        />
 
         {!currentProject ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Proyecto no encontrado</h2>
-            <p className="mt-2 text-sm text-gray-500">
-              No existe un proyecto con el ID proporcionado.
-            </p>
-          </div>
+          <EmptyState
+            title="Proyecto no encontrado"
+            description="No existe un proyecto con el ID proporcionado."
+          />
         ) : (
           <form action={updateProjectAction} className="space-y-5">
             <input type="hidden" name="id" value={currentProject.id} />
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">
                   Nombre
                 </label>
                 <input
@@ -106,7 +102,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
               </div>
 
               <div>
-                <label htmlFor="slug" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="slug" className="mb-1 block text-sm font-medium text-gray-300">
                   Slug
                 </label>
                 <input
@@ -120,10 +116,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             </div>
 
             <div>
-              <label
-                htmlFor="short_description"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="short_description" className="mb-1 block text-sm font-medium text-gray-300">
                 Descripción corta
               </label>
               <input
@@ -135,7 +128,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             </div>
 
             <div>
-              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
                 Descripción
               </label>
               <textarea
@@ -148,7 +141,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             </div>
 
             <div>
-              <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-300">
                 URL del repositorio
               </label>
               <input
@@ -162,33 +155,20 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-700">
+                <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                   Estado
                 </label>
-                <select
-                  id="status"
-                  name="status"
-                  defaultValue={currentProject.status}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
+                <select id="status" name="status" defaultValue={currentProject.status} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="active">active</option>
                   <option value="archived">archived</option>
                 </select>
               </div>
 
               <div>
-                <label
-                  htmlFor="difficulty"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                   Dificultad
                 </label>
-                <select
-                  id="difficulty"
-                  name="difficulty"
-                  defaultValue={currentProject.difficulty}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
+                <select id="difficulty" name="difficulty" defaultValue={currentProject.difficulty} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="beginner">beginner</option>
                   <option value="intermediate">intermediate</option>
                   <option value="advanced">advanced</option>
@@ -197,7 +177,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             </div>
 
             <div>
-              <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-300">
                 Tech stack (separado por comas)
               </label>
               <input
@@ -211,15 +191,14 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
             <div className="pt-2">
               <button
                 type="submit"
-                className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-100"
+                className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
                 Guardar cambios
               </button>
             </div>
           </form>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

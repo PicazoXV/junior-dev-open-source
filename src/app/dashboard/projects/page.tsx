@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import { isReviewerRole } from "@/lib/roles";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
+import Badge from "@/components/ui/badge";
+import DifficultyBadge from "@/components/ui/difficulty-badge";
 
 type ProjectRow = {
   id: string;
@@ -33,9 +39,7 @@ export default async function DashboardProjectsPage() {
     redirect("/dashboard");
   }
 
-  const isAllowed = profile?.role === "admin" || profile?.role === "maintainer";
-
-  if (!isAllowed) {
+  if (!isReviewerRole(profile?.role)) {
     redirect("/dashboard");
   }
 
@@ -51,67 +55,69 @@ export default async function DashboardProjectsPage() {
   const rows = (projects || []) as ProjectRow[];
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Manage projects</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Gestión de proyectos de la plataforma
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/dashboard/projects/new"
-              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Nuevo proyecto
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Volver al dashboard
-            </Link>
-          </div>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-6xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Gestionar proyectos"
+          description="Administra proyectos, visibilidad y nivel recomendado."
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+              >
+                Nuevo proyecto
+              </Link>
+              <Link
+                href="/dashboard"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                Volver al dashboard
+              </Link>
+            </div>
+          }
+        />
 
         {rows.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              No hay proyectos registrados
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Crea un proyecto para empezar a gestionar tareas.
-            </p>
-          </div>
+          <EmptyState
+            title="No hay proyectos registrados"
+            description="Crea el primer proyecto para empezar a publicar tareas para la comunidad junior."
+            action={
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+              >
+                Crear proyecto
+              </Link>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border">
+          <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-medium">Name</th>
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-400">
+                  <th className="px-4 py-3 font-medium">Nombre</th>
                   <th className="px-4 py-3 font-medium">Slug</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Difficulty</th>
-                  <th className="px-4 py-3 font-medium">Created at</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Dificultad</th>
+                  <th className="px-4 py-3 font-medium">Creado</th>
+                  <th className="px-4 py-3 font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((project) => (
-                  <tr key={project.id} className="border-t">
-                    <td className="px-4 py-3 align-top text-gray-900">
-                      {project.name || "Sin nombre"}
+                  <tr key={project.id} className="border-t border-white/10">
+                    <td className="px-4 py-3 align-top text-white">{project.name || "Sin nombre"}</td>
+                    <td className="px-4 py-3 align-top text-gray-300">{project.slug || "Sin slug"}</td>
+                    <td className="px-4 py-3 align-top">
+                      <Badge tone={project.status === "active" ? "success" : "default"}>
+                        {project.status === "active" ? "Activo" : "Archivado"}
+                      </Badge>
                     </td>
-                    <td className="px-4 py-3 align-top text-gray-700">
-                      {project.slug || "Sin slug"}
+                    <td className="px-4 py-3 align-top">
+                      <DifficultyBadge difficulty={project.difficulty} />
                     </td>
-                    <td className="px-4 py-3 align-top text-gray-700">{project.status}</td>
-                    <td className="px-4 py-3 align-top text-gray-700">{project.difficulty}</td>
-                    <td className="px-4 py-3 align-top text-gray-600">
+                    <td className="px-4 py-3 align-top text-gray-400">
                       {project.created_at
                         ? new Date(project.created_at).toLocaleString("es-ES")
                         : "No disponible"}
@@ -119,9 +125,9 @@ export default async function DashboardProjectsPage() {
                     <td className="px-4 py-3 align-top">
                       <Link
                         href={`/dashboard/projects/${project.id}/edit`}
-                        className="inline-flex rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-gray-100"
+                        className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                       >
-                        Edit
+                        Editar
                       </Link>
                     </td>
                   </tr>
@@ -130,8 +136,7 @@ export default async function DashboardProjectsPage() {
             </table>
           </div>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

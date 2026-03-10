@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isReviewerRole } from "@/lib/roles";
 
 export async function createProjectAction(formData: FormData) {
   const supabase = await createClient();
@@ -25,7 +26,7 @@ export async function createProjectAction(formData: FormData) {
     redirect("/dashboard");
   }
 
-  const isAllowed = profile.role === "admin" || profile.role === "maintainer";
+  const isAllowed = isReviewerRole(profile.role);
 
   if (!isAllowed) {
     redirect("/dashboard");
@@ -68,4 +69,3 @@ export async function createProjectAction(formData: FormData) {
 
   redirect("/projects");
 }
-

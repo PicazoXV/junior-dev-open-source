@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createProjectAction } from "@/app/dashboard/projects/new/actions";
+import { isReviewerRole } from "@/lib/roles";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
 
 export default async function NewProjectPage() {
   const user = await createProfileIfNeeded();
@@ -25,48 +28,37 @@ export default async function NewProjectPage() {
     redirect("/dashboard");
   }
 
-  const isAllowed = profile?.role === "admin" || profile?.role === "maintainer";
-
-  if (!isAllowed) {
+  if (!isReviewerRole(profile?.role)) {
     redirect("/dashboard");
   }
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Nuevo proyecto</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Crea un nuevo proyecto para la comunidad
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-4xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Nuevo proyecto"
+          description="Define los datos base para publicar un proyecto en la plataforma."
+          actions={
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver al dashboard
+            </Link>
+          }
+        />
 
         <form action={createProjectAction} className="space-y-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">
                 Nombre
               </label>
-              <input
-                id="name"
-                name="name"
-                required
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              <input id="name" name="name" required className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div>
-              <label htmlFor="slug" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="slug" className="mb-1 block text-sm font-medium text-gray-300">
                 Slug
               </label>
               <input
@@ -80,33 +72,21 @@ export default async function NewProjectPage() {
           </div>
 
           <div>
-            <label
-              htmlFor="short_description"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="short_description" className="mb-1 block text-sm font-medium text-gray-300">
               Descripción corta
             </label>
-            <input
-              id="short_description"
-              name="short_description"
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            />
+            <input id="short_description" name="short_description" className="w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
 
           <div>
-            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
               Descripción
             </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={5}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
-            />
+            <textarea id="description" name="description" rows={5} className="w-full rounded-lg border px-3 py-2 text-sm" />
           </div>
 
           <div>
-            <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="repo_url" className="mb-1 block text-sm font-medium text-gray-300">
               URL del repositorio
             </label>
             <input
@@ -120,7 +100,7 @@ export default async function NewProjectPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                 Estado
               </label>
               <select id="status" name="status" defaultValue="active" className="w-full rounded-lg border px-3 py-2 text-sm">
@@ -130,18 +110,10 @@ export default async function NewProjectPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="difficulty"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                 Dificultad
               </label>
-              <select
-                id="difficulty"
-                name="difficulty"
-                defaultValue="beginner"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              >
+              <select id="difficulty" name="difficulty" defaultValue="beginner" className="w-full rounded-lg border px-3 py-2 text-sm">
                 <option value="beginner">beginner</option>
                 <option value="intermediate">intermediate</option>
                 <option value="advanced">advanced</option>
@@ -150,7 +122,7 @@ export default async function NewProjectPage() {
           </div>
 
           <div>
-            <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="tech_stack" className="mb-1 block text-sm font-medium text-gray-300">
               Tech stack (separado por comas)
             </label>
             <input
@@ -164,14 +136,13 @@ export default async function NewProjectPage() {
           <div className="pt-2">
             <button
               type="submit"
-              className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-100"
+              className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
             >
               Crear proyecto
             </button>
           </div>
         </form>
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

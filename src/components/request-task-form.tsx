@@ -17,13 +17,13 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
   const [state, formAction, pending] = useActionState(requestTaskAction, initialState);
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="rounded-2xl border border-white/20 bg-black/20 p-6">
       <input type="hidden" name="taskId" value={taskId} />
 
       {state.message ? (
         <p
           className={`mb-3 text-sm ${
-            state.status === "success" ? "text-green-700" : "text-gray-600"
+            state.status === "success" ? "text-emerald-300" : "text-gray-300"
           }`}
         >
           {state.message}
@@ -31,16 +31,18 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
       ) : null}
 
       {!isTaskOpen && !state.message ? (
-        <p className="mb-3 text-sm text-gray-600">Esta tarea ya no está disponible.</p>
+        <p className="mb-3 text-sm text-gray-300">Esta tarea ya no está disponible.</p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending || !isTaskOpen}
-        className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
-      >
-        {pending ? "Enviando..." : "Solicitar tarea"}
-      </button>
+      {isTaskOpen ? (
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {pending ? "Enviando..." : "Solicitar tarea"}
+        </button>
+      ) : null}
     </form>
   );
 }

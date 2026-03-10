@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import RightSidebar from "@/components/right-sidebar";
+import { isReviewerRole } from "@/lib/roles";
 
 type NavbarProps = {
   containerClassName?: string;
@@ -17,7 +18,7 @@ export default async function Navbar({ containerClassName }: NavbarProps = {}) {
     ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
     : { data: null };
 
-  const isReviewer = profile?.role === "admin" || profile?.role === "maintainer";
+  const isReviewer = isReviewerRole(profile?.role);
 
   return (
     <RightSidebar isAuthenticated={!!user} isReviewer={isReviewer} />

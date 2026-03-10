@@ -1,4 +1,7 @@
 import Link from "next/link";
+import SectionCard from "@/components/ui/section-card";
+import DifficultyBadge from "@/components/ui/difficulty-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 type TaskCardProps = {
   task: {
@@ -24,26 +27,22 @@ function getPreview(text: string | null, maxLength = 140) {
 
 export default function TaskCard({ task }: TaskCardProps) {
   return (
-    <article className="rounded-xl border p-5">
-      <h3 className="text-lg font-semibold text-gray-900">{task.title}</h3>
+    <SectionCard className="h-full p-5">
+      <h3 className="text-lg font-semibold text-white">{task.title}</h3>
 
-      <p className="mt-2 text-sm text-gray-600">{getPreview(task.description)}</p>
+      <p className="mt-2 text-sm text-gray-300">{getPreview(task.description)}</p>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-          Estado: {task.status}
-        </span>
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-          Dificultad: {task.difficulty || "No especificada"}
-        </span>
+        <StatusBadge status={task.status} />
+        <DifficultyBadge difficulty={task.difficulty} />
       </div>
 
       <Link
         href={`/tasks/${task.id}`}
-        className="mt-5 inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+        className="mt-5 inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
       >
         Ver tarea
       </Link>
-    </article>
+    </SectionCard>
   );
 }

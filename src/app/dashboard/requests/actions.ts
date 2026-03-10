@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isReviewerRole } from "@/lib/roles";
 
 async function getReviewerContext() {
   const supabase = await createClient();
@@ -21,7 +22,7 @@ async function getReviewerContext() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const isReviewer = profile?.role === "admin" || profile?.role === "maintainer";
+  const isReviewer = isReviewerRole(profile?.role);
 
   return { supabase, user, isReviewer };
 }

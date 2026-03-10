@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { updateTaskAction } from "@/app/dashboard/tasks/[id]/edit/actions";
+import { isReviewerRole } from "@/lib/roles";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
 
 type TaskEditPageProps = {
   params: Promise<{ id: string }>;
@@ -46,9 +50,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
     redirect("/dashboard");
   }
 
-  const isAllowed = profile?.role === "admin" || profile?.role === "maintainer";
-
-  if (!isAllowed) {
+  if (!isReviewerRole(profile?.role)) {
     redirect("/dashboard");
   }
 
@@ -75,50 +77,35 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
   const projectOptions = (projects || []) as ProjectOption[];
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Editar tarea</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Actualiza la configuración de la tarea
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-4xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Editar tarea"
+          description="Ajusta estado, descripción y metadatos de la tarea."
+          actions={
+            <Link
+              href="/dashboard/tasks"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver a gestión
+            </Link>
+          }
+        />
 
         {!currentTask ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Tarea no encontrada</h2>
-            <p className="mt-2 text-sm text-gray-500">
-              No existe una tarea con el ID proporcionado.
-            </p>
-          </div>
+          <EmptyState
+            title="Tarea no encontrada"
+            description="No existe una tarea con el ID proporcionado."
+          />
         ) : (
           <form action={updateTaskAction} className="space-y-5">
             <input type="hidden" name="id" value={currentTask.id} />
 
             <div>
-              <label
-                htmlFor="project_id"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="project_id" className="mb-1 block text-sm font-medium text-gray-300">
                 Proyecto
               </label>
-              <select
-                id="project_id"
-                name="project_id"
-                required
-                defaultValue={currentTask.project_id}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              >
+              <select id="project_id" name="project_id" required defaultValue={currentTask.project_id} className="w-full rounded-lg border px-3 py-2 text-sm">
                 {projectOptions.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
@@ -128,48 +115,25 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
             </div>
 
             <div>
-              <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-300">
                 Título
               </label>
-              <input
-                id="title"
-                name="title"
-                required
-                defaultValue={currentTask.title || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              <input id="title" name="title" required defaultValue={currentTask.title || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div>
-              <label
-                htmlFor="description"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
                 Descripción
               </label>
-              <textarea
-                id="description"
-                name="description"
-                rows={5}
-                defaultValue={currentTask.description || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              <textarea id="description" name="description" rows={5} defaultValue={currentTask.description || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label
-                  htmlFor="difficulty"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                   Dificultad
                 </label>
-                <select
-                  id="difficulty"
-                  name="difficulty"
-                  defaultValue={currentTask.difficulty || "beginner"}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
+                <select id="difficulty" name="difficulty" defaultValue={currentTask.difficulty || "beginner"} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="beginner">beginner</option>
                   <option value="intermediate">intermediate</option>
                   <option value="advanced">advanced</option>
@@ -177,18 +141,10 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
               </div>
 
               <div>
-                <label
-                  htmlFor="status"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                   Estado
                 </label>
-                <select
-                  id="status"
-                  name="status"
-                  defaultValue={currentTask.status}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
-                >
+                <select id="status" name="status" defaultValue={currentTask.status} className="w-full rounded-lg border px-3 py-2 text-sm">
                   <option value="open">open</option>
                   <option value="assigned">assigned</option>
                   <option value="in_review">in_review</option>
@@ -199,45 +155,30 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
             </div>
 
             <div>
-              <label htmlFor="labels" className="mb-1 block text-sm font-medium text-gray-700">
+              <label htmlFor="labels" className="mb-1 block text-sm font-medium text-gray-300">
                 Labels (separadas por comas)
               </label>
-              <input
-                id="labels"
-                name="labels"
-                defaultValue={(currentTask.labels || []).join(", ")}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              <input id="labels" name="labels" defaultValue={(currentTask.labels || []).join(", ")} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div>
-              <label
-                htmlFor="github_issue_url"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="github_issue_url" className="mb-1 block text-sm font-medium text-gray-300">
                 URL del issue de GitHub
               </label>
-              <input
-                id="github_issue_url"
-                name="github_issue_url"
-                type="url"
-                defaultValue={currentTask.github_issue_url || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-              />
+              <input id="github_issue_url" name="github_issue_url" type="url" defaultValue={currentTask.github_issue_url || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
-                className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-100"
+                className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
                 Guardar cambios
               </button>
             </div>
           </form>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

@@ -6,6 +6,7 @@ import AppLayout from "@/components/layout/app-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import Badge from "@/components/ui/badge";
+import { isReviewerRole } from "@/lib/roles";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -26,7 +27,7 @@ export default async function DashboardPage() {
     console.error("Error cargando perfil:", error.message);
   }
 
-  const canReviewRequests = profile?.role === "admin" || profile?.role === "maintainer";
+  const canReviewRequests = isReviewerRole(profile?.role);
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">

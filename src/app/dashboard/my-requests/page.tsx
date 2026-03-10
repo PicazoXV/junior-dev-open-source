@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
+import StatusBadge from "@/components/ui/status-badge";
 
 type MyRequest = {
   id: string;
@@ -70,44 +74,44 @@ export default async function MyRequestsPage() {
   );
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Mis solicitudes</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Estado de tus solicitudes de tareas
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-6xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Mis solicitudes"
+          description="Consulta el estado de las tareas que solicitaste."
+          actions={
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver al dashboard
+            </Link>
+          }
+        />
 
         {myRequests.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Todavía no has enviado solicitudes
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Explora proyectos y solicita una tarea para empezar a colaborar.
-            </p>
-          </div>
+          <EmptyState
+            title="Todavía no has enviado solicitudes"
+            description="Explora proyectos activos y solicita una tarea para empezar a colaborar."
+            action={
+              <Link
+                href="/projects"
+                className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+              >
+                Explorar proyectos
+              </Link>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border">
+          <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-medium">Task</th>
-                  <th className="px-4 py-3 font-medium">Project</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Created at</th>
-                  <th className="px-4 py-3 font-medium">Link</th>
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-400">
+                  <th className="px-4 py-3 font-medium">Tarea</th>
+                  <th className="px-4 py-3 font-medium">Proyecto</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Fecha</th>
+                  <th className="px-4 py-3 font-medium">Detalle</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,19 +120,13 @@ export default async function MyRequestsPage() {
                   const project = projectById.get(request.project_id);
 
                   return (
-                    <tr key={request.id} className="border-t">
-                      <td className="px-4 py-3 align-top text-gray-900">
-                        {task?.title || "Tarea no disponible"}
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-800">
-                        {project?.name || "Proyecto no disponible"}
-                      </td>
+                    <tr key={request.id} className="border-t border-white/10">
+                      <td className="px-4 py-3 align-top text-white">{task?.title || "Tarea no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
                       <td className="px-4 py-3 align-top">
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                          {request.status}
-                        </span>
+                        <StatusBadge status={request.status} />
                       </td>
-                      <td className="px-4 py-3 align-top text-gray-600">
+                      <td className="px-4 py-3 align-top text-gray-400">
                         {request.created_at
                           ? new Date(request.created_at).toLocaleString("es-ES")
                           : "No disponible"}
@@ -136,7 +134,7 @@ export default async function MyRequestsPage() {
                       <td className="px-4 py-3 align-top">
                         <Link
                           href={`/tasks/${request.task_id}`}
-                          className="inline-flex rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-gray-100"
+                          className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                         >
                           Ver tarea
                         </Link>
@@ -148,8 +146,7 @@ export default async function MyRequestsPage() {
             </table>
           </div>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

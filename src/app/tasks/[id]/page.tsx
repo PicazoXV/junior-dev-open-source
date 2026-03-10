@@ -2,28 +2,18 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createClient } from "@/lib/supabase/server";
-import Navbar from "@/components/navbar";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
 import RequestTaskForm from "@/components/request-task-form";
+import Badge from "@/components/ui/badge";
+import DifficultyBadge from "@/components/ui/difficulty-badge";
+import StatusBadge from "@/components/ui/status-badge";
+import { isReviewerRole } from "@/lib/roles";
 
 type TaskDetailPageProps = {
   params: Promise<{ id: string }>;
-};
-
-type Task = {
-  id: string;
-  project_id: string;
-  title: string;
-  description: string | null;
-  status: "open" | "assigned" | "in_review" | "completed" | "closed";
-  difficulty: "beginner" | "intermediate" | "advanced" | null;
-  labels: string[] | null;
-  github_issue_url: string | null;
-};
-
-type Project = {
-  id: string;
-  slug: string;
-  name: string;
 };
 
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
@@ -46,7 +36,6 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     .from("tasks")
     .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
     .eq("id", id)
-    .returns<Task[]>()
     .maybeSingle();
 
   if (taskError) {
@@ -58,85 +47,84 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     notFound();
   }
 
-  const { data: project, error: projectError } = await supabase
-    .from("projects")
-    .select("id, slug, name")
-    .eq("id", task.project_id)
-    .returns<Project[]>()
-    .maybeSingle();
+  const [{ data: project, error: projectError }, { data: profile }, { data: existingRequest }] =
+    await Promise.all([
+      supabase
+        .from("projects")
+        .select("id, slug, name")
+        .eq("id", task.project_id)
+        .maybeSingle(),
+      supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+      supabase
+        .from("task_requests")
+        .select("id, status")
+        .eq("task_id", task.id)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
   if (projectError) {
     console.error("Error cargando proyecto de la tarea:", projectError.message);
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const canEdit = profile?.role === "admin" || profile?.role === "maintainer";
+  const canEdit = isReviewerRole(profile?.role);
+  const isTaskOpen = task.status === "open";
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-6 flex flex-wrap gap-3">
-          <Link
-            href="/projects"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver a proyectos
-          </Link>
+    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+      <SectionCard className="p-8">
+        <PageHeader
+          title={task.title || "Tarea sin título"}
+          description="Detalle de la tarea y contexto del proyecto"
+          actions={
+            <>
+              <Link
+                href="/projects"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                Volver a proyectos
+              </Link>
 
-          {project?.slug ? (
-            <Link
-              href={`/projects/${project.slug}`}
-              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Volver a {project.name}
-            </Link>
-          ) : null}
-          {canEdit ? (
-            <Link
-              href={`/dashboard/tasks/${task.id}/edit`}
-              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Editar tarea
-            </Link>
-          ) : null}
-        </div>
+              {project?.slug ? (
+                <Link
+                  href={`/projects/${project.slug}`}
+                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+                >
+                  Ver proyecto
+                </Link>
+              ) : null}
 
-        <section className="rounded-2xl border p-6">
-          <h1 className="text-3xl font-bold text-gray-900">{task.title}</h1>
+              {canEdit ? (
+                <Link
+                  href={`/dashboard/tasks/${task.id}/edit`}
+                  className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+                >
+                  Editar tarea
+                </Link>
+              ) : null}
+            </>
+          }
+        />
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-              Estado: {task.status}
-            </span>
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-              Dificultad: {task.difficulty || "No especificada"}
-            </span>
+        <section className="rounded-2xl border border-white/20 bg-black/20 p-6">
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge status={task.status} />
+            <DifficultyBadge difficulty={task.difficulty} />
           </div>
 
           <div className="mt-6">
-            <p className="mb-1 text-sm font-medium text-gray-500">Descripción</p>
-            <p className="whitespace-pre-line text-gray-800">
+            <p className="mb-1 text-sm font-medium text-gray-400">Descripción</p>
+            <p className="whitespace-pre-line text-gray-200">
               {task.description || "Sin descripción disponible."}
             </p>
           </div>
 
           <div className="mt-6">
-            <p className="mb-2 text-sm font-medium text-gray-500">Labels</p>
+            <p className="mb-2 text-sm font-medium text-gray-400">Labels</p>
             {task.labels && task.labels.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {task.labels.map((label) => (
-                  <span
-                    key={`${task.id}-${label}`}
-                    className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
-                  >
-                    {label}
-                  </span>
+                {task.labels.map((label: string) => (
+                  <Badge key={`${task.id}-${label}`}>{label}</Badge>
                 ))}
               </div>
             ) : (
@@ -145,32 +133,51 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </div>
 
           <div className="mt-6">
-            <p className="mb-1 text-sm font-medium text-gray-500">GitHub Issue</p>
+            <p className="mb-1 text-sm font-medium text-gray-400">GitHub Issue</p>
             {task.github_issue_url ? (
-              <a
+              <Link
                 href={task.github_issue_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
               >
                 Ver issue en GitHub
-              </a>
+              </Link>
             ) : (
               <p className="text-sm text-gray-500">No hay issue de GitHub enlazado.</p>
             )}
           </div>
         </section>
+      </SectionCard>
 
-        <section className="mt-8 rounded-2xl border border-dashed p-6">
-          <h2 className="text-xl font-semibold text-gray-900">Solicitar esta tarea</h2>
-          <p className="mt-2 text-sm text-gray-500">
-            Envía tu solicitud para que un maintainer pueda revisarla.
-          </p>
-          <div className="mt-4">
-            <RequestTaskForm taskId={task.id} isTaskOpen={task.status === "open"} />
-          </div>
-        </section>
-      </div>
-    </main>
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Solicitar esta tarea"
+          description="Envía tu solicitud para que un maintainer la revise."
+        />
+
+        {existingRequest ? (
+          <EmptyState
+            title="Ya enviaste una solicitud para esta tarea"
+            description="Puedes seguir el estado desde el panel de Mis solicitudes."
+            action={
+              <Link
+                href="/dashboard/my-requests"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                Ver mis solicitudes
+              </Link>
+            }
+          />
+        ) : isTaskOpen ? (
+          <RequestTaskForm taskId={task.id} isTaskOpen={isTaskOpen} />
+        ) : (
+          <EmptyState
+            title="Esta tarea ya no está disponible"
+            description="El estado actual de la tarea no permite nuevas solicitudes."
+          />
+        )}
+      </SectionCard>
+    </AppLayout>
   );
 }

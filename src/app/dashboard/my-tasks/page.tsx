@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
+import StatusBadge from "@/components/ui/status-badge";
+import DifficultyBadge from "@/components/ui/difficulty-badge";
 
 type MyTask = {
   id: string;
@@ -57,44 +62,44 @@ export default async function MyTasksPage() {
   );
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Mis tareas</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Tareas que tienes asignadas actualmente
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-6xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Mis tareas"
+          description="Tareas asignadas para avanzar en tus contribuciones."
+          actions={
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver al dashboard
+            </Link>
+          }
+        />
 
         {myTasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              No tienes tareas asignadas
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Cuando te asignen una tarea, aparecerá aquí.
-            </p>
-          </div>
+          <EmptyState
+            title="No tienes tareas asignadas"
+            description="Cuando un maintainer apruebe tu solicitud, la tarea aparecerá en este panel."
+            action={
+              <Link
+                href="/dashboard/my-requests"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                Ver mis solicitudes
+              </Link>
+            }
+          />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border">
+          <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-medium">Task</th>
-                  <th className="px-4 py-3 font-medium">Project</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Difficulty</th>
-                  <th className="px-4 py-3 font-medium">Link</th>
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-400">
+                  <th className="px-4 py-3 font-medium">Tarea</th>
+                  <th className="px-4 py-3 font-medium">Proyecto</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Dificultad</th>
+                  <th className="px-4 py-3 font-medium">Detalle</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,25 +107,19 @@ export default async function MyTasksPage() {
                   const project = projectById.get(task.project_id);
 
                   return (
-                    <tr key={task.id} className="border-t">
-                      <td className="px-4 py-3 align-top text-gray-900">
-                        {task.title || "Tarea sin título"}
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-800">
-                        {project?.name || "Proyecto no disponible"}
+                    <tr key={task.id} className="border-t border-white/10">
+                      <td className="px-4 py-3 align-top text-white">{task.title || "Tarea sin título"}</td>
+                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
+                      <td className="px-4 py-3 align-top">
+                        <StatusBadge status={task.status} />
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                          {task.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-700">
-                        {task.difficulty || "No especificada"}
+                        <DifficultyBadge difficulty={task.difficulty} />
                       </td>
                       <td className="px-4 py-3 align-top">
                         <Link
                           href={`/tasks/${task.id}`}
-                          className="inline-flex rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-gray-100"
+                          className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                         >
                           Ver tarea
                         </Link>
@@ -132,8 +131,7 @@ export default async function MyTasksPage() {
             </table>
           </div>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }
-

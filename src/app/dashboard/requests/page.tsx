@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { approveRequest, rejectRequest } from "@/app/dashboard/requests/actions";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import EmptyState from "@/components/ui/empty-state";
+import StatusBadge from "@/components/ui/status-badge";
+import { isReviewerRole, normalizeRole } from "@/lib/roles";
 
 type PendingRequest = {
   id: string;
@@ -51,9 +56,14 @@ export default async function DashboardRequestsPage() {
     redirect("/dashboard");
   }
 
-  const isReviewer = profile?.role === "admin" || profile?.role === "maintainer";
+  const isReviewer = isReviewerRole(profile?.role);
 
   if (!isReviewer) {
+    console.warn("Acceso denegado a /dashboard/requests", {
+      userId: user.id,
+      role: profile?.role,
+      normalizedRole: normalizeRole(profile?.role),
+    });
     redirect("/dashboard");
   }
 
@@ -111,45 +121,37 @@ export default async function DashboardRequestsPage() {
   );
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-6xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Solicitudes de tareas</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Revisa las solicitudes pendientes de los desarrolladores
-            </p>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver al dashboard
-          </Link>
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-6xl">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Solicitudes de tareas"
+          description="Revisa las solicitudes pendientes y asigna la tarea al colaborador adecuado."
+          actions={
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+            >
+              Volver al dashboard
+            </Link>
+          }
+        />
 
         {pendingRequests.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              No hay solicitudes pendientes
-            </h2>
-            <p className="mt-2 text-sm text-gray-500">
-              Cuando lleguen nuevas solicitudes aparecerán aquí.
-            </p>
-          </div>
+          <EmptyState
+            title="No hay solicitudes pendientes"
+            description="Cuando un junior solicite una tarea abierta, aparecerá aquí para revisión."
+          />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border">
+          <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-medium">User</th>
-                  <th className="px-4 py-3 font-medium">Task</th>
-                  <th className="px-4 py-3 font-medium">Project</th>
-                  <th className="px-4 py-3 font-medium">Requested at</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-400">
+                  <th className="px-4 py-3 font-medium">Usuario</th>
+                  <th className="px-4 py-3 font-medium">Tarea</th>
+                  <th className="px-4 py-3 font-medium">Proyecto</th>
+                  <th className="px-4 py-3 font-medium">Solicitada</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -159,52 +161,46 @@ export default async function DashboardRequestsPage() {
                   const project = projectById.get(request.project_id);
 
                   return (
-                    <tr key={request.id} className="border-t">
+                    <tr key={request.id} className="border-t border-white/10">
                       <td className="px-4 py-3 align-top">
-                        <p className="font-medium text-gray-900">
-                          {requester?.full_name || "Sin nombre"}
-                        </p>
-                        <p className="text-gray-600">
-                          @{requester?.github_username || "sin-username"}
-                        </p>
+                        <p className="font-medium text-white">{requester?.full_name || "Sin nombre"}</p>
+                        <p className="text-gray-300">@{requester?.github_username || "sin-username"}</p>
                         <p className="text-gray-500">{requester?.email || "Sin email"}</p>
                       </td>
-                      <td className="px-4 py-3 align-top text-gray-800">
-                        {task?.title || "Tarea no disponible"}
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-800">
-                        {project?.name || "Proyecto no disponible"}
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-600">
+                      <td className="px-4 py-3 align-top text-gray-200">{task?.title || "Tarea no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-gray-300">{project?.name || "Proyecto no disponible"}</td>
+                      <td className="px-4 py-3 align-top text-gray-400">
                         {request.created_at
                           ? new Date(request.created_at).toLocaleString("es-ES")
                           : "No disponible"}
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
-                          {request.status}
-                        </span>
+                        <StatusBadge status={request.status} />
                       </td>
                       <td className="px-4 py-3 align-top">
-                        <div className="flex flex-wrap gap-2">
-                          <form action={approveRequest.bind(null, request.id)}>
-                            <button
-                              type="submit"
-                              className="rounded-lg border border-green-600 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-50"
-                            >
-                              Approve
-                            </button>
-                          </form>
+                        {request.status === "pending" ? (
+                          <div className="flex flex-wrap gap-2">
+                            <form action={approveRequest.bind(null, request.id)}>
+                              <button
+                                type="submit"
+                                className="rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/15"
+                              >
+                                Aprobar
+                              </button>
+                            </form>
 
-                          <form action={rejectRequest.bind(null, request.id)}>
-                            <button
-                              type="submit"
-                              className="rounded-lg border border-red-600 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
-                            >
-                              Reject
-                            </button>
-                          </form>
-                        </div>
+                            <form action={rejectRequest.bind(null, request.id)}>
+                              <button
+                                type="submit"
+                                className="rounded-lg border border-rose-500/35 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition hover:bg-rose-500/15"
+                              >
+                                Rechazar
+                              </button>
+                            </form>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">Solicitud revisada</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -213,7 +209,7 @@ export default async function DashboardRequestsPage() {
             </table>
           </div>
         )}
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }

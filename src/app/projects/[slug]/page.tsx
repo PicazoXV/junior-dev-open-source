@@ -7,27 +7,11 @@ import AppLayout from "@/components/layout/app-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import Badge from "@/components/ui/badge";
+import EmptyState from "@/components/ui/empty-state";
+import { isReviewerRole } from "@/lib/roles";
 
 type ProjectDetailPageProps = {
   params: Promise<{ slug: string }>;
-};
-
-type Project = {
-  id: string;
-  slug: string;
-  name: string;
-  short_description: string | null;
-  description: string | null;
-  repo_url: string | null;
-  tech_stack: string[] | null;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  status: "open" | "assigned" | "in_review" | "completed" | "closed";
-  difficulty: "beginner" | "intermediate" | "advanced" | null;
 };
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -57,8 +41,6 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     .eq("slug", slug)
     .maybeSingle();
 
-  console.log({ rawSlug, slug, project });
-
   if (projectError) {
     console.error("Error cargando proyecto:", projectError.message);
     notFound();
@@ -84,7 +66,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     .eq("id", user.id)
     .maybeSingle();
 
-  const canEdit = profile?.role === "admin" || profile?.role === "maintainer";
+  const canEdit = isReviewerRole(profile?.role);
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
@@ -155,14 +137,10 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             ))}
           </div>
         ) : (
-          <SectionCard className="border-dashed bg-black/20 p-10 text-center">
-            <h3 className="text-lg font-semibold text-white">
-              Este proyecto todavía no tiene tareas
-            </h3>
-            <p className="mt-2 text-sm text-gray-400">
-              Cuando el maintainer publique tareas, aparecerán aquí.
-            </p>
-          </SectionCard>
+          <EmptyState
+            title="Este proyecto todavía no tiene tareas"
+            description="Cuando el maintainer publique tareas, aparecerán aquí para que puedas solicitarlas."
+          />
         )}
       </SectionCard>
     </AppLayout>
