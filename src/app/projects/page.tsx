@@ -1,8 +1,9 @@
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Navbar from "@/components/navbar";
 import ProjectsListSection from "@/components/projects-list-section";
+import AppLayout from "@/components/layout/app-layout";
+import SectionCard from "@/components/ui/section-card";
 
 export default async function ProjectsPage() {
   const user = await createProfileIfNeeded();
@@ -24,11 +25,10 @@ export default async function ProjectsPage() {
   }
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
+    <AppLayout containerClassName="mx-auto max-w-5xl">
+      <SectionCard className="p-8">
         <ProjectsListSection projects={projects} />
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }

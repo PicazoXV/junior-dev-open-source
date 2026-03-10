@@ -1,4 +1,6 @@
 import ProjectCard from "@/components/project-card";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
 
 type Project = {
   id: string;
@@ -15,12 +17,10 @@ type ProjectsListSectionProps = {
 export default function ProjectsListSection({ projects }: ProjectsListSectionProps) {
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Proyectos</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Descubre proyectos open source activos para colaborar
-        </p>
-      </div>
+      <PageHeader
+        title="Proyectos"
+        description="Descubre proyectos open source activos para colaborar"
+      />
 
       {projects && projects.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -29,14 +29,14 @@ export default function ProjectsListSection({ projects }: ProjectsListSectionPro
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed p-10 text-center">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <SectionCard className="border-dashed p-10 text-center">
+          <h2 className="text-lg font-semibold text-white">
             Todavía no hay proyectos activos
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-400">
             Vuelve más tarde para ver nuevas oportunidades de colaboración.
           </p>
-        </div>
+        </SectionCard>
       )}
     </>
   );

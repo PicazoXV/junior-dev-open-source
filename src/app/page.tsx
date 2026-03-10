@@ -1,8 +1,9 @@
 import GitHubLoginButton from "@/components/github-login-button";
-import Navbar from "@/components/navbar";
 import ProjectsListSection from "@/components/projects-list-section";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
+import AppLayout from "@/components/layout/app-layout";
+import SectionCard from "@/components/ui/section-card";
 
 export default async function HomePage() {
   const user = await createProfileIfNeeded();
@@ -10,17 +11,17 @@ export default async function HomePage() {
   if (!user) {
     return (
       <main className="app-bg flex min-h-screen items-center justify-center p-6">
-        <div className="app-shell w-full max-w-xl rounded-2xl p-8 text-center">
+        <SectionCard className="w-full max-w-xl p-8 text-center">
           <div className="mb-4 flex items-center justify-center gap-2">
             <span className="accent-dot" />
             <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Open Source Hub</p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-100">Junior Dev Open Source</h1>
-          <p className="mt-2 text-gray-500">Conecta tu GitHub y empieza a colaborar.</p>
+          <h1 className="text-3xl font-bold text-white">Junior Dev Open Source</h1>
+          <p className="mt-2 text-gray-400">Conecta tu GitHub y empieza a colaborar.</p>
           <div className="mt-6">
             <GitHubLoginButton />
           </div>
-        </div>
+        </SectionCard>
       </main>
     );
   }
@@ -37,11 +38,10 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
+    <AppLayout containerClassName="mx-auto max-w-5xl">
+      <SectionCard className="p-8">
         <ProjectsListSection projects={projects} />
-      </div>
-    </main>
+      </SectionCard>
+    </AppLayout>
   );
 }

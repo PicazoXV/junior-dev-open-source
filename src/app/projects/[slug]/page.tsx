@@ -3,7 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { createClient } from "@/lib/supabase/server";
 import TaskCard from "@/components/task-card";
-import Navbar from "@/components/navbar";
+import AppLayout from "@/components/layout/app-layout";
+import PageHeader from "@/components/ui/page-header";
+import SectionCard from "@/components/ui/section-card";
+import Badge from "@/components/ui/badge";
 
 type ProjectDetailPageProps = {
   params: Promise<{ slug: string }>;
@@ -84,46 +87,40 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const canEdit = profile?.role === "admin" || profile?.role === "maintainer";
 
   return (
-    <main className="app-bg min-h-screen p-8 lg:pr-72">
-      <Navbar />
-      <div className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-sm">
-        <div className="mb-6 flex flex-wrap gap-3">
-          <Link
-            href="/projects"
-            className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-          >
-            Volver a proyectos
-          </Link>
-          {canEdit ? (
-            <Link
-              href={`/dashboard/projects/${project.id}/edit`}
-              className="inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
-            >
-              Editar proyecto
-            </Link>
-          ) : null}
-        </div>
+    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+      <SectionCard className="p-8">
+        <PageHeader
+          title={project.name}
+          description={project.short_description || "Sin descripción corta disponible."}
+          actions={
+            <>
+              <Link
+                href="/projects"
+                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+              >
+                Volver a proyectos
+              </Link>
+              {canEdit ? (
+                <Link
+                  href={`/dashboard/projects/${project.id}/edit`}
+                  className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+                >
+                  Editar proyecto
+                </Link>
+              ) : null}
+            </>
+          }
+        />
 
-        <section className="rounded-2xl border p-6">
-          <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
-
-          <p className="mt-2 text-sm text-gray-600">
-            {project.short_description || "Sin descripción corta disponible."}
-          </p>
-
-          <p className="mt-4 whitespace-pre-line text-gray-800">
+        <section className="rounded-2xl border border-white/20 bg-black/20 p-6">
+          <p className="whitespace-pre-line text-gray-200">
             {project.description || "Sin descripción detallada disponible."}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
             {project.tech_stack && project.tech_stack.length > 0 ? (
               project.tech_stack.map((tech: string) => (
-                <span
-                  key={`${project.id}-${tech}`}
-                  className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
-                >
-                  {tech}
-                </span>
+                <Badge key={`${project.id}-${tech}`}>{tech}</Badge>
               ))
             ) : (
               <span className="text-xs text-gray-500">Tech stack no especificado.</span>
@@ -131,43 +128,43 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </div>
 
           {project.repo_url ? (
-            <a
+            <Link
               href={project.repo_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-5 inline-flex rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-100"
+              className="mt-5 inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
             >
               Ver repositorio
-            </a>
+            </Link>
           ) : (
             <p className="mt-5 text-sm text-gray-500">Repositorio no disponible.</p>
           )}
         </section>
+      </SectionCard>
 
-        <section className="mt-8">
-          <div className="mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">Tareas del proyecto</h2>
-            <p className="mt-1 text-sm text-gray-500">Explora las tareas disponibles y su dificultad.</p>
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Tareas del proyecto"
+          description="Explora las tareas disponibles y su dificultad."
+        />
+
+        {tasks && tasks.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {tasks.map((task) => (
+              <TaskCard key={task.id} task={task} />
+            ))}
           </div>
-
-          {tasks && tasks.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed p-10 text-center">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Este proyecto todavía no tiene tareas
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Cuando el maintainer publique tareas, aparecerán aquí.
-              </p>
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+        ) : (
+          <SectionCard className="border-dashed bg-black/20 p-10 text-center">
+            <h3 className="text-lg font-semibold text-white">
+              Este proyecto todavía no tiene tareas
+            </h3>
+            <p className="mt-2 text-sm text-gray-400">
+              Cuando el maintainer publique tareas, aparecerán aquí.
+            </p>
+          </SectionCard>
+        )}
+      </SectionCard>
+    </AppLayout>
   );
 }
