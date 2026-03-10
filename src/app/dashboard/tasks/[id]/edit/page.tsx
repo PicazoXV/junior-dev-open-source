@@ -8,6 +8,7 @@ import AppLayout from "@/components/layout/app-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
+import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 
 type TaskEditPageProps = {
   params: Promise<{ id: string }>;
@@ -99,6 +100,27 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
           />
         ) : (
           <form action={updateTaskAction} className="space-y-5">
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Integración GitHub</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <GitHubIssueBadge issueUrl={currentTask.github_issue_url} compact />
+                {currentTask.github_issue_url ? (
+                  <Link
+                    href={currentTask.github_issue_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-orange-300 hover:underline"
+                  >
+                    Abrir issue
+                  </Link>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Se creará automáticamente al aprobar una solicitud si la tarea no tiene issue.
+                  </p>
+                )}
+              </div>
+            </div>
+
             <input type="hidden" name="id" value={currentTask.id} />
 
             <div>

@@ -10,6 +10,7 @@ import RequestTaskForm from "@/components/request-task-form";
 import Badge from "@/components/ui/badge";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
+import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 import { isReviewerRole } from "@/lib/roles";
 
 type TaskDetailPageProps = {
@@ -110,6 +111,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           <div className="flex flex-wrap gap-2">
             <StatusBadge status={task.status} />
             <DifficultyBadge difficulty={task.difficulty} />
+            <GitHubIssueBadge issueUrl={task.github_issue_url} />
           </div>
 
           <div className="mt-6">
@@ -135,16 +137,22 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           <div className="mt-6">
             <p className="mb-1 text-sm font-medium text-gray-400">GitHub Issue</p>
             {task.github_issue_url ? (
-              <Link
-                href={task.github_issue_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-              >
-                Ver issue en GitHub
-              </Link>
+              <div className="flex flex-wrap items-center gap-2">
+                <GitHubIssueBadge issueUrl={task.github_issue_url} compact />
+                <Link
+                  href={task.github_issue_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+                >
+                  Ver issue en GitHub
+                </Link>
+              </div>
             ) : (
-              <p className="text-sm text-gray-500">No hay issue de GitHub enlazado.</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <GitHubIssueBadge issueUrl={null} compact />
+                <p className="text-sm text-gray-500">La tarea todavía no tiene issue enlazado.</p>
+              </div>
             )}
           </div>
         </section>

@@ -9,6 +9,7 @@ import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
+import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 
 type TaskRow = {
   id: string;
@@ -17,6 +18,7 @@ type TaskRow = {
   status: "open" | "assigned" | "in_review" | "completed" | "closed";
   difficulty: "beginner" | "intermediate" | "advanced" | null;
   created_at: string;
+  github_issue_url: string | null;
 };
 
 type ProjectRow = {
@@ -50,7 +52,7 @@ export default async function DashboardTasksPage() {
 
   const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, project_id, title, status, difficulty, created_at")
+    .select("id, project_id, title, status, difficulty, created_at, github_issue_url")
     .order("created_at", { ascending: false });
 
   if (tasksError) {
@@ -119,6 +121,7 @@ export default async function DashboardTasksPage() {
                   <th className="px-4 py-3 font-medium">Proyecto</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
                   <th className="px-4 py-3 font-medium">Dificultad</th>
+                  <th className="px-4 py-3 font-medium">GitHub</th>
                   <th className="px-4 py-3 font-medium">Creada</th>
                   <th className="px-4 py-3 font-medium">Acciones</th>
                 </tr>
@@ -136,6 +139,21 @@ export default async function DashboardTasksPage() {
                       </td>
                       <td className="px-4 py-3 align-top">
                         <DifficultyBadge difficulty={task.difficulty} />
+                      </td>
+                      <td className="px-4 py-3 align-top">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <GitHubIssueBadge issueUrl={task.github_issue_url} compact />
+                          {task.github_issue_url ? (
+                            <Link
+                              href={task.github_issue_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-orange-300 hover:underline"
+                            >
+                              Ver issue
+                            </Link>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="px-4 py-3 align-top text-gray-400">
                         {task.created_at

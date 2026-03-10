@@ -3,27 +3,9 @@ import { buildTaskIssueDraft } from "@/lib/github/task-approval-preparation";
 import { getRepositoryInstallationAccessToken } from "@/lib/github/app-auth";
 import { createRepositoryIssue } from "@/lib/github/issues";
 import { isRepositoryCollaborator } from "@/lib/github/collaborators";
-
-type TaskForGitHub = {
-  id: string;
-  title: string | null;
-  description: string | null;
-  github_issue_url: string | null;
-  project_id: string;
-};
-
-type ProjectForGitHub = {
-  id: string;
-  name: string | null;
-  slug: string | null;
-  repo_url: string | null;
-};
-
-type AssigneeProfile = {
-  github_username: string | null;
-  full_name: string | null;
-  email: string | null;
-};
+import { buildTaskIssueBody, buildTaskIssueTitle } from "@/lib/github/issue-body";
+// Next phase extension point:
+// import { linkPullRequestToTaskPlaceholder } from "@/lib/github/pull-requests";
 
 export type EnsureTaskIssueResult = {
   status: "reused" | "created" | "skipped";
@@ -51,7 +33,13 @@ async function updateTaskIssueMetadata(
   }
 
   const message = withNumber.error.message || "";
-  if (message.toLowerCase().includes("github_issue_number")) {
+  const code = (withNumber.error as { code?: string }).code || "";
+  const missingColumn =
+    code === "42703" ||
+    message.toLowerCase().includes("github_issue_number") ||
+    message.toLowerCase().includes("column") && message.toLowerCase().includes("does not exist");
+
+  if (missingColumn) {
     const fallback = await supabase
       .from("tasks")
       .update({ github_issue_url: issueUrl })
@@ -65,29 +53,6 @@ async function updateTaskIssueMetadata(
   }
 
   throw new Error(`Could not persist issue metadata: ${withNumber.error.message}`);
-}
-
-function buildIssueBody(params: {
-  task: TaskForGitHub;
-  project: ProjectForGitHub;
-  assignee: AssigneeProfile | null;
-  approvedByUserId: string;
-}) {
-  const assigneeLine = params.assignee?.github_username
-    ? `- Assigned developer: @${params.assignee.github_username}`
-    : "- Assigned developer: not available";
-
-  return [
-    "## Task assigned from Junior Dev Open Source",
-    "",
-    `- Platform project: ${params.project.name || params.project.slug || params.project.id}`,
-    `- Internal task id: ${params.task.id}`,
-    assigneeLine,
-    `- Approved by user id: ${params.approvedByUserId}`,
-    "",
-    "### Task description",
-    params.task.description?.trim() || "No description provided.",
-  ].join("\n");
 }
 
 export async function ensureGitHubIssueForApprovedTask(params: {
@@ -174,11 +139,14 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   }
 
   const issue = await createRepositoryIssue(installationToken, draft.repository, {
-    title: draft.issueTitle,
-    body: buildIssueBody({
-      task: task as TaskForGitHub,
-      project: project as ProjectForGitHub,
-      assignee: (assignee as AssigneeProfile | null) || null,
+    title: buildTaskIssueTitle(draft.issueTitle),
+    body: buildTaskIssueBody({
+      taskId: task.id,
+      taskTitle: task.title,
+      taskDescription: task.description,
+      projectName: project.name,
+      projectSlug: project.slug,
+      assignedGithubUsername: assignee?.github_username || null,
       approvedByUserId,
     }),
   });

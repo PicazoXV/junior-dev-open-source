@@ -52,7 +52,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
   const { data: tasks, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, title, description, status, difficulty")
+    .select("id, title, description, status, difficulty, github_issue_url")
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 

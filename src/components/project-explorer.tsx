@@ -7,6 +7,7 @@ import SectionCard from "@/components/ui/section-card";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
 import Badge from "@/components/ui/badge";
+import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 
 type ExplorerTask = {
   id: string;
@@ -135,6 +136,7 @@ export default function ProjectExplorer({ projects }: ProjectExplorerProps) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <DifficultyBadge difficulty={task.difficulty} />
                   <StatusBadge status={task.status} />
+                  <GitHubIssueBadge issueUrl={task.github_issue_url} compact />
                   {(task.labels || []).slice(0, 2).map((label) => (
                     <Badge key={`${task.id}-${label}`}>{label}</Badge>
                   ))}

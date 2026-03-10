@@ -2,6 +2,7 @@ import Link from "next/link";
 import SectionCard from "@/components/ui/section-card";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
+import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 
 type TaskCardProps = {
   task: {
@@ -10,6 +11,7 @@ type TaskCardProps = {
     description: string | null;
     status: "open" | "assigned" | "in_review" | "completed" | "closed";
     difficulty: "beginner" | "intermediate" | "advanced" | null;
+    github_issue_url?: string | null;
   };
 };
 
@@ -35,6 +37,7 @@ export default function TaskCard({ task }: TaskCardProps) {
       <div className="mt-4 flex flex-wrap gap-2">
         <StatusBadge status={task.status} />
         <DifficultyBadge difficulty={task.difficulty} />
+        <GitHubIssueBadge issueUrl={task.github_issue_url || null} compact />
       </div>
 
       <Link
