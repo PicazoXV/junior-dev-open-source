@@ -12,6 +12,10 @@ import LevelBadge from "@/components/ui/level-badge";
 import { getUserBadges } from "@/lib/user-badges";
 import AchievementBadge from "@/components/ui/achievement-badge";
 import StatCard from "@/components/ui/stat-card";
+import { getRecommendedTasksForUser } from "@/lib/recommendations";
+import EmptyState from "@/components/ui/empty-state";
+import DifficultyBadge from "@/components/ui/difficulty-badge";
+import Badge from "@/components/ui/badge";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -36,6 +40,9 @@ export default async function DashboardPage() {
   const progress = await getUserProgress(supabase, user.id, profile?.tech_stack || null);
   const badges = getUserBadges(progress);
   const unlockedBadges = badges.filter((badge) => badge.unlocked);
+  const recommendedTasks = await getRecommendedTasksForUser(supabase, user.id, 6);
+  const githubUsername = profile?.github_username || "tu-username";
+  const readmeBadgeSnippet = `[![Contributing via MiPrimerIssue](https://img.shields.io/badge/Contributing%20via-MiPrimerIssue-orange)](https://miprimerissue.dev/dev/${githubUsername})`;
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
@@ -197,6 +204,94 @@ export default async function DashboardPage() {
               )}
             </div>
           </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Your progress"
+          description="Vista rápida de tu avance y siguientes pasos recomendados."
+        />
+        <div className="grid gap-3 md:grid-cols-4">
+          <StatCard label="Tasks completed" value={progress.completedTasks} />
+          <StatCard label="Current tasks" value={progress.inProgressTasks} />
+          <StatCard label="PRs merged" value={progress.mergedPullRequests} />
+          <StatCard
+            label="Next level"
+            value={
+              progress.level === "beginner"
+                ? "junior"
+                : progress.level === "junior"
+                  ? "contributor"
+                  : progress.level === "contributor"
+                    ? "maintainer"
+                    : "max level"
+            }
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Recommended for you"
+          description="Tareas sugeridas según tu tech stack, nivel y actividad."
+        />
+
+        {recommendedTasks.length > 0 ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {recommendedTasks.map((task) => (
+              <article
+                key={task.id}
+                className="rounded-xl border border-white/15 bg-black/20 p-4"
+              >
+                <p className="text-sm font-semibold text-white">{task.title}</p>
+                <p className="mt-1 text-xs text-gray-400">{task.projectName}</p>
+                <p className="mt-2 text-sm text-gray-300">
+                  {task.description || "Sin descripción disponible."}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <DifficultyBadge difficulty={task.difficulty} />
+                  {(task.labels || []).slice(0, 3).map((label) => (
+                    <Badge key={`${task.id}-${label}`}>{label}</Badge>
+                  ))}
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <Link
+                    href={`/tasks/${task.id}`}
+                    className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-2.5 py-1 text-xs text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
+                  >
+                    Ver tarea
+                  </Link>
+                  {task.projectSlug ? (
+                    <Link
+                      href={`/projects/${task.projectSlug}`}
+                      className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-2.5 py-1 text-xs text-orange-300 hover:border-orange-400"
+                    >
+                      Ver proyecto
+                    </Link>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No hay recomendaciones por ahora"
+            description="Completa más tareas o añade tech stack en tu perfil para mejorar las sugerencias."
+          />
+        )}
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Badge para tu GitHub README"
+          description="Copia este snippet para mostrar que contribuyes desde MiPrimerIssue."
+        />
+        <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+          <p className="text-xs text-gray-500">Markdown snippet</p>
+          <pre className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-black/30 p-3 text-xs text-gray-200">
+            {readmeBadgeSnippet}
+          </pre>
         </div>
       </SectionCard>
     </AppLayout>

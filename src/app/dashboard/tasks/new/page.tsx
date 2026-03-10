@@ -143,6 +143,18 @@ export default async function NewTaskPage() {
             </div>
 
             <div>
+              <label htmlFor="learning_resources" className="mb-1 block text-sm font-medium text-gray-300">
+                Learning resources (links separados por comas)
+              </label>
+              <input
+                id="learning_resources"
+                name="learning_resources"
+                placeholder="https://docs..., https://tutorial..."
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
+            </div>
+
+            <div>
               <label htmlFor="github_issue_url" className="mb-1 block text-sm font-medium text-gray-300">
                 URL del issue de GitHub
               </label>

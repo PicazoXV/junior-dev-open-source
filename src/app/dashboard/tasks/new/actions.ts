@@ -4,6 +4,21 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isReviewerRole } from "@/lib/roles";
 
+function isMissingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  const code = error.code || "";
+  const message = error.message?.toLowerCase() || "";
+
+  return (
+    code === "42703" ||
+    message.includes("learning_resources") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
 export async function createTaskAction(formData: FormData) {
   const supabase = await createClient();
 
@@ -38,6 +53,7 @@ export async function createTaskAction(formData: FormData) {
   const difficulty = String(formData.get("difficulty") || "beginner").trim();
   const labelsRaw = String(formData.get("labels") || "").trim();
   const githubIssueUrl = String(formData.get("github_issue_url") || "").trim();
+  const learningResourcesRaw = String(formData.get("learning_resources") || "").trim();
   const status = String(formData.get("status") || "open").trim();
 
   if (!projectId || !title) {
@@ -49,20 +65,44 @@ export async function createTaskAction(formData: FormData) {
     .map((item) => item.trim())
     .filter(Boolean);
 
-  const { error: insertError } = await supabase.from("tasks").insert({
+  const learningResources = learningResourcesRaw
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const insertWithResources = await supabase.from("tasks").insert({
     project_id: projectId,
     title,
     description: description || null,
     difficulty,
     labels,
+    learning_resources: learningResources.length > 0 ? learningResources : null,
     github_issue_url: githubIssueUrl || null,
     status,
     created_at: new Date().toISOString(),
   });
 
-  if (insertError) {
-    console.error("Error creando tarea:", insertError.message);
+  if (insertWithResources.error && !isMissingColumnError(insertWithResources.error)) {
+    console.error("Error creando tarea:", insertWithResources.error.message);
     redirect("/dashboard/tasks/new?error=create_failed");
+  }
+
+  if (insertWithResources.error && isMissingColumnError(insertWithResources.error)) {
+    const fallbackInsert = await supabase.from("tasks").insert({
+      project_id: projectId,
+      title,
+      description: description || null,
+      difficulty,
+      labels,
+      github_issue_url: githubIssueUrl || null,
+      status,
+      created_at: new Date().toISOString(),
+    });
+
+    if (fallbackInsert.error) {
+      console.error("Error creando tarea:", fallbackInsert.error.message);
+      redirect("/dashboard/tasks/new?error=create_failed");
+    }
   }
 
   redirect("/dashboard/my-tasks");

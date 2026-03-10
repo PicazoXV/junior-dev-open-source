@@ -17,6 +17,21 @@ type TaskDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
+function isMissingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  const code = error.code || "";
+  const message = error.message?.toLowerCase() || "";
+
+  return (
+    code === "42703" ||
+    message.includes("learning_resources") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   const user = await createProfileIfNeeded();
 
@@ -33,11 +48,28 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
 
   const supabase = await createClient();
 
-  const { data: task, error: taskError } = await supabase
+  const taskWithResources = await supabase
     .from("tasks")
-    .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+    .select(
+      "id, project_id, title, description, status, difficulty, labels, github_issue_url, learning_resources"
+    )
     .eq("id", id)
     .maybeSingle();
+
+  let task = taskWithResources.data;
+  let taskError = taskWithResources.error;
+
+  if (taskError && isMissingColumnError(taskError)) {
+    const fallbackTask = await supabase
+      .from("tasks")
+      .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+      .eq("id", id)
+      .maybeSingle();
+    task = fallbackTask.data
+      ? ({ ...fallbackTask.data, learning_resources: null } as typeof task)
+      : null;
+    taskError = fallbackTask.error;
+  }
 
   if (taskError) {
     console.error("Error cargando tarea:", taskError.message);
@@ -153,6 +185,29 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
                 <GitHubIssueBadge issueUrl={null} compact />
                 <p className="text-sm text-gray-500">La tarea todavía no tiene issue enlazado.</p>
               </div>
+            )}
+          </div>
+
+          <div className="mt-6">
+            <p className="mb-2 text-sm font-medium text-gray-400">Learning resources</p>
+            {task.learning_resources && task.learning_resources.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {task.learning_resources.map((resource: string) => (
+                  <Link
+                    key={`${task.id}-${resource}`}
+                    href={resource}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-fit rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
+                  >
+                    {resource}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Esta tarea no incluye recursos adicionales por ahora.
+              </p>
             )}
           </div>
         </section>

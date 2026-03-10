@@ -1,0 +1,88 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import AppLayout from "@/components/layout/app-layout";
+import SectionCard from "@/components/ui/section-card";
+import PageHeader from "@/components/ui/page-header";
+import LevelBadge from "@/components/ui/level-badge";
+import Badge from "@/components/ui/badge";
+import EmptyState from "@/components/ui/empty-state";
+import { getDevelopersLeaderboard } from "@/lib/developer-stats";
+
+export default async function DevelopersPage() {
+  const supabase = await createClient();
+  const leaderboard = await getDevelopersLeaderboard(supabase);
+
+  return (
+    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+      <SectionCard className="p-8">
+        <PageHeader
+          title="Leaderboard de developers"
+          description="Ranking público basado en tareas completadas, PRs merged y proyectos contribuidos."
+        />
+
+        {leaderboard.length === 0 ? (
+          <EmptyState
+            title="Aún no hay developers en el leaderboard"
+            description="Cuando haya actividad en la plataforma, el ranking aparecerá aquí."
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-white/15 bg-black/20">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left text-gray-400">
+                  <th className="px-4 py-3">Developer</th>
+                  <th className="px-4 py-3">Tasks</th>
+                  <th className="px-4 py-3">PRs merged</th>
+                  <th className="px-4 py-3">Proyectos</th>
+                  <th className="px-4 py-3">Level</th>
+                  <th className="px-4 py-3">Badges</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaderboard.map((developer, index) => (
+                  <tr key={developer.id} className="border-t border-white/10">
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="text-white">
+                          #{index + 1} @{developer.githubUsername}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {developer.fullName || "Developer en MiPrimerIssue"}
+                        </p>
+                        <Link
+                          href={`/dev/${developer.githubUsername}`}
+                          className="mt-1 inline-flex text-xs text-orange-300 hover:underline"
+                        >
+                          Ver perfil público
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-200">{developer.completedTasks}</td>
+                    <td className="px-4 py-3 text-gray-200">{developer.mergedPullRequests}</td>
+                    <td className="px-4 py-3 text-gray-200">{developer.contributedProjects}</td>
+                    <td className="px-4 py-3">
+                      <LevelBadge level={developer.level} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {developer.badges.map((badge) => (
+                          <Badge key={`${developer.id}-${badge}`} tone="warning">
+                            {badge}
+                          </Badge>
+                        ))}
+                        {developer.badges.length === 0 ? (
+                          <span className="text-xs text-gray-500">Sin badges por ahora</span>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SectionCard>
+    </AppLayout>
+  );
+}
+

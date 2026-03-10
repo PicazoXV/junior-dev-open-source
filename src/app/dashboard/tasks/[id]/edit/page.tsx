@@ -23,7 +23,21 @@ type Task = {
   difficulty: "beginner" | "intermediate" | "advanced" | null;
   labels: string[] | null;
   github_issue_url: string | null;
+  learning_resources?: string[] | null;
 };
+
+function isMissingColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+  const code = error.code || "";
+  const message = error.message?.toLowerCase() || "";
+  return (
+    code === "42703" ||
+    message.includes("learning_resources") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
 
 type ProjectOption = {
   id: string;
@@ -55,11 +69,28 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
     redirect("/dashboard");
   }
 
-  const { data: task, error: taskError } = await supabase
+  const taskWithResources = await supabase
     .from("tasks")
-    .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+    .select(
+      "id, project_id, title, description, status, difficulty, labels, github_issue_url, learning_resources"
+    )
     .eq("id", id)
     .maybeSingle();
+
+  let task = taskWithResources.data;
+  let taskError = taskWithResources.error;
+
+  if (taskError && isMissingColumnError(taskError)) {
+    const fallbackTask = await supabase
+      .from("tasks")
+      .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+      .eq("id", id)
+      .maybeSingle();
+    task = fallbackTask.data
+      ? ({ ...fallbackTask.data, learning_resources: null } as typeof task)
+      : null;
+    taskError = fallbackTask.error;
+  }
 
   if (taskError) {
     console.error("Error cargando tarea:", taskError.message);
@@ -181,6 +212,18 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 Labels (separadas por comas)
               </label>
               <input id="labels" name="labels" defaultValue={(currentTask.labels || []).join(", ")} className="w-full rounded-lg border px-3 py-2 text-sm" />
+            </div>
+
+            <div>
+              <label htmlFor="learning_resources" className="mb-1 block text-sm font-medium text-gray-300">
+                Learning resources (links separados por comas)
+              </label>
+              <input
+                id="learning_resources"
+                name="learning_resources"
+                defaultValue={(currentTask.learning_resources || []).join(", ")}
+                className="w-full rounded-lg border px-3 py-2 text-sm"
+              />
             </div>
 
             <div>

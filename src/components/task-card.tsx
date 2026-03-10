@@ -3,6 +3,7 @@ import SectionCard from "@/components/ui/section-card";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
 import GitHubIssueBadge from "@/components/ui/github-issue-badge";
+import Badge from "@/components/ui/badge";
 
 type TaskCardProps = {
   task: {
@@ -12,6 +13,7 @@ type TaskCardProps = {
     status: "open" | "assigned" | "in_review" | "completed" | "closed";
     difficulty: "beginner" | "intermediate" | "advanced" | null;
     github_issue_url?: string | null;
+    labels?: string[] | null;
   };
 };
 
@@ -38,6 +40,9 @@ export default function TaskCard({ task }: TaskCardProps) {
         <StatusBadge status={task.status} />
         <DifficultyBadge difficulty={task.difficulty} />
         <GitHubIssueBadge issueUrl={task.github_issue_url || null} compact />
+        {(task.labels || []).slice(0, 3).map((label) => (
+          <Badge key={`${task.id}-${label}`}>{label}</Badge>
+        ))}
       </div>
 
       <Link

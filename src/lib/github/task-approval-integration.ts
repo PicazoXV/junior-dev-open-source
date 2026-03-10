@@ -1,7 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildTaskIssueDraft } from "@/lib/github/task-approval-preparation";
 import { getRepositoryInstallationAccessToken } from "@/lib/github/app-auth";
-import { createRepositoryIssue } from "@/lib/github/issues";
+import {
+  createIssueComment,
+  createRepositoryIssue,
+  getIssueNumberFromUrl,
+} from "@/lib/github/issues";
 import { isRepositoryCollaborator } from "@/lib/github/collaborators";
 import { buildTaskIssueBody, buildTaskIssueTitle } from "@/lib/github/issue-body";
 // Next phase extension point:
@@ -66,7 +70,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   const [{ data: task, error: taskError }, { data: assignee }] = await Promise.all([
     supabase
       .from("tasks")
-      .select("id, title, description, github_issue_url, project_id")
+      .select("id, title, description, github_issue_url, github_issue_number, project_id")
       .eq("id", taskId)
       .maybeSingle(),
     supabase
@@ -98,10 +102,35 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   });
 
   if (draft.reason === "already_has_issue") {
+    const issueNumber =
+      task.github_issue_number || getIssueNumberFromUrl(draft.existingIssueUrl) || null;
+
+    if (issueNumber && draft.repository) {
+      try {
+        const token = await getRepositoryInstallationAccessToken(draft.repository);
+        await createIssueComment(
+          token,
+          draft.repository,
+          issueNumber,
+          [
+            "Assigned via MiPrimerIssue",
+            "",
+            `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
+          ].join("\n")
+        );
+      } catch (error) {
+        console.warn("Could not post assignment comment on existing issue", {
+          taskId,
+          issueNumber,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
     return {
       status: "reused",
       issueUrl: draft.existingIssueUrl,
-      issueNumber: null,
+      issueNumber,
       reason: "already_has_issue",
     };
   }
@@ -152,6 +181,25 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   });
 
   await updateTaskIssueMetadata(supabase, task.id, issue.html_url, issue.number);
+
+  try {
+    await createIssueComment(
+      installationToken,
+      draft.repository,
+      issue.number,
+      [
+        "Assigned via MiPrimerIssue",
+        "",
+        `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
+      ].join("\n")
+    );
+  } catch (error) {
+    console.warn("Could not post assignment comment in GitHub issue", {
+      taskId,
+      issueNumber: issue.number,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   return {
     status: "created",

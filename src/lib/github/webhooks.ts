@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { parseRepositoryFromUrl, type RepositoryRef } from "@/lib/github/repository";
+import { getRepositoryInstallationAccessToken } from "@/lib/github/app-auth";
+import { createIssueComment } from "@/lib/github/issues";
 import {
   extractIssueNumbersFromPullRequest,
   getLinkedIssueNumbersForPullRequest,
@@ -279,6 +281,24 @@ export async function handlePullRequestWebhook(params: {
     pullRequestUrl: pullRequest.html_url,
     repository,
   });
+
+  if (action === "closed" && pullRequest.merged && task.github_issue_number) {
+    try {
+      const installationToken = await getRepositoryInstallationAccessToken(repository);
+      await createIssueComment(
+        installationToken,
+        repository,
+        task.github_issue_number,
+        "Task completed via MiPrimerIssue 🎉"
+      );
+    } catch (error) {
+      console.warn("Could not post merged comment on GitHub issue", {
+        taskId: task.id,
+        issueNumber: task.github_issue_number,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   return {
     ok: true,

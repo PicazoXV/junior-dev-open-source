@@ -35,9 +35,13 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
   const items: NavItem[] = [
     { href: "/", label: "Inicio", icon: Home },
     { href: "/projects", label: "Proyectos", icon: FolderKanban },
+    { href: "/developers", label: "Developers", icon: Briefcase },
+    { href: "/activity", label: "Actividad", icon: ClipboardList },
+    { href: "/stats", label: "Stats", icon: ListTodo },
     { href: "/dashboard/my-tasks", label: "Mis tareas", icon: Briefcase },
     { href: "/dashboard/my-requests", label: "Mis solicitudes", icon: ClipboardList },
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/first-contribution", label: "Primera contribución", icon: SquarePen },
     {
       href: "/dashboard/requests",
       label: "Ver solicitudes",
@@ -47,6 +51,12 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
     {
       href: "/dashboard/projects/new",
       label: "Nuevo proyecto",
+      icon: PlusSquare,
+      reviewerOnly: true,
+    },
+    {
+      href: "/projects/new",
+      label: "Registrar proyecto",
       icon: PlusSquare,
       reviewerOnly: true,
     },

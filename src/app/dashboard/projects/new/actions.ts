@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isReviewerRole } from "@/lib/roles";
+import { parseRepositoryFromUrl } from "@/lib/github/repository";
 
 export async function createProjectAction(formData: FormData) {
   const supabase = await createClient();
@@ -43,6 +44,10 @@ export async function createProjectAction(formData: FormData) {
 
   if (!name || !slug) {
     redirect("/dashboard/projects/new?error=missing_fields");
+  }
+
+  if (repoUrl && !parseRepositoryFromUrl(repoUrl)) {
+    redirect("/dashboard/projects/new?error=invalid_repo_url");
   }
 
   const techStack = techStackRaw
