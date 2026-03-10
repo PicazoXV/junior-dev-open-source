@@ -16,6 +16,9 @@ export type UserProgressMetrics = {
   requestsSent: number;
   mergedPullRequests: number;
   inReviewPullRequests: number;
+  challengeStartedAt: string | null;
+  challengeCompletedAt: string | null;
+  challengeCompletedInTime: boolean;
   techStack: string | null;
   recentActivity: UserRecentActivity;
   level: UserLevel;
@@ -68,6 +71,28 @@ function isMissingColumnError(error: { code?: string; message?: string } | null)
   );
 }
 
+function isMissingChallengeColumnError(error: { code?: string; message?: string } | null) {
+  if (!error) {
+    return false;
+  }
+
+  const code = error.code || "";
+  const message = error.message?.toLowerCase() || "";
+
+  return (
+    code === "42703" ||
+    message.includes("challenge_started_at") ||
+    message.includes("challenge_completed_at") ||
+    (message.includes("column") && message.includes("does not exist"))
+  );
+}
+
+function addDays(dateIso: string, days: number) {
+  const date = new Date(dateIso);
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
 export async function getUserProgress(
   supabase: MinimalSupabaseClient,
   userId: string,
@@ -81,8 +106,10 @@ export async function getUserProgress(
     requestsResult,
     mergedPullRequestsResult,
     inReviewPullRequestsResult,
+    profileChallengeResult,
     recentCompletedTaskResult,
     recentTaskWithPrResult,
+    firstCompletedTaskResult,
   ] = await Promise.all([
     supabase
       .from("tasks")
@@ -121,6 +148,11 @@ export async function getUserProgress(
       .eq("status", "in_review")
       .not("github_pr_number", "is", null),
     supabase
+      .from("profiles")
+      .select("created_at, challenge_started_at, challenge_completed_at")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
       .from("tasks")
       .select("id, title, project_id, created_at")
       .eq("assigned_to", userId)
@@ -134,6 +166,14 @@ export async function getUserProgress(
       .eq("assigned_to", userId)
       .not("github_pr_url", "is", null)
       .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("tasks")
+      .select("id, created_at")
+      .eq("assigned_to", userId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle(),
   ]);
@@ -168,6 +208,13 @@ export async function getUserProgress(
     );
   }
 
+  if (profileChallengeResult.error && !isMissingChallengeColumnError(profileChallengeResult.error)) {
+    console.error(
+      "Error cargando métricas (challenge profile):",
+      profileChallengeResult.error.message
+    );
+  }
+
   if (recentCompletedTaskResult.error) {
     console.error(
       "Error cargando actividad reciente (last completed task):",
@@ -199,6 +246,32 @@ export async function getUserProgress(
     ? 0
     : inReviewPullRequestsResult.count || 0;
 
+  let challengeStartedAt: string | null = null;
+  let challengeCompletedAt: string | null = null;
+
+  if (!profileChallengeResult.error && profileChallengeResult.data) {
+    challengeStartedAt =
+      profileChallengeResult.data.challenge_started_at || profileChallengeResult.data.created_at || null;
+    challengeCompletedAt = profileChallengeResult.data.challenge_completed_at || null;
+  } else if (isMissingChallengeColumnError(profileChallengeResult.error)) {
+    const fallbackProfileResult = await supabase
+      .from("profiles")
+      .select("created_at")
+      .eq("id", userId)
+      .maybeSingle();
+
+    challengeStartedAt = fallbackProfileResult.data?.created_at || null;
+  }
+
+  if (!challengeCompletedAt) {
+    challengeCompletedAt = firstCompletedTaskResult.data?.created_at || null;
+  }
+
+  const challengeCompletedInTime =
+    !!challengeStartedAt &&
+    !!challengeCompletedAt &&
+    new Date(challengeCompletedAt).getTime() <= new Date(addDays(challengeStartedAt, 7)).getTime();
+
   const recentProjectId =
     recentCompletedTaskResult.data?.project_id || recentTaskWithPrResult.data?.project_id || null;
 
@@ -221,6 +294,9 @@ export async function getUserProgress(
     requestsSent: requestsResult.count || 0,
     mergedPullRequests: mergedPrCount,
     inReviewPullRequests: inReviewPrCount,
+    challengeStartedAt,
+    challengeCompletedAt,
+    challengeCompletedInTime,
     techStack,
     recentActivity: {
       lastCompletedTaskTitle: recentCompletedTaskResult.data?.title || null,

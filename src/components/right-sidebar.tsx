@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   ListTodo,
   PlusSquare,
+  Sparkles,
   ShieldCheck,
   SquarePen,
   LogOut,
@@ -35,6 +36,7 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
   const items: NavItem[] = [
     { href: "/", label: "Inicio", icon: Home },
     { href: "/projects", label: "Proyectos", icon: FolderKanban },
+    { href: "/good-first-issues", label: "Good First Issues", icon: Sparkles },
     { href: "/developers", label: "Developers", icon: Briefcase },
     { href: "/activity", label: "Actividad", icon: ClipboardList },
     { href: "/stats", label: "Stats", icon: ListTodo },
@@ -82,6 +84,25 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
 
   const visibleItems = items.filter((item) => !item.reviewerOnly || isReviewer);
 
+  const normalizePath = (value: string) => {
+    if (!value) return "/";
+    return value.length > 1 && value.endsWith("/") ? value.slice(0, -1) : value;
+  };
+
+  const normalizedPathname = normalizePath(pathname ?? "/");
+
+  const activeItem = visibleItems.reduce<NavItem | null>((winner, item) => {
+    const normalizedHref = normalizePath(item.href);
+    const isMatch =
+      normalizedPathname === normalizedHref ||
+      (normalizedHref !== "/" && normalizedPathname.startsWith(`${normalizedHref}/`));
+
+    if (!isMatch) return winner;
+    if (!winner) return item;
+
+    return normalizePath(item.href).length > normalizePath(winner.href).length ? item : winner;
+  }, null);
+
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -107,17 +128,18 @@ export default function RightSidebar({ isAuthenticated, isReviewer }: RightSideb
 
         <div className="space-y-2">
           {visibleItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+            const isActive = activeItem?.href === item.href;
             const Icon = item.icon;
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
                   isActive
-                    ? "border-orange-500/30 bg-orange-500/10 text-orange-300"
-                    : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300"
+                    ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
+                    : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"
                 }`}
                 title={item.label}
               >

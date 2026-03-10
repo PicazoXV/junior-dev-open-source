@@ -16,6 +16,7 @@ import { getRecommendedTasksForUser } from "@/lib/recommendations";
 import EmptyState from "@/components/ui/empty-state";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import Badge from "@/components/ui/badge";
+import { getFirstIssueChallengeProgress } from "@/lib/first-issue-challenge";
 
 export default async function DashboardPage() {
   const user = await createProfileIfNeeded();
@@ -38,6 +39,7 @@ export default async function DashboardPage() {
 
   const canReviewRequests = isReviewerRole(profile?.role);
   const progress = await getUserProgress(supabase, user.id, profile?.tech_stack || null);
+  const challenge = await getFirstIssueChallengeProgress(supabase, user.id);
   const badges = getUserBadges(progress);
   const unlockedBadges = badges.filter((badge) => badge.unlocked);
   const recommendedTasks = await getRecommendedTasksForUser(supabase, user.id, 6);
@@ -202,6 +204,58 @@ export default async function DashboardPage() {
               ) : (
                 <p className="mt-1 text-sm text-gray-500">Sin PR detectado todavía</p>
               )}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard className="p-8">
+        <PageHeader
+          title="🎯 First Issue Challenge"
+          description="Completa tu primera contribución open source en 7 días."
+        />
+        <div className="rounded-2xl border border-white/20 bg-black/20 p-5">
+          <div className="flex flex-wrap items-center gap-2">
+            {challenge.completedInTime ? (
+              <Badge tone="success">🏆 Challenge completed</Badge>
+            ) : challenge.isExpired ? (
+              <Badge tone="danger">Challenge finalizado</Badge>
+            ) : (
+              <Badge tone="warning">Challenge activo</Badge>
+            )}
+            {challenge.deadlineAt ? (
+              <Badge tone="info">
+                {challenge.isExpired
+                  ? "Fuera de ventana"
+                  : `${challenge.daysRemaining} día(s) restantes`}
+              </Badge>
+            ) : null}
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-sm text-gray-400">Task requested</p>
+              <p className="mt-1 text-sm text-white">
+                {challenge.steps.taskRequested ? "✅ Completado" : "⏳ Pendiente"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-sm text-gray-400">Task approved</p>
+              <p className="mt-1 text-sm text-white">
+                {challenge.steps.taskApproved ? "✅ Completado" : "⏳ Pendiente"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-sm text-gray-400">PR opened</p>
+              <p className="mt-1 text-sm text-white">
+                {challenge.steps.prOpened ? "✅ Completado" : "⏳ Pendiente"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <p className="text-sm text-gray-400">PR merged</p>
+              <p className="mt-1 text-sm text-white">
+                {challenge.steps.prMerged ? "✅ Completado" : "⏳ Pendiente"}
+              </p>
             </div>
           </div>
         </div>

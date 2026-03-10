@@ -8,6 +8,7 @@ import {
   getLinkedIssueNumbersForPullRequest,
   linkPullRequestToTaskPlaceholder,
 } from "@/lib/github/pull-requests";
+import { markFirstIssueChallengeCompleted } from "@/lib/first-issue-challenge";
 
 export type PullRequestWebhookPayload = {
   action: string;
@@ -31,6 +32,7 @@ type TaskCandidate = {
   project_id: string;
   status: "open" | "assigned" | "in_review" | "completed" | "closed";
   github_issue_number: number | null;
+  assigned_to: string | null;
 };
 
 type ProjectRepository = {
@@ -135,7 +137,7 @@ async function findTaskByIssueNumbers(params: {
 
   const { data: taskCandidates, error: tasksError } = await supabase
     .from("tasks")
-    .select("id, project_id, status, github_issue_number")
+    .select("id, project_id, status, github_issue_number, assigned_to")
     .in("github_issue_number", issueNumbers);
 
   if (tasksError) {
@@ -295,6 +297,21 @@ export async function handlePullRequestWebhook(params: {
       console.warn("Could not post merged comment on GitHub issue", {
         taskId: task.id,
         issueNumber: task.github_issue_number,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  if (action === "closed" && pullRequest.merged && task.assigned_to) {
+    try {
+      await markFirstIssueChallengeCompleted({
+        supabase,
+        userId: task.assigned_to,
+      });
+    } catch (error) {
+      console.warn("Could not update First Issue Challenge completion", {
+        taskId: task.id,
+        userId: task.assigned_to,
         error: error instanceof Error ? error.message : String(error),
       });
     }

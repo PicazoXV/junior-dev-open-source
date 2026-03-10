@@ -12,6 +12,7 @@ import DifficultyBadge from "@/components/ui/difficulty-badge";
 import StatusBadge from "@/components/ui/status-badge";
 import GitHubIssueBadge from "@/components/ui/github-issue-badge";
 import { isReviewerRole } from "@/lib/roles";
+import ContributionShareActions from "@/components/contribution-share-actions";
 
 type TaskDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -28,8 +29,19 @@ function isMissingColumnError(error: { code?: string; message?: string } | null)
   return (
     code === "42703" ||
     message.includes("learning_resources") ||
+    message.includes("github_pr_url") ||
+    message.includes("github_pr_number") ||
     (message.includes("column") && message.includes("does not exist"))
   );
+}
+
+function getBaseUrl() {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  return "https://www.primerissue.dev";
 }
 
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
@@ -51,7 +63,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   const taskWithResources = await supabase
     .from("tasks")
     .select(
-      "id, project_id, title, description, status, difficulty, labels, github_issue_url, learning_resources"
+      "id, project_id, title, description, status, difficulty, labels, github_issue_url, github_pr_url, github_pr_number, assigned_to, learning_resources"
     )
     .eq("id", id)
     .maybeSingle();
@@ -62,11 +74,18 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   if (taskError && isMissingColumnError(taskError)) {
     const fallbackTask = await supabase
       .from("tasks")
-      .select("id, project_id, title, description, status, difficulty, labels, github_issue_url")
+      .select(
+        "id, project_id, title, description, status, difficulty, labels, github_issue_url, assigned_to"
+      )
       .eq("id", id)
       .maybeSingle();
     task = fallbackTask.data
-      ? ({ ...fallbackTask.data, learning_resources: null } as typeof task)
+      ? ({
+          ...fallbackTask.data,
+          github_pr_url: null,
+          github_pr_number: null,
+          learning_resources: null,
+        } as typeof task)
       : null;
     taskError = fallbackTask.error;
   }
@@ -80,7 +99,12 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
     notFound();
   }
 
-  const [{ data: project, error: projectError }, { data: profile }, { data: existingRequest }] =
+  const [
+    { data: project, error: projectError },
+    { data: profile },
+    { data: existingRequest },
+    { data: assignedDeveloper },
+  ] =
     await Promise.all([
       supabase
         .from("projects")
@@ -94,6 +118,13 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         .eq("task_id", task.id)
         .eq("user_id", user.id)
         .maybeSingle(),
+      task.assigned_to
+        ? supabase
+            .from("profiles")
+            .select("id, github_username, full_name")
+            .eq("id", task.assigned_to)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
     ]);
 
   if (projectError) {
@@ -102,6 +133,9 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
 
   const canEdit = isReviewerRole(profile?.role);
   const isTaskOpen = task.status === "open";
+  const canShareContribution =
+    task.status === "completed" && !!task.assigned_to && task.assigned_to === user.id;
+  const contributionUrl = `${getBaseUrl()}/contribution/${task.id}`;
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
@@ -187,6 +221,37 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
               </div>
             )}
           </div>
+
+          {canShareContribution ? (
+            <div className="mt-6 rounded-xl border border-white/20 bg-black/20 p-4">
+              <p className="text-sm font-semibold text-white">🎉 Contribution completed</p>
+              <p className="mt-1 text-sm text-gray-300">
+                Project: {project?.name || "Proyecto"} · Task: {task.title || "Tarea"}
+              </p>
+              <p className="mt-1 text-sm text-gray-400">
+                PR merged:{" "}
+                {task.github_pr_number ? `#${task.github_pr_number}` : "detectado"} · Developer:{" "}
+                {assignedDeveloper?.github_username
+                  ? `@${assignedDeveloper.github_username}`
+                  : assignedDeveloper?.full_name || "@developer"}
+              </p>
+              <ContributionShareActions
+                contributionUrl={contributionUrl}
+                projectName={project?.name || "Proyecto"}
+                taskTitle={task.title || "Tarea"}
+                prNumber={task.github_pr_number}
+                developerUsername={assignedDeveloper?.github_username || null}
+              />
+              <div className="mt-3">
+                <Link
+                  href={`/contribution/${task.id}`}
+                  className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
+                >
+                  Ver página pública de contribución
+                </Link>
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-6">
             <p className="mb-2 text-sm font-medium text-gray-400">Learning resources</p>

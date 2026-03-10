@@ -37,14 +37,30 @@ export async function createProfileIfNeeded() {
 
     const avatarUrl = user.user_metadata?.avatar_url || null;
 
-    const { error: insertError } = await supabase.from("profiles").insert({
+    const baseProfilePayload = {
       id: user.id,
       email: user.email,
       github_username: githubUsername,
       full_name: fullName,
       avatar_url: avatarUrl,
       role: "junior",
-    });
+    };
+
+    const withChallengePayload = {
+      ...baseProfilePayload,
+      challenge_started_at: new Date().toISOString(),
+    };
+
+    const firstInsert = await supabase.from("profiles").insert(withChallengePayload);
+
+    const isMissingChallengeColumn =
+      firstInsert.error &&
+      ((firstInsert.error as { code?: string }).code === "42703" ||
+        firstInsert.error.message?.toLowerCase().includes("challenge_started_at"));
+
+    const insertError = isMissingChallengeColumn
+      ? (await supabase.from("profiles").insert(baseProfilePayload)).error
+      : firstInsert.error;
 
     if (insertError) {
       console.error("Error creating profile:", insertError);

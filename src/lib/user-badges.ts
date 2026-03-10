@@ -1,6 +1,7 @@
 import type { UserProgressMetrics } from "@/lib/user-progress";
 
 export type UserBadgeId =
+  | "first_issue_champion"
   | "first_request"
   | "first_task_assigned"
   | "first_pr"
@@ -22,6 +23,12 @@ type BadgeRule = Omit<UserBadge, "unlocked"> & {
 };
 
 const BADGE_RULES: BadgeRule[] = [
+  {
+    id: "first_issue_champion",
+    title: "First Issue Champion",
+    description: "Completaste tu primera contribución dentro del reto de 7 días.",
+    isUnlocked: (metrics) => metrics.challengeCompletedInTime,
+  },
   {
     id: "first_request",
     title: "First Request",
@@ -80,4 +87,3 @@ export function getUserBadges(metrics: UserProgressMetrics): UserBadge[] {
     unlocked: rule.isUnlocked(metrics),
   }));
 }
-
