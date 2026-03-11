@@ -1,5 +1,5 @@
 import Link from "next/link";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import EmptyState from "@/components/ui/empty-state";
@@ -19,7 +19,7 @@ export default async function TechRankingPage({ searchParams }: TechRankingPageP
   const rows = await getTopContributorsByTech({ supabase, tech, limit: 20 });
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "Tech rankings" : "Ranking por tecnologías"}
@@ -99,6 +99,6 @@ export default async function TechRankingPage({ searchParams }: TechRankingPageP
           </div>
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

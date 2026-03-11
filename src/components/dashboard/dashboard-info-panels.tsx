@@ -8,12 +8,14 @@ type DashboardInfoPanelsProps = {
   primerIssuePanel: ReactNode;
   onboardingPanel: ReactNode;
   roadmapPanel: ReactNode;
+  priorityPanel?: "primerIssue" | "onboarding" | "roadmap";
 };
 
 export default function DashboardInfoPanels({
   primerIssuePanel,
   onboardingPanel,
   roadmapPanel,
+  priorityPanel = "primerIssue",
 }: DashboardInfoPanelsProps) {
   const { messages } = useI18n();
 
@@ -22,7 +24,9 @@ export default function DashboardInfoPanels({
       <CollapsibleCard
         title={messages.dashboardPanels.primerIssueTitle}
         description={messages.dashboardPanels.primerIssueDesc}
-        accent
+        accent={priorityPanel === "primerIssue"}
+        defaultOpen={priorityPanel === "primerIssue"}
+        headingAs="h3"
       >
         {primerIssuePanel}
       </CollapsibleCard>
@@ -30,6 +34,9 @@ export default function DashboardInfoPanels({
       <CollapsibleCard
         title={messages.dashboardPanels.onboardingTitle}
         description={messages.dashboardPanels.onboardingDesc}
+        accent={priorityPanel === "onboarding"}
+        defaultOpen={priorityPanel === "onboarding"}
+        headingAs="h3"
       >
         {onboardingPanel}
       </CollapsibleCard>
@@ -37,6 +44,9 @@ export default function DashboardInfoPanels({
       <CollapsibleCard
         title={messages.dashboardPanels.roadmapTitle}
         description={messages.dashboardPanels.roadmapDesc}
+        accent={priorityPanel === "roadmap"}
+        defaultOpen={priorityPanel === "roadmap"}
+        headingAs="h3"
       >
         {roadmapPanel}
       </CollapsibleCard>

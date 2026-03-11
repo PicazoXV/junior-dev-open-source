@@ -1,7 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import LevelBadge from "@/components/ui/level-badge";
@@ -18,6 +19,37 @@ import { getUserStreaks } from "@/lib/user-streaks";
 type DeveloperProfilePageProps = {
   params: Promise<{ username: string }>;
 };
+
+export async function generateMetadata({ params }: DeveloperProfilePageProps): Promise<Metadata> {
+  const { username } = await params;
+  const normalizedUsername = typeof username === "string" ? username.trim().toLowerCase() : "";
+
+  if (!normalizedUsername) {
+    return {
+      title: "Perfil de developer | PrimerIssue",
+      description:
+        "Consulta perfiles públicos de developers junior con historial de contribuciones, tareas y progreso en open source.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name, github_username, bio")
+    .ilike("github_username", normalizedUsername)
+    .maybeSingle();
+
+  const githubUsername = profile?.github_username || normalizedUsername;
+  const displayName = profile?.full_name?.trim() || `@${githubUsername}`;
+  const description =
+    profile?.bio?.trim() ||
+    `Perfil público de @${githubUsername} en PrimerIssue con tareas completadas, PRs mergeados y evolución como contributor.`;
+
+  return {
+    title: `${displayName} | PrimerIssue`,
+    description,
+  };
+}
 
 export default async function DeveloperProfilePage({ params }: DeveloperProfilePageProps) {
   const locale = await getCurrentLocale();
@@ -44,7 +76,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
   const streaks = await getUserStreaks(supabase, developer.id);
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={developer.fullName || `@${developer.githubUsername}`}
@@ -82,6 +114,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Activity streaks" : "Rachas de actividad"}
           description={
             locale === "en"
@@ -103,6 +136,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Verified contributions" : "Contribuciones verificadas"}
           description={
             locale === "en"
@@ -133,6 +167,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title="Stats"
           description={
             locale === "en"
@@ -152,6 +187,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Unlocked badges" : "Badges desbloqueados"}
           description={locale === "en" ? "Visible developer achievements." : "Logros visibles del developer."}
         />
@@ -175,6 +211,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Recent activity" : "Actividad reciente"}
           description={
             locale === "en"
@@ -215,6 +252,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={
             locale === "en"
               ? "Projects contributed to"
@@ -269,6 +307,6 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
           />
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

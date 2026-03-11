@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
@@ -42,7 +42,7 @@ export default async function ContributionPage({ params }: ContributionPageProps
   const contributionUrl = `${getBaseUrl()}/contribution/${contribution.id}`;
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-4xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-4xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "Contribution completed" : "Contribución completada"}
@@ -145,6 +145,6 @@ export default async function ContributionPage({ params }: ContributionPageProps
           </div>
         </div>
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

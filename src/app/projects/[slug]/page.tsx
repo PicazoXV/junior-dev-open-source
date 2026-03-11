@@ -1,8 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import PageHeader from "@/components/ui/page-header";
 import SectionCard from "@/components/ui/section-card";
 import Badge from "@/components/ui/badge";
@@ -46,10 +46,51 @@ function isMissingEstimatedColumnError(error: { code?: string; message?: string 
   );
 }
 
+function slugToTitle(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
+}
+
+export async function generateMetadata({ params }: ProjectDetailPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const rawSlug = resolvedParams?.slug;
+  const slug = typeof rawSlug === "string" ? rawSlug.trim().toLowerCase() : "";
+
+  if (!slug) {
+    return {
+      title: "Proyecto open source | PrimerIssue",
+      description:
+        "Conoce proyectos open source con tareas para juniors, nivel de dificultad y contexto para contribuir con impacto.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: project } = await supabase
+    .from("projects")
+    .select("name, short_description")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  const readableName = project?.name?.trim() || slugToTitle(slug) || "Proyecto open source";
+  const description =
+    project?.short_description?.trim() ||
+    `Explora ${readableName} en PrimerIssue y encuentra tareas abiertas para empezar a contribuir en open source.`;
+
+  return {
+    title: `${readableName} | PrimerIssue`,
+    description,
+  };
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const locale = await getCurrentLocale();
-  const currentUser = await createProfileIfNeeded();
   const supabase = await createClient();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
   const resolvedParams = await params;
   const rawSlug = resolvedParams?.slug;
@@ -133,7 +174,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   }
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={project.name || (locale === "en" ? "Project" : "Proyecto")}
@@ -219,6 +260,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Contributing developers" : "Developers contribuyendo"}
           description={
             locale === "en"
@@ -266,6 +308,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Available tasks" : "Tareas disponibles"}
           description={
             locale === "en"
@@ -286,6 +329,6 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           />
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

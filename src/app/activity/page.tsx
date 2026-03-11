@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import EmptyState from "@/components/ui/empty-state";
 import { getPlatformActivity } from "@/lib/activity-feed";
 import { getCurrentLocale } from "@/lib/i18n/server";
+
+export const metadata: Metadata = {
+  title: "Actividad reciente de la comunidad | PrimerIssue",
+  description:
+    "Sigue la actividad pública de PrimerIssue: tareas iniciadas, tareas completadas y pull requests mergeados en proyectos open source.",
+};
 
 export default async function ActivityPage() {
   const locale = await getCurrentLocale();
@@ -13,7 +20,7 @@ export default async function ActivityPage() {
   const activity = await getPlatformActivity(supabase, 30);
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "Activity feed" : "Feed de actividad"}
@@ -78,6 +85,6 @@ export default async function ActivityPage() {
           />
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

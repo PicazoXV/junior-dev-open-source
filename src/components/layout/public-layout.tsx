@@ -1,18 +1,18 @@
 import type { ReactNode } from "react";
-import Navbar from "@/components/navbar";
+import RightSidebar from "@/components/right-sidebar";
 
-type AppLayoutProps = {
+type PublicLayoutProps = {
   children: ReactNode;
   containerClassName?: string;
 };
 
-export default function AppLayout({
+export default function PublicLayout({
   children,
   containerClassName = "mx-auto max-w-5xl",
-}: AppLayoutProps) {
+}: PublicLayoutProps) {
   return (
     <main className="app-bg min-h-screen p-6 pb-28 lg:pb-6 lg:pr-72">
-      <Navbar />
+      <RightSidebar isAuthenticated={false} isReviewer={false} unreadNotifications={0} />
       <div className={containerClassName}>{children}</div>
     </main>
   );

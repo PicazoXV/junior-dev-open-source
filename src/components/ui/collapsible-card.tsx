@@ -8,6 +8,7 @@ type CollapsibleCardProps = {
   description?: string;
   defaultOpen?: boolean;
   accent?: boolean;
+  headingAs?: "h2" | "h3" | "h4";
   children: ReactNode;
 };
 
@@ -16,9 +17,11 @@ export default function CollapsibleCard({
   description,
   defaultOpen = false,
   accent = false,
+  headingAs = "h2",
   children,
 }: CollapsibleCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const HeadingTag = headingAs;
 
   return (
     <section className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl`}>
@@ -29,7 +32,7 @@ export default function CollapsibleCard({
         aria-expanded={isOpen}
       >
         <div>
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
+          <HeadingTag className="text-lg font-semibold text-white">{title}</HeadingTag>
           {description ? <p className="mt-1 text-sm text-gray-400">{description}</p> : null}
         </div>
         <ChevronDown
@@ -47,4 +50,3 @@ export default function CollapsibleCard({
     </section>
   );
 }
-

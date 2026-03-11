@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
 import { getCurrentLocale } from "@/lib/i18n/server";
+
+export const metadata: Metadata = {
+  title: "Para maintainers: escala contribuciones junior | PrimerIssue",
+  description:
+    "Publica proyectos, organiza tareas y gestiona solicitudes de developers junior con un flujo conectado a issues y pull requests de GitHub.",
+};
 
 const BENEFITS_ES = [
   "Recibe contributors con contexto y tareas guiadas.",
@@ -24,7 +31,7 @@ export default async function ForMaintainersPage() {
   const benefits = locale === "en" ? BENEFITS_EN : BENEFITS_ES;
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "For Maintainers" : "Para maintainers"}
@@ -67,7 +74,7 @@ export default async function ForMaintainersPage() {
 
         <div className="mt-6 flex flex-wrap gap-2">
           <Link
-            href="/projects/new"
+            href="/dashboard/projects/new"
             className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
           >
             {locale === "en" ? "Add your project" : "Añade tu proyecto"}
@@ -80,6 +87,6 @@ export default async function ForMaintainersPage() {
           </Link>
         </div>
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

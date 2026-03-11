@@ -9,6 +9,7 @@ import SectionCard from "@/components/ui/section-card";
 import EmptyState from "@/components/ui/empty-state";
 import Badge from "@/components/ui/badge";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
+import Table from "@/components/ui/table";
 import { getCurrentLocale } from "@/lib/i18n/server";
 
 type ProjectRow = {
@@ -102,63 +103,61 @@ export default async function DashboardProjectsPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-white/20 bg-black/20">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-left text-gray-400">
-                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Name" : "Nombre"}</th>
-                  <th className="px-4 py-3 font-medium">Slug</th>
-                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Status" : "Estado"}</th>
-                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Difficulty" : "Dificultad"}</th>
-                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Created" : "Creado"}</th>
-                  <th className="px-4 py-3 font-medium">{locale === "en" ? "Actions" : "Acciones"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((project) => (
-                  <tr key={project.id} className="border-t border-white/10">
-                    <td className="px-4 py-3 align-top text-white">
-                      {project.name || (locale === "en" ? "No name" : "Sin nombre")}
-                    </td>
-                    <td className="px-4 py-3 align-top text-gray-300">
-                      {project.slug || (locale === "en" ? "No slug" : "Sin slug")}
-                    </td>
-                    <td className="px-4 py-3 align-top">
-                      <Badge tone={project.status === "active" ? "success" : "default"}>
-                        {project.status === "active"
-                          ? locale === "en"
-                            ? "Active"
-                            : "Activo"
-                          : locale === "en"
-                            ? "Archived"
-                            : "Archivado"}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 align-top">
-                      <DifficultyBadge difficulty={project.difficulty} />
-                    </td>
-                    <td className="px-4 py-3 align-top text-gray-400">
-                      {project.created_at
-                        ? new Date(project.created_at).toLocaleString(
-                            locale === "en" ? "en-US" : "es-ES"
-                          )
+          <Table>
+            <thead>
+              <tr className="border-b border-white/10 text-left text-gray-400">
+                <th className="px-4 py-3 font-medium">{locale === "en" ? "Name" : "Nombre"}</th>
+                <th className="px-4 py-3 font-medium">Slug</th>
+                <th className="px-4 py-3 font-medium">{locale === "en" ? "Status" : "Estado"}</th>
+                <th className="px-4 py-3 font-medium">{locale === "en" ? "Difficulty" : "Dificultad"}</th>
+                <th className="px-4 py-3 font-medium">{locale === "en" ? "Created" : "Creado"}</th>
+                <th className="px-4 py-3 font-medium">{locale === "en" ? "Actions" : "Acciones"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((project) => (
+                <tr key={project.id} className="border-t border-white/10">
+                  <td className="px-4 py-3 align-top text-white">
+                    {project.name || (locale === "en" ? "No name" : "Sin nombre")}
+                  </td>
+                  <td className="px-4 py-3 align-top text-gray-300">
+                    {project.slug || (locale === "en" ? "No slug" : "Sin slug")}
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <Badge tone={project.status === "active" ? "success" : "default"}>
+                      {project.status === "active"
+                        ? locale === "en"
+                          ? "Active"
+                          : "Activo"
                         : locale === "en"
-                          ? "Not available"
-                          : "No disponible"}
-                    </td>
-                    <td className="px-4 py-3 align-top">
-                      <Link
-                        href={`/dashboard/projects/${project.id}/edit`}
-                        className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-                      >
-                        {locale === "en" ? "Edit" : "Editar"}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                          ? "Archived"
+                          : "Archivado"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <DifficultyBadge difficulty={project.difficulty} />
+                  </td>
+                  <td className="px-4 py-3 align-top text-gray-400">
+                    {project.created_at
+                      ? new Date(project.created_at).toLocaleString(
+                          locale === "en" ? "en-US" : "es-ES"
+                        )
+                      : locale === "en"
+                        ? "Not available"
+                        : "No disponible"}
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <Link
+                      href={`/dashboard/projects/${project.id}/edit`}
+                      className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+                    >
+                      {locale === "en" ? "Edit" : "Editar"}
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         )}
       </SectionCard>
     </AppLayout>

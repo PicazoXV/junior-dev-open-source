@@ -1,4 +1,5 @@
-import AppLayout from "@/components/layout/app-layout";
+import type { Metadata } from "next";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import CourseCard from "@/components/certifications/course-card";
@@ -8,6 +9,12 @@ import {
   type CertificationCategory,
 } from "@/lib/certifications";
 import { getCurrentMessages } from "@/lib/i18n/server";
+
+export const metadata: Metadata = {
+  title: "Certificaciones recomendadas para developers junior | PrimerIssue",
+  description:
+    "Explora certificaciones de programación, datos, cloud, IA e inglés para fortalecer tu perfil técnico y crecer en open source.",
+};
 
 function getCategoryCopy(category: CertificationCategory, messages: Awaited<ReturnType<typeof getCurrentMessages>>["messages"]) {
   if (category === "english") {
@@ -49,7 +56,7 @@ export default async function CertificationsPage() {
   const categories = getCertificationCategoriesOrder();
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="surface-accent p-8 md:p-10">
         <PageHeader title={messages.certifications.title} description={messages.certifications.subtitle} />
         <p className="max-w-4xl text-sm text-gray-300 md:text-base">{messages.certifications.intro}</p>
@@ -72,6 +79,6 @@ export default async function CertificationsPage() {
           </SectionCard>
         );
       })}
-    </AppLayout>
+    </PublicLayout>
   );
 }

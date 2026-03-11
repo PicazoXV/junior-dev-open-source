@@ -1,6 +1,7 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import LevelBadge from "@/components/ui/level-badge";
@@ -9,13 +10,19 @@ import EmptyState from "@/components/ui/empty-state";
 import { getDevelopersLeaderboard } from "@/lib/developer-stats";
 import { getCurrentLocale } from "@/lib/i18n/server";
 
+export const metadata: Metadata = {
+  title: "Ranking de developers open source | PrimerIssue",
+  description:
+    "Descubre developers junior activos, sus tareas completadas, PRs mergeados y progreso público dentro de PrimerIssue.",
+};
+
 export default async function DevelopersPage() {
   const locale = await getCurrentLocale();
   const supabase = await createClient();
   const leaderboard = await getDevelopersLeaderboard(supabase);
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "Developers leaderboard" : "Leaderboard de developers"}
@@ -98,6 +105,6 @@ export default async function DevelopersPage() {
           </div>
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

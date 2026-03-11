@@ -1,7 +1,14 @@
-import AppLayout from "@/components/layout/app-layout";
+import type { Metadata } from "next";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import { getCurrentLocale } from "@/lib/i18n/server";
+
+export const metadata: Metadata = {
+  title: "Guía para tu primera contribución open source | PrimerIssue",
+  description:
+    "Sigue una guía paso a paso para hacer tu primera contribución open source: elegir tarea, crear branch y abrir tu primer pull request.",
+};
 
 const STEPS_ES = [
   {
@@ -74,7 +81,7 @@ export default async function FirstContributionPage() {
   const steps = locale === "en" ? STEPS_EN : STEPS_ES;
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={
@@ -101,6 +108,6 @@ export default async function FirstContributionPage() {
           ))}
         </div>
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

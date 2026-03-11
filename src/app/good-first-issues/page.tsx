@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
 import DifficultyBadge from "@/components/ui/difficulty-badge";
 import EmptyState from "@/components/ui/empty-state";
+import Button from "@/components/ui/button";
+import { FilterField, FiltersForm, FilterSelect } from "@/components/ui/filters";
 import { getCurrentLocale } from "@/lib/i18n/server";
 import FavoriteToggle from "@/components/favorites/favorite-toggle";
-import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { getFavoriteIdsByType } from "@/lib/favorites";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "Good First Issues | MiPrimerIssue",
+  title: "Good First Issues para developers junior | PrimerIssue",
   description:
-    "Find beginner-friendly tasks to make your first open source contribution with MiPrimerIssue.",
+    "Encuentra tareas beginner-friendly para tu primera contribución open source: filtra por tecnología, dificultad y tiempo estimado.",
+  alternates: {
+    canonical: `${getSiteUrl()}/good-first-issues`,
+  },
 };
 
 type GoodFirstIssuesPageProps = {
@@ -205,10 +210,11 @@ function matchesEstimate(task: NormalizedTaskRow, estimateFilter: string) {
 
 export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIssuesPageProps) {
   const locale = await getCurrentLocale();
-  const user = await createProfileIfNeeded();
-  const { tech = "", track = "", difficulty = "", estimate = "", favorites = "" } = await searchParams;
-
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { tech = "", track = "", difficulty = "", estimate = "", favorites = "" } = await searchParams;
   const favoriteTaskIds = await getFavoriteIdsByType({
     supabase,
     userId: user?.id || null,
@@ -255,7 +261,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
   const availableTech = [...new Set(tasks.flatMap((task) => task.project?.tech_stack || []))].sort();
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="surface-accent p-8">
         <PageHeader
           title={locale === "en" ? "Good First Issues" : "Good First Issues"}
@@ -275,112 +281,92 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Filters" : "Filtros"}
           description={locale === "en" ? "Adjust technology, track and recommended difficulty." : "Ajusta tecnología, track y dificultad recomendada."}
         />
 
-        <form className="grid gap-3 md:grid-cols-5">
-          <div>
-            <label htmlFor="tech" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Technology" : "Tecnología"}
-            </label>
-            <select
+        <FiltersForm className="md:grid-cols-5">
+          <FilterField htmlFor="tech" label={locale === "en" ? "Technology" : "Tecnología"}>
+            <FilterSelect
               id="tech"
               name="tech"
               defaultValue={tech}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todas"}</option>
-              {availableTech.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todas" },
+                ...availableTech.map((item) => ({ value: item, label: item })),
+              ]}
+            />
+          </FilterField>
 
-          <div>
-            <label htmlFor="track" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Track" : "Track"}
-            </label>
-            <select
+          <FilterField htmlFor="track" label={locale === "en" ? "Track" : "Track"}>
+            <FilterSelect
               id="track"
               name="track"
               defaultValue={track}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todos"}</option>
-              <option value="frontend">Frontend</option>
-              <option value="backend">Backend</option>
-              <option value="docs">Docs</option>
-              <option value="testing">Testing</option>
-            </select>
-          </div>
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todos" },
+                { value: "frontend", label: "Frontend" },
+                { value: "backend", label: "Backend" },
+                { value: "docs", label: "Docs" },
+                { value: "testing", label: "Testing" },
+              ]}
+            />
+          </FilterField>
 
-          <div>
-            <label htmlFor="difficulty" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Difficulty" : "Dificultad"}
-            </label>
-            <select
+          <FilterField htmlFor="difficulty" label={locale === "en" ? "Difficulty" : "Dificultad"}>
+            <FilterSelect
               id="difficulty"
               name="difficulty"
               defaultValue={difficulty}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todas"}</option>
-              <option value="very-easy">{locale === "en" ? "Very easy" : "Muy fácil"}</option>
-              <option value="beginner">{locale === "en" ? "Beginner" : "Principiante"}</option>
-              <option value="junior">{locale === "en" ? "Junior" : "Junior"}</option>
-            </select>
-          </div>
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todas" },
+                { value: "very-easy", label: locale === "en" ? "Very easy" : "Muy fácil" },
+                { value: "beginner", label: locale === "en" ? "Beginner" : "Principiante" },
+                { value: "junior", label: locale === "en" ? "Junior" : "Junior" },
+              ]}
+            />
+          </FilterField>
 
-          <div>
-            <label htmlFor="estimate" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Estimated time" : "Tiempo estimado"}
-            </label>
-            <select
+          <FilterField htmlFor="estimate" label={locale === "en" ? "Estimated time" : "Tiempo estimado"}>
+            <FilterSelect
               id="estimate"
               name="estimate"
               defaultValue={estimate}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todos"}</option>
-              <option value="short">{locale === "en" ? "Up to 30 min" : "Hasta 30 min"}</option>
-              <option value="medium">{locale === "en" ? "30-90 min" : "30-90 min"}</option>
-              <option value="long">{locale === "en" ? "90+ min" : "90+ min"}</option>
-            </select>
-          </div>
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todos" },
+                { value: "short", label: locale === "en" ? "Up to 30 min" : "Hasta 30 min" },
+                { value: "medium", label: locale === "en" ? "30-90 min" : "30-90 min" },
+                { value: "long", label: locale === "en" ? "90+ min" : "90+ min" },
+              ]}
+            />
+          </FilterField>
 
           {user ? (
-            <div>
-              <label htmlFor="favorites" className="mb-1 block text-xs text-gray-400">
-                {locale === "en" ? "Favorites" : "Favoritos"}
-              </label>
-              <select
+            <FilterField htmlFor="favorites" label={locale === "en" ? "Favorites" : "Favoritos"}>
+              <FilterSelect
                 id="favorites"
                 name="favorites"
                 defaultValue={favorites}
-                className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-              >
-                <option value="">{locale === "en" ? "All" : "Todos"}</option>
-                <option value="1">{locale === "en" ? "Only favorites" : "Solo favoritos"}</option>
-              </select>
-            </div>
+                options={[
+                  { value: "", label: locale === "en" ? "All" : "Todos" },
+                  { value: "1", label: locale === "en" ? "Only favorites" : "Solo favoritos" },
+                ]}
+              />
+            </FilterField>
           ) : null}
 
           <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-            >
+            <Button type="submit" variant="accent" className="w-full">
               {locale === "en" ? "Apply filters" : "Aplicar filtros"}
-            </button>
+            </Button>
           </div>
-        </form>
+        </FiltersForm>
       </SectionCard>
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Beginner-friendly tasks" : "Tareas beginner-friendly"}
           description={
             locale === "en"
@@ -469,6 +455,6 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
           </div>
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

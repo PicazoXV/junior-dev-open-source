@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
@@ -19,6 +20,17 @@ import { addTaskCommentAction } from "@/app/tasks/[id]/actions";
 
 type TaskDetailPageProps = {
   params: Promise<{ id: string }>;
+};
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 function isMissingColumnError(error: { code?: string; message?: string } | null) {
@@ -396,6 +408,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Request this task" : "Solicitar esta tarea"}
           description={
             locale === "en"

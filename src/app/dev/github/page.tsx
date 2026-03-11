@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import AppLayout from "@/components/layout/app-layout";
@@ -18,6 +19,17 @@ type GitHubDevPageProps = {
     issue_url?: string;
     error?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 function DiagnosticRow({
@@ -172,6 +184,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
 
       <SectionCard className="p-8">
         <PageHeader
+          as="h2"
           title={locale === "en" ? "Create test issue" : "Crear issue de prueba"}
           description={
             locale === "en"

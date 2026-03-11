@@ -1,14 +1,26 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import AppLayout from "@/components/layout/app-layout";
+import PublicLayout from "@/components/layout/public-layout";
 import SectionCard from "@/components/ui/section-card";
 import PageHeader from "@/components/ui/page-header";
 import Badge from "@/components/ui/badge";
 import EmptyState from "@/components/ui/empty-state";
+import Button from "@/components/ui/button";
+import { FiltersForm, FilterField, FilterSelect } from "@/components/ui/filters";
 import { getCurrentLocale } from "@/lib/i18n/server";
-import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import FavoriteToggle from "@/components/favorites/favorite-toggle";
 import { getFavoriteIdsByType } from "@/lib/favorites";
+import { getSiteUrl } from "@/lib/site-url";
+
+export const metadata: Metadata = {
+  title: "Proyectos open source para contribuir | PrimerIssue",
+  description:
+    "Explora proyectos open source con tareas reales, filtros por tecnología y nivel, y encuentra dónde empezar a contribuir como developer junior.",
+  alternates: {
+    canonical: `${getSiteUrl()}/projects`,
+  },
+};
 
 type ProjectRow = {
   id: string;
@@ -64,10 +76,12 @@ function hasAnyTrackLabel(labels: string[] | null | undefined, track: string) {
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
   const locale = await getCurrentLocale();
-  const user = await createProfileIfNeeded();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { tech = "", difficulty = "", status = "active", track = "", estimate = "", favorites = "" } =
     await searchParams;
-  const supabase = await createClient();
   const favoriteProjectIds = await getFavoriteIdsByType({
     supabase,
     userId: user?.id || null,
@@ -155,7 +169,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
   ].sort((a, b) => a.localeCompare(b));
 
   return (
-    <AppLayout containerClassName="mx-auto max-w-6xl space-y-6">
+    <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
       <SectionCard className="p-8">
         <PageHeader
           title={locale === "en" ? "Open source projects" : "Proyectos open source"}
@@ -166,88 +180,74 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
           }
         />
 
-        <form className="mb-6 grid gap-3 md:grid-cols-6">
-          <div>
-            <label htmlFor="tech" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Technology" : "Tecnología"}
-            </label>
-            <select
+        <FiltersForm className="mb-6 md:grid-cols-6">
+          <FilterField htmlFor="tech" label={locale === "en" ? "Technology" : "Tecnología"}>
+            <FilterSelect
               id="tech"
               name="tech"
               defaultValue={tech}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todas"}</option>
-              {availableTech.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="difficulty" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Difficulty" : "Dificultad"}
-            </label>
-            <select
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todas" },
+                ...availableTech.map((item) => ({ value: item, label: item })),
+              ]}
+            />
+          </FilterField>
+
+          <FilterField htmlFor="difficulty" label={locale === "en" ? "Difficulty" : "Dificultad"}>
+            <FilterSelect
               id="difficulty"
               name="difficulty"
               defaultValue={difficulty}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todas"}</option>
-              <option value="beginner">{locale === "en" ? "Beginner" : "Principiante"}</option>
-              <option value="intermediate">{locale === "en" ? "Intermediate" : "Intermedia"}</option>
-              <option value="advanced">{locale === "en" ? "Advanced" : "Avanzada"}</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="status" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Status" : "Estado"}
-            </label>
-            <select
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todas" },
+                { value: "beginner", label: locale === "en" ? "Beginner" : "Principiante" },
+                { value: "intermediate", label: locale === "en" ? "Intermediate" : "Intermedia" },
+                { value: "advanced", label: locale === "en" ? "Advanced" : "Avanzada" },
+              ]}
+            />
+          </FilterField>
+
+          <FilterField htmlFor="status" label={locale === "en" ? "Status" : "Estado"}>
+            <FilterSelect
               id="status"
               name="status"
               defaultValue={status}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="active">{locale === "en" ? "Active" : "Activos"}</option>
-              <option value="archived">{locale === "en" ? "Archived" : "Archivados"}</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="track" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Task type" : "Tipo de tarea"}
-            </label>
-            <select
+              options={[
+                { value: "active", label: locale === "en" ? "Active" : "Activos" },
+                { value: "archived", label: locale === "en" ? "Archived" : "Archivados" },
+              ]}
+            />
+          </FilterField>
+
+          <FilterField htmlFor="track" label={locale === "en" ? "Task type" : "Tipo de tarea"}>
+            <FilterSelect
               id="track"
               name="track"
               defaultValue={track}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todos"}</option>
-              <option value="frontend">Frontend</option>
-              <option value="backend">Backend</option>
-              <option value="docs">Docs</option>
-              <option value="testing">Testing</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="estimate" className="mb-1 block text-xs text-gray-400">
-              {locale === "en" ? "Estimated time" : "Tiempo estimado"}
-            </label>
-            <select
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todos" },
+                { value: "frontend", label: "Frontend" },
+                { value: "backend", label: "Backend" },
+                { value: "docs", label: "Docs" },
+                { value: "testing", label: "Testing" },
+              ]}
+            />
+          </FilterField>
+
+          <FilterField htmlFor="estimate" label={locale === "en" ? "Estimated time" : "Tiempo estimado"}>
+            <FilterSelect
               id="estimate"
               name="estimate"
               defaultValue={estimate}
-              className="w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-            >
-              <option value="">{locale === "en" ? "All" : "Todos"}</option>
-              <option value="short">{locale === "en" ? "Up to 30 min" : "Hasta 30 min"}</option>
-              <option value="medium">{locale === "en" ? "30-90 min" : "30-90 min"}</option>
-              <option value="long">{locale === "en" ? "90+ min" : "90+ min"}</option>
-            </select>
-          </div>
+              options={[
+                { value: "", label: locale === "en" ? "All" : "Todos" },
+                { value: "short", label: locale === "en" ? "Up to 30 min" : "Hasta 30 min" },
+                { value: "medium", label: locale === "en" ? "30-90 min" : "30-90 min" },
+                { value: "long", label: locale === "en" ? "90+ min" : "90+ min" },
+              ]}
+            />
+          </FilterField>
+
           <div className="flex items-end gap-2">
             {user ? (
               <label className="flex items-center gap-2 text-sm text-gray-300">
@@ -255,14 +255,11 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
                 {locale === "en" ? "Only favorites" : "Solo favoritos"}
               </label>
             ) : null}
-            <button
-              type="submit"
-              className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-            >
+            <Button type="submit" variant="accent">
               {locale === "en" ? "Apply" : "Aplicar"}
-            </button>
+            </Button>
           </div>
-        </form>
+        </FiltersForm>
 
         {filteredProjects.length === 0 ? (
           <EmptyState
@@ -356,6 +353,6 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
           </div>
         )}
       </SectionCard>
-    </AppLayout>
+    </PublicLayout>
   );
 }

@@ -147,7 +147,7 @@ export async function getUserOnboardingState(params: {
       id: "complete_profile",
       title: messages.onboarding.completeProfileTitle,
       description: messages.onboarding.completeProfileDesc,
-      href: "/profile/edit",
+      href: "/dashboard?editProfile=1",
       ctaLabel: messages.onboarding.completeProfileCta,
       status: deriveStatus({
         completed: profileCompletionScore >= 2,
