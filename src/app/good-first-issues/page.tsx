@@ -249,7 +249,7 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
       matchesTrack(task, track) &&
       matchesDifficulty(task, difficulty) &&
       matchesEstimate(task, estimate) &&
-      (favorites !== "1" || favoriteTaskIds.has(task.id))
+      (favorites !== "1" || !user || favoriteTaskIds.has(task.id))
   );
 
   const availableTech = [...new Set(tasks.flatMap((task) => task.project?.tech_stack || []))].sort();
@@ -442,11 +442,13 @@ export default async function GoodFirstIssuesPage({ searchParams }: GoodFirstIss
                 </div>
 
                 <div className="mt-5 flex gap-2">
-                  <FavoriteToggle
-                    itemType="task"
-                    itemId={task.id}
-                    initiallyFavorite={favoriteTaskIds.has(task.id)}
-                  />
+                  {user ? (
+                    <FavoriteToggle
+                      itemType="task"
+                      itemId={task.id}
+                      initiallyFavorite={favoriteTaskIds.has(task.id)}
+                    />
+                  ) : null}
                   <Link
                     href={`/tasks/${task.id}`}
                     className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"

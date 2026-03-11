@@ -17,11 +17,12 @@ export default function GitHubLoginButton({
 
   const handleLogin = async () => {
     const supabase = createClient()
+    const redirectTo = new URL('/auth/callback', window.location.origin).toString()
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: 'http://localhost:3000/auth/callback',
+        redirectTo,
       },
     })
 

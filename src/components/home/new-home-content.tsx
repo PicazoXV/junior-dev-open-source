@@ -145,19 +145,12 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
                 className="rounded-xl px-7 py-3 text-sm font-semibold"
               />
             )}
-            {isAuthenticated ? (
-              <Link
-                href="/good-first-issues"
-                className="inline-flex items-center rounded-xl border border-white/20 px-7 py-3 text-sm font-semibold text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
-              >
-                {isEn ? "View Good First Issues" : "Ver Good First Issues"}
-              </Link>
-            ) : (
-              <GitHubLoginButton
-                label={isEn ? "View Good First Issues" : "Ver Good First Issues"}
-                className="rounded-xl border-white/20 bg-transparent px-7 py-3 text-sm font-semibold text-gray-200 hover:border-orange-500/35 hover:bg-orange-500/10 hover:text-orange-300"
-              />
-            )}
+            <Link
+              href="/good-first-issues"
+              className="inline-flex items-center rounded-xl border border-white/20 px-7 py-3 text-sm font-semibold text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+            >
+              {isEn ? "View Good First Issues" : "Ver Good First Issues"}
+            </Link>
           </div>
 
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
@@ -250,19 +243,12 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
           ))}
         </div>
         <div className="mt-5">
-          {isAuthenticated ? (
-            <Link
-              href="/good-first-issues"
-              className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-            >
-              {isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
-            </Link>
-          ) : (
-            <GitHubLoginButton
-              label={isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
-              className="rounded-lg px-3 py-2 text-sm font-medium"
-            />
-          )}
+          <Link
+            href="/good-first-issues"
+            className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+          >
+            {isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
+          </Link>
         </div>
       </SectionCard>
 
