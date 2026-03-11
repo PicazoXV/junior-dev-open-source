@@ -103,7 +103,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
             type="text"
             name="repo_url"
             defaultValue={repoUrl}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="form-control"
           />
           <button
             type="submit"
@@ -200,7 +200,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
               type="text"
               name="repo_url"
               defaultValue={repoUrl}
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="form-control"
             />
           </div>
 
@@ -212,7 +212,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
               type="text"
               name="title"
               defaultValue="[Dev Test] GitHub App issue creation"
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="form-control"
             />
           </div>
 
@@ -226,7 +226,7 @@ export default async function GitHubDevPage({ searchParams }: GitHubDevPageProps
                   ? `Diagnostics issue to validate GitHub App integration.\n\nTarget repository: ${repoUrl}`
                   : `Issue de diagnóstico para validar integración GitHub App.\n\nRepositorio objetivo: ${repoUrl}`
               }
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="form-control"
             />
           </div>
 

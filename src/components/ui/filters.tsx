@@ -42,7 +42,7 @@ export function FilterField({ htmlFor, label, children, className = "" }: Filter
 export function FilterSelect({ options, className = "", ...props }: FilterSelectProps) {
   return (
     <select
-      className={`surface-subcard w-full rounded-xl border border-white/20 bg-neutral-900/90 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 ${className}`}
+      className={`form-control form-select rounded-xl ${className}`}
       {...props}
     >
       {options.map((option) => (

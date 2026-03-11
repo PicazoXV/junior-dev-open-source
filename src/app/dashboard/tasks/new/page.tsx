@@ -119,7 +119,7 @@ Definición de terminado / Definition of done:
               <label htmlFor="project_id" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Project" : "Proyecto"}
               </label>
-              <select id="project_id" name="project_id" required className="w-full rounded-lg border px-3 py-2 text-sm">
+              <select id="project_id" name="project_id" required className="form-control form-select">
                 <option value="">{locale === "en" ? "Select a project" : "Selecciona un proyecto"}</option>
                 {projectOptions.map((project) => (
                   <option key={project.id} value={project.id}>
@@ -133,14 +133,14 @@ Definición de terminado / Definition of done:
               <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Title" : "Título"}
               </label>
-              <input id="title" name="title" required className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="title" name="title" required className="form-control" />
             </div>
 
             <div>
               <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Description" : "Descripción"}
               </label>
-              <textarea id="description" name="description" rows={5} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <textarea id="description" name="description" rows={5} className="form-control" />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -148,7 +148,7 @@ Definición de terminado / Definition of done:
                 <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Difficulty" : "Dificultad"}
                 </label>
-                <select id="difficulty" name="difficulty" defaultValue="beginner" className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="difficulty" name="difficulty" defaultValue="beginner" className="form-control form-select">
                   <option value="beginner">beginner</option>
                   <option value="intermediate">intermediate</option>
                   <option value="advanced">advanced</option>
@@ -159,7 +159,7 @@ Definición de terminado / Definition of done:
                 <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Status" : "Estado"}
                 </label>
-                <select id="status" name="status" defaultValue="open" className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="status" name="status" defaultValue="open" className="form-control form-select">
                   <option value="open">open</option>
                   <option value="assigned">assigned</option>
                   <option value="in_review">in_review</option>
@@ -173,7 +173,7 @@ Definición de terminado / Definition of done:
               <label htmlFor="labels" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Labels (comma separated)" : "Labels (separadas por comas)"}
               </label>
-              <input id="labels" name="labels" placeholder="good first issue, backend, bug" className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="labels" name="labels" placeholder="good first issue, backend, bug" className="form-control" />
             </div>
 
             <div>
@@ -187,7 +187,7 @@ Definición de terminado / Definition of done:
                 min={5}
                 step={5}
                 placeholder={locale === "en" ? "e.g. 60" : "ej. 60"}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -199,7 +199,7 @@ Definición de terminado / Definition of done:
                 id="learning_resources"
                 name="learning_resources"
                 placeholder="https://docs..., https://tutorial..."
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -212,7 +212,7 @@ Definición de terminado / Definition of done:
                 name="github_issue_url"
                 type="url"
                 placeholder="https://github.com/org/repo/issues/123"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 

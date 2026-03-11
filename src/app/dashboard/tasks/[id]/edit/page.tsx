@@ -184,7 +184,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
               <label htmlFor="project_id" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Project" : "Proyecto"}
               </label>
-              <select id="project_id" name="project_id" required defaultValue={currentTask.project_id} className="w-full rounded-lg border px-3 py-2 text-sm">
+              <select id="project_id" name="project_id" required defaultValue={currentTask.project_id} className="form-control form-select">
                 {projectOptions.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
@@ -197,14 +197,14 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
               <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Title" : "Título"}
               </label>
-              <input id="title" name="title" required defaultValue={currentTask.title || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="title" name="title" required defaultValue={currentTask.title || ""} className="form-control" />
             </div>
 
             <div>
               <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Description" : "Descripción"}
               </label>
-              <textarea id="description" name="description" rows={5} defaultValue={currentTask.description || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <textarea id="description" name="description" rows={5} defaultValue={currentTask.description || ""} className="form-control" />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -212,7 +212,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Difficulty" : "Dificultad"}
                 </label>
-                <select id="difficulty" name="difficulty" defaultValue={currentTask.difficulty || "beginner"} className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="difficulty" name="difficulty" defaultValue={currentTask.difficulty || "beginner"} className="form-control form-select">
                   <option value="beginner">beginner</option>
                   <option value="intermediate">intermediate</option>
                   <option value="advanced">advanced</option>
@@ -223,7 +223,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Status" : "Estado"}
                 </label>
-                <select id="status" name="status" defaultValue={currentTask.status} className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="status" name="status" defaultValue={currentTask.status} className="form-control form-select">
                   <option value="open">open</option>
                   <option value="assigned">assigned</option>
                   <option value="in_review">in_review</option>
@@ -237,7 +237,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
               <label htmlFor="labels" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Labels (comma separated)" : "Labels (separadas por comas)"}
               </label>
-              <input id="labels" name="labels" defaultValue={(currentTask.labels || []).join(", ")} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="labels" name="labels" defaultValue={(currentTask.labels || []).join(", ")} className="form-control" />
             </div>
 
             <div>
@@ -251,7 +251,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 min={5}
                 step={5}
                 defaultValue={currentTask.estimated_minutes || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -263,7 +263,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
                 id="learning_resources"
                 name="learning_resources"
                 defaultValue={(currentTask.learning_resources || []).join(", ")}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -271,7 +271,7 @@ export default async function EditTaskPage({ params }: TaskEditPageProps) {
               <label htmlFor="github_issue_url" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "GitHub issue URL" : "URL del issue de GitHub"}
               </label>
-              <input id="github_issue_url" name="github_issue_url" type="url" defaultValue={currentTask.github_issue_url || ""} className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="github_issue_url" name="github_issue_url" type="url" defaultValue={currentTask.github_issue_url || ""} className="form-control" />
             </div>
 
             <div className="pt-2">

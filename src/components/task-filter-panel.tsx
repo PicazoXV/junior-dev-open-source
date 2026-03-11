@@ -51,7 +51,7 @@ export default function TaskFilterPanel({ tasks }: TaskFilterPanelProps) {
           <select
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
-            className="surface-subcard w-full rounded-lg border border-white/20 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            className="form-control form-select"
           >
             <option value="all">{locale === "en" ? "All" : "Todas"}</option>
             <option value="beginner">beginner</option>
@@ -67,7 +67,7 @@ export default function TaskFilterPanel({ tasks }: TaskFilterPanelProps) {
           <select
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            className="surface-subcard w-full rounded-lg border border-white/20 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+            className="form-control form-select"
           >
             <option value="all">{locale === "en" ? "All" : "Todas"}</option>
             {labels.map((item) => (

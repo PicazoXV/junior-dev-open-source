@@ -173,9 +173,9 @@ export default function RightSidebar({
     <aside className="group fixed bottom-3 right-3 z-40 lg:right-8 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2">
       <nav
         aria-label={locale === "en" ? "Main navigation" : "Navegación principal"}
-        className={`sidebar-shell sidebar-scroll w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
+        className={`sidebar-shell sidebar-scroll w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 pr-1 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
       >
-        <div className="mb-4 flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-2.5 py-2">
+        <div className="mb-4 flex min-h-14 items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5">
           <div className="min-w-0 flex-1">
             <div className={`min-w-0 ${desktopExpandedOnlyClass}`}>
               <p className="truncate text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">
@@ -184,7 +184,7 @@ export default function RightSidebar({
               <p className="truncate text-[10px] text-gray-500">{messages.brand.domain}</p>
             </div>
             <p
-              className={`text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 ${desktopCollapsedOnlyClass}`}
+              className={`text-center text-[11px] font-semibold uppercase leading-none tracking-[0.2em] text-gray-400 ${desktopCollapsedOnlyClass}`}
             >
               MI
             </p>
@@ -243,6 +243,7 @@ export default function RightSidebar({
             <button
               type="button"
               onClick={handleLogout}
+              aria-label={messages.sidebar.logout}
               className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 px-3 py-2.5 text-sm text-gray-300 transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               title={messages.sidebar.logout}
             >

@@ -60,7 +60,7 @@ export default async function NewProjectPage() {
               <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Name" : "Nombre"}
               </label>
-              <input id="name" name="name" required className="w-full rounded-lg border px-3 py-2 text-sm" />
+              <input id="name" name="name" required className="form-control" />
             </div>
 
             <div>
@@ -72,7 +72,7 @@ export default async function NewProjectPage() {
                 name="slug"
                 required
                 placeholder="mi-proyecto-open-source"
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
           </div>
@@ -81,14 +81,14 @@ export default async function NewProjectPage() {
             <label htmlFor="short_description" className="mb-1 block text-sm font-medium text-gray-300">
               {locale === "en" ? "Short description" : "Descripción corta"}
             </label>
-            <input id="short_description" name="short_description" className="w-full rounded-lg border px-3 py-2 text-sm" />
+            <input id="short_description" name="short_description" className="form-control" />
           </div>
 
           <div>
             <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-300">
               {locale === "en" ? "Description" : "Descripción"}
             </label>
-            <textarea id="description" name="description" rows={5} className="w-full rounded-lg border px-3 py-2 text-sm" />
+            <textarea id="description" name="description" rows={5} className="form-control" />
           </div>
 
           <div>
@@ -100,7 +100,7 @@ export default async function NewProjectPage() {
               name="repo_url"
               type="url"
               placeholder="https://github.com/org/repo"
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="form-control"
             />
           </div>
 
@@ -109,7 +109,7 @@ export default async function NewProjectPage() {
               <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Status" : "Estado"}
               </label>
-              <select id="status" name="status" defaultValue="active" className="w-full rounded-lg border px-3 py-2 text-sm">
+              <select id="status" name="status" defaultValue="active" className="form-control form-select">
                 <option value="active">active</option>
                 <option value="archived">archived</option>
               </select>
@@ -119,7 +119,7 @@ export default async function NewProjectPage() {
               <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                 {locale === "en" ? "Difficulty" : "Dificultad"}
               </label>
-              <select id="difficulty" name="difficulty" defaultValue="beginner" className="w-full rounded-lg border px-3 py-2 text-sm">
+              <select id="difficulty" name="difficulty" defaultValue="beginner" className="form-control form-select">
                 <option value="beginner">beginner</option>
                 <option value="intermediate">intermediate</option>
                 <option value="advanced">advanced</option>
@@ -135,7 +135,7 @@ export default async function NewProjectPage() {
               id="tech_stack"
               name="tech_stack"
               placeholder="nextjs, supabase, tailwindcss"
-              className="w-full rounded-lg border px-3 py-2 text-sm"
+              className="form-control"
             />
           </div>
 

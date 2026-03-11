@@ -254,20 +254,132 @@ body {
   background: rgba(8, 8, 8, 0.45);
 }
 
-.app-bg :where(input, textarea, select) {
-  background: rgba(23, 23, 23, 0.95);
-  border-color: var(--surface-border-strong) !important;
+.app-bg :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(
+        [type="file"]
+      ):not([type="hidden"]),
+    textarea,
+    select
+  ),
+.form-control {
+  width: 100%;
+  min-height: 2.625rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--surface-border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 70%),
+    rgba(20, 20, 20, 0.96);
   color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.55rem 0.85rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.app-bg :where(input, textarea)::placeholder {
+.app-bg :where(textarea),
+.form-textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.app-bg :where(select),
+.form-select {
+  appearance: none;
+  color-scheme: dark;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23fb923c' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.72rem center;
+  background-repeat: no-repeat;
+  background-size: 0.9rem;
+  padding-right: 2.35rem;
+}
+
+.app-bg :where(select[multiple]),
+.form-select[multiple] {
+  background-image: none;
+  padding-right: 0.85rem;
+}
+
+.app-bg :where(input, textarea)::placeholder,
+.form-control::placeholder {
   color: #9ca3af;
 }
 
-.app-bg :where(input, textarea, select):focus {
+.app-bg :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(
+        [type="file"]
+      ):not([type="hidden"]),
+    textarea,
+    select
+  ):hover,
+.form-control:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.app-bg :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(
+        [type="file"]
+      ):not([type="hidden"]),
+    textarea,
+    select
+  ):focus,
+.app-bg :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(
+        [type="file"]
+      ):not([type="hidden"]),
+    textarea,
+    select
+  ):focus-visible,
+.form-control:focus,
+.form-control:focus-visible {
   outline: none;
-  border-color: rgba(251, 146, 60, 0.75) !important;
-  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.2);
+  border-color: rgba(251, 146, 60, 0.78) !important;
+  box-shadow:
+    0 0 0 3px rgba(251, 146, 60, 0.22),
+    0 0 20px rgba(249, 115, 22, 0.11);
+}
+
+.app-bg :where(select option) {
+  background-color: #0b0b0b !important;
+  color: #f3f4f6 !important;
+}
+
+.app-bg :where(select option:checked),
+.app-bg :where(select option[selected]),
+.app-bg :where(select:focus > option:checked),
+.form-select option[selected],
+.form-select:focus > option:checked,
+.form-select option:checked {
+  background-color: rgba(249, 115, 22, 0.42) !important;
+  color: #fff !important;
+  /* Helps Firefox/Chromium avoid default OS-blue selected option. */
+  box-shadow: 0 0 0 9999px rgba(249, 115, 22, 0.42) inset !important;
+}
+
+.app-bg :where(select option:hover, select option:focus, select option:active),
+.form-select option:hover,
+.form-select option:focus,
+.form-select option:active {
+  background-color: rgba(249, 115, 22, 0.5) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 9999px rgba(249, 115, 22, 0.5) inset !important;
+}
+
+.app-bg :where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: #f97316;
+  border-color: rgba(251, 146, 60, 0.45);
+}
+
+.app-bg :where(input[type="checkbox"], input[type="radio"]):focus-visible {
+  outline: 2px solid rgba(251, 146, 60, 0.78);
+  outline-offset: 2px;
+}
+
+.app-bg :where(input, textarea, select):-webkit-autofill,
+.app-bg :where(input, textarea, select):-webkit-autofill:hover,
+.app-bg :where(input, textarea, select):-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0 1000px rgba(20, 20, 20, 0.96) inset;
 }
 
 .app-bg :where(a, button) {

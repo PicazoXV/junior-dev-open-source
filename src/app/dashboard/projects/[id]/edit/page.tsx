@@ -107,7 +107,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                   name="name"
                   required
                   defaultValue={currentProject.name || ""}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                  className="form-control"
                 />
               </div>
 
@@ -120,7 +120,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                   name="slug"
                   required
                   defaultValue={currentProject.slug || ""}
-                  className="w-full rounded-lg border px-3 py-2 text-sm"
+                  className="form-control"
                 />
               </div>
             </div>
@@ -133,7 +133,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 id="short_description"
                 name="short_description"
                 defaultValue={currentProject.short_description || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -146,7 +146,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 name="description"
                 rows={5}
                 defaultValue={currentProject.description || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -159,7 +159,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 name="repo_url"
                 type="url"
                 defaultValue={currentProject.repo_url || ""}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 <label htmlFor="status" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Status" : "Estado"}
                 </label>
-                <select id="status" name="status" defaultValue={currentProject.status} className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="status" name="status" defaultValue={currentProject.status} className="form-control form-select">
                   <option value="active">active</option>
                   <option value="archived">archived</option>
                 </select>
@@ -178,7 +178,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 <label htmlFor="difficulty" className="mb-1 block text-sm font-medium text-gray-300">
                   {locale === "en" ? "Difficulty" : "Dificultad"}
                 </label>
-                <select id="difficulty" name="difficulty" defaultValue={currentProject.difficulty} className="w-full rounded-lg border px-3 py-2 text-sm">
+                <select id="difficulty" name="difficulty" defaultValue={currentProject.difficulty} className="form-control form-select">
                   <option value="beginner">beginner</option>
                   <option value="intermediate">intermediate</option>
                   <option value="advanced">advanced</option>
@@ -194,7 +194,7 @@ export default async function EditProjectPage({ params }: ProjectEditPageProps) 
                 id="tech_stack"
                 name="tech_stack"
                 defaultValue={(currentProject.tech_stack || []).join(", ")}
-                className="w-full rounded-lg border px-3 py-2 text-sm"
+                className="form-control"
               />
             </div>
 
