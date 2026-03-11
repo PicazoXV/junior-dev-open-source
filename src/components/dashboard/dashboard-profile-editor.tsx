@@ -119,7 +119,7 @@ export default function DashboardProfileEditor({
   };
 
   return (
-    <div id="dashboard-profile-editor" className="mt-6 rounded-2xl border border-white/15 bg-black/20 p-5">
+    <div id="dashboard-profile-editor" className="surface-card mt-6 rounded-2xl p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium text-gray-300">
           {locale === "en" ? "Profile details" : "Datos de perfil"}
@@ -165,7 +165,7 @@ export default function DashboardProfileEditor({
             <textarea
               value={bioValue}
               onChange={(event) => setBioValue(event.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+              className="surface-subcard w-full rounded-xl border border-white/20 px-4 py-2 text-white placeholder:text-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
               placeholder={messages.profileEditor.bioPlaceholder}
               rows={4}
               maxLength={600}
@@ -180,7 +180,7 @@ export default function DashboardProfileEditor({
               type="text"
               value={locationValue}
               onChange={(event) => setLocationValue(event.target.value)}
-              className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-white placeholder:text-gray-500"
+              className="surface-subcard w-full rounded-xl border border-white/20 px-4 py-2 text-white placeholder:text-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
               placeholder={messages.profileEditor.locationPlaceholder}
               maxLength={120}
             />

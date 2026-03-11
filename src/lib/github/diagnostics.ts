@@ -4,7 +4,7 @@ import { githubInstallationRequest } from "@/lib/github/api";
 import { createRepositoryIssue } from "@/lib/github/issues";
 import { parseRepositoryFromUrl } from "@/lib/github/repository";
 
-export const GITHUB_TEST_REPOSITORY_URL = "https://github.com/PicazoXV/Tic-Tac-Toe-Responsive";
+export const GITHUB_TEST_REPOSITORY_URL = "https://github.com/MiPrimerIssue/openapi-finder";
 
 function toErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);

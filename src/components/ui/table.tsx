@@ -12,7 +12,7 @@ export default function Table({
   tableClassName = "min-w-full text-sm",
 }: TableProps) {
   return (
-    <div className={`overflow-x-auto rounded-2xl border border-white/20 bg-black/20 ${className}`}>
+    <div className={`surface-subcard overflow-x-auto rounded-2xl ${className}`}>
       <table className={tableClassName}>{children}</table>
     </div>
   );

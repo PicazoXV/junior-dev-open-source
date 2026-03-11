@@ -6,17 +6,46 @@ import {
   createRepositoryIssue,
   getIssueNumberFromUrl,
 } from "@/lib/github/issues";
-import { isRepositoryCollaborator } from "@/lib/github/collaborators";
+import {
+  inviteRepositoryCollaborator,
+  isRepositoryCollaborator,
+} from "@/lib/github/collaborators";
 import { buildTaskIssueBody, buildTaskIssueTitle } from "@/lib/github/issue-body";
+import { parseRepositoryFromUrl, type RepositoryRef } from "@/lib/github/repository";
 // Next phase extension point:
 // import { linkPullRequestToTaskPlaceholder } from "@/lib/github/pull-requests";
+
+export type CollaboratorAccessStatus =
+  | "invited"
+  | "already_collaborator"
+  | "skipped_no_repo"
+  | "skipped_no_github_username"
+  | "failed";
 
 export type EnsureTaskIssueResult = {
   status: "reused" | "created" | "skipped";
   issueUrl: string | null;
   issueNumber: number | null;
   reason?: string;
+  repository: RepositoryRef | null;
+  collaboratorAccess: CollaboratorAccessStatus;
+  collaboratorAccessError: string | null;
 };
+
+function buildAssignmentGitHubComment(params: {
+  githubUsername: string | null;
+  taskTitle: string | null;
+}) {
+  const mention = params.githubUsername ? `@${params.githubUsername}` : "Developer";
+  const title = params.taskTitle?.trim() || "la tarea";
+
+  return [
+    `✅ ${mention} tu tarea ha sido asignada en MiPrimerIssue.`,
+    "",
+    `Tarea: ${title}`,
+    "Siguiente paso: empieza a trabajar y abre tu Pull Request cuando esté lista.",
+  ].join("\n");
+}
 
 async function updateTaskIssueMetadata(
   supabase: SupabaseClient,
@@ -81,7 +110,15 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   ]);
 
   if (taskError || !task) {
-    return { status: "skipped", issueUrl: null, issueNumber: null, reason: "task_not_found" };
+    return {
+      status: "skipped",
+      issueUrl: null,
+      issueNumber: null,
+      reason: "task_not_found",
+      repository: null,
+      collaboratorAccess: "skipped_no_repo",
+      collaboratorAccessError: null,
+    };
   }
 
   const { data: project, error: projectError } = await supabase
@@ -91,8 +128,66 @@ export async function ensureGitHubIssueForApprovedTask(params: {
     .maybeSingle();
 
   if (projectError || !project) {
-    return { status: "skipped", issueUrl: null, issueNumber: null, reason: "project_not_found" };
+    return {
+      status: "skipped",
+      issueUrl: null,
+      issueNumber: null,
+      reason: "project_not_found",
+      repository: null,
+      collaboratorAccess: "skipped_no_repo",
+      collaboratorAccessError: null,
+    };
   }
+
+  const projectRepository = parseRepositoryFromUrl(project.repo_url || "");
+
+  let installationTokenCache: string | null = null;
+  const getInstallationToken = async () => {
+    if (installationTokenCache) {
+      return installationTokenCache;
+    }
+
+    if (!projectRepository) {
+      throw new Error("project_repository_not_available");
+    }
+
+    installationTokenCache = await getRepositoryInstallationAccessToken(projectRepository);
+    return installationTokenCache;
+  };
+
+  const ensureCollaboratorAccess = async (): Promise<{
+    status: CollaboratorAccessStatus;
+    error: string | null;
+  }> => {
+    if (!projectRepository) {
+      return { status: "skipped_no_repo", error: null };
+    }
+
+    const githubUsername = assignee?.github_username?.trim();
+    if (!githubUsername) {
+      return { status: "skipped_no_github_username", error: null };
+    }
+
+    try {
+      const token = await getInstallationToken();
+      const isCollaborator = await isRepositoryCollaborator(token, projectRepository, githubUsername);
+
+      if (isCollaborator) {
+        return { status: "already_collaborator", error: null };
+      }
+
+      const invitation = await inviteRepositoryCollaborator(token, projectRepository, githubUsername);
+      return {
+        status: invitation.status === "invited" ? "invited" : "already_collaborator",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: "failed",
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  };
 
   const draft = buildTaskIssueDraft({
     projectRepoUrl: project.repo_url,
@@ -102,21 +197,21 @@ export async function ensureGitHubIssueForApprovedTask(params: {
   });
 
   if (draft.reason === "already_has_issue") {
+    const collaboratorAccess = await ensureCollaboratorAccess();
     const issueNumber =
       task.github_issue_number || getIssueNumberFromUrl(draft.existingIssueUrl) || null;
 
-    if (issueNumber && draft.repository) {
+    if (issueNumber && projectRepository) {
       try {
-        const token = await getRepositoryInstallationAccessToken(draft.repository);
+        const token = await getInstallationToken();
         await createIssueComment(
           token,
-          draft.repository,
+          projectRepository,
           issueNumber,
-          [
-            "Assigned via MiPrimerIssue",
-            "",
-            `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
-          ].join("\n")
+          buildAssignmentGitHubComment({
+            githubUsername: assignee?.github_username || null,
+            taskTitle: task.title,
+          })
         );
       } catch (error) {
         console.warn("Could not post assignment comment on existing issue", {
@@ -132,42 +227,29 @@ export async function ensureGitHubIssueForApprovedTask(params: {
       issueUrl: draft.existingIssueUrl,
       issueNumber,
       reason: "already_has_issue",
+      repository: projectRepository,
+      collaboratorAccess: collaboratorAccess.status,
+      collaboratorAccessError: collaboratorAccess.error,
     };
   }
 
   if (!draft.ready || !draft.repository || !draft.issueTitle || !draft.issueBody) {
+    const collaboratorAccess = await ensureCollaboratorAccess();
     return {
       status: "skipped",
       issueUrl: null,
       issueNumber: null,
       reason: draft.reason,
+      repository: projectRepository,
+      collaboratorAccess: collaboratorAccess.status,
+      collaboratorAccessError: collaboratorAccess.error,
     };
   }
 
-  const installationToken = await getRepositoryInstallationAccessToken(draft.repository);
+  const collaboratorAccess = await ensureCollaboratorAccess();
+  const issueCreationToken = await getInstallationToken();
 
-  if (assignee?.github_username) {
-    try {
-      const isCollaborator = await isRepositoryCollaborator(
-        installationToken,
-        draft.repository,
-        assignee.github_username
-      );
-      console.info("GitHub collaborator check", {
-        taskId,
-        username: assignee.github_username,
-        isCollaborator,
-      });
-    } catch (error) {
-      console.warn("Could not verify collaborator status", {
-        taskId,
-        username: assignee.github_username,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-
-  const issue = await createRepositoryIssue(installationToken, draft.repository, {
+  const issue = await createRepositoryIssue(issueCreationToken, draft.repository, {
     title: buildTaskIssueTitle(draft.issueTitle),
     body: buildTaskIssueBody({
       taskId: task.id,
@@ -184,14 +266,13 @@ export async function ensureGitHubIssueForApprovedTask(params: {
 
   try {
     await createIssueComment(
-      installationToken,
+      issueCreationToken,
       draft.repository,
       issue.number,
-      [
-        "Assigned via MiPrimerIssue",
-        "",
-        `Developer: ${assignee?.github_username ? `@${assignee.github_username}` : "N/A"}`,
-      ].join("\n")
+      buildAssignmentGitHubComment({
+        githubUsername: assignee?.github_username || null,
+        taskTitle: task.title,
+      })
     );
   } catch (error) {
     console.warn("Could not post assignment comment in GitHub issue", {
@@ -205,5 +286,8 @@ export async function ensureGitHubIssueForApprovedTask(params: {
     status: "created",
     issueUrl: issue.html_url,
     issueNumber: issue.number,
+    repository: projectRepository,
+    collaboratorAccess: collaboratorAccess.status,
+    collaboratorAccessError: collaboratorAccess.error,
   };
 }

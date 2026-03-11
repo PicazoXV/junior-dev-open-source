@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -19,8 +18,6 @@ import {
   BarChart3,
   Users,
   GraduationCap,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/client";
@@ -46,8 +43,6 @@ type NavGroup = {
   items: NavItem[];
 };
 
-const SIDEBAR_PIN_STORAGE_KEY = "primerissue:sidebar-pinned";
-
 export default function RightSidebar({
   isAuthenticated,
   isReviewer,
@@ -56,17 +51,6 @@ export default function RightSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { messages, locale } = useI18n();
-  const [isPinned, setIsPinned] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-
-    try {
-      return window.localStorage.getItem(SIDEBAR_PIN_STORAGE_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
 
   const navGroups: NavGroup[] = [
     {
@@ -74,10 +58,9 @@ export default function RightSidebar({
       label: messages.sidebarGroups.explore,
       items: [
         { href: "/", label: messages.sidebar.home, icon: Home },
-        { href: "/good-first-issues", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
+        { href: "/buena-primera-issue", label: messages.sidebar.goodFirstIssues, icon: Sparkles },
         { href: "/projects", label: messages.sidebar.projects, icon: FolderKanban },
         { href: "/certificaciones", label: messages.sidebar.certifications, icon: GraduationCap },
-        { href: "/first-contribution", label: messages.sidebar.firstContribution, icon: SquarePen },
       ],
     },
     {
@@ -177,78 +160,42 @@ export default function RightSidebar({
     router.refresh();
   };
 
-  const togglePinnedState = () => {
-    setIsPinned((currentValue) => {
-      const nextValue = !currentValue;
-      try {
-        window.localStorage.setItem(SIDEBAR_PIN_STORAGE_KEY, nextValue ? "1" : "0");
-      } catch {
-        // Ignore storage errors and keep runtime toggle behavior.
-      }
-      return nextValue;
-    });
-  };
+  const desktopWidthClass = "lg:w-20 lg:hover:w-72 lg:focus-within:w-72";
 
-  const desktopWidthClass = isPinned
-    ? "lg:w-72"
-    : "lg:w-20 lg:hover:w-72 lg:focus-within:w-72";
+  const desktopRevealTextClass =
+    "lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[220px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[220px] lg:group-focus-within:opacity-100";
 
-  const desktopRevealTextClass = isPinned
-    ? "lg:max-w-[220px] lg:opacity-100"
-    : "lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-[220px] lg:group-hover:opacity-100 lg:group-focus-within:max-w-[220px] lg:group-focus-within:opacity-100";
+  const desktopCollapsedOnlyClass = "hidden lg:block lg:group-hover:hidden lg:group-focus-within:hidden";
 
-  const desktopCollapsedOnlyClass = isPinned
-    ? "lg:hidden"
-    : "lg:block lg:group-hover:hidden lg:group-focus-within:hidden";
-
-  const desktopExpandedOnlyClass = isPinned
-    ? "lg:block"
-    : "lg:hidden lg:group-hover:block lg:group-focus-within:block";
-
-  const toggleLabel = isPinned
-    ? locale === "en"
-      ? "Switch to compact sidebar"
-      : "Cambiar a sidebar compacta"
-    : locale === "en"
-      ? "Keep sidebar expanded"
-      : "Mantener sidebar expandida";
+  const desktopExpandedOnlyClass = "block lg:hidden lg:group-hover:block lg:group-focus-within:block";
 
   return (
     <aside className="group fixed bottom-3 right-3 z-40 lg:right-8 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2">
       <nav
         aria-label={locale === "en" ? "Main navigation" : "Navegación principal"}
-        className={`sidebar-shell w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
+        className={`sidebar-shell sidebar-scroll w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
       >
-        <div
-          className={`mb-4 flex items-center justify-between px-1 ${
-            isPinned ? "" : "lg:justify-center lg:group-hover:justify-between lg:group-focus-within:justify-between"
-          }`}
-        >
-          <div className={`block ${desktopExpandedOnlyClass}`}>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">
-              {messages.brand.name}
-            </p>
-            <p className="text-[10px] text-gray-500">{messages.brand.domain}</p>
-          </div>
-          <p className={`hidden text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 ${desktopCollapsedOnlyClass}`}>
-            PI
-          </p>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.7)]" />
-            <button
-              type="button"
-              onClick={togglePinnedState}
-              aria-pressed={isPinned}
-              title={toggleLabel}
-              className="hidden cursor-pointer items-center justify-center rounded-lg border border-white/15 bg-black/30 p-1.5 text-gray-300 transition hover:border-orange-500/35 hover:text-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black lg:inline-flex"
+        <div className="mb-4 flex min-h-12 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-2.5 py-2">
+          <div className="min-w-0 flex-1">
+            <div className={`min-w-0 ${desktopExpandedOnlyClass}`}>
+              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">
+                {messages.brand.name}
+              </p>
+              <p className="truncate text-[10px] text-gray-500">{messages.brand.domain}</p>
+            </div>
+            <p
+              className={`text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 ${desktopCollapsedOnlyClass}`}
             >
-              {isPinned ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </button>
+              MI
+            </p>
+          </div>
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+            <span className="h-2.5 w-2.5 rounded-full bg-orange-400 shadow-[0_0_14px_rgba(251,146,60,0.7)]" />
           </div>
         </div>
 
         <div className="mb-3">
-          <HardModeToggle forceExpanded={isPinned} />
+          <HardModeToggle />
         </div>
 
         <div className="space-y-3 [@media(max-height:860px)]:grid [@media(max-height:860px)]:grid-cols-2 [@media(max-height:860px)]:gap-3 [@media(max-height:860px)]:space-y-0">

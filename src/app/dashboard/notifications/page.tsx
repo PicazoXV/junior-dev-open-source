@@ -8,7 +8,11 @@ import Badge from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { getCurrentLocale } from "@/lib/i18n/server";
-import { markAllNotificationsRead, markNotificationRead } from "@/app/dashboard/notifications/actions";
+import {
+  deleteNotification,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/app/dashboard/notifications/actions";
 import type { NotificationRow } from "@/lib/notifications";
 
 export default async function NotificationsPage() {
@@ -125,6 +129,14 @@ export default async function NotificationsPage() {
                       </button>
                     </form>
                   ) : null}
+                  <form action={deleteNotification.bind(null, notification.id)}>
+                    <button
+                      type="submit"
+                      className="inline-flex rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 transition hover:border-red-400 hover:bg-red-500/15"
+                    >
+                      {locale === "en" ? "Delete" : "Borrar"}
+                    </button>
+                  </form>
                 </div>
               </article>
             ))}

@@ -43,10 +43,10 @@ function buildStaticUrls(siteUrl: string): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
-      url: `${siteUrl}/good-first-issues`,
+      url: `${siteUrl}/buena-primera-issue`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 0.9,
+      priority: 0.85,
     },
     {
       url: `${siteUrl}/developers`,
@@ -71,12 +71,6 @@ function buildStaticUrls(siteUrl: string): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.7,
-    },
-    {
-      url: `${siteUrl}/first-contribution`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.85,
     },
     {
       url: `${siteUrl}/for-maintainers`,

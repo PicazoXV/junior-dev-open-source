@@ -43,7 +43,7 @@ export default function TaskFilterPanel({ tasks }: TaskFilterPanelProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 rounded-xl border border-white/15 bg-black/20 p-4 md:grid-cols-2">
+      <div className="surface-subcard grid gap-3 rounded-xl p-4 md:grid-cols-2">
         <div>
           <label className="mb-1 block text-xs uppercase tracking-[0.12em] text-gray-500">
             {locale === "en" ? "Difficulty" : "Dificultad"}
@@ -51,7 +51,7 @@ export default function TaskFilterPanel({ tasks }: TaskFilterPanelProps) {
           <select
             value={difficulty}
             onChange={(event) => setDifficulty(event.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="surface-subcard w-full rounded-lg border border-white/20 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
           >
             <option value="all">{locale === "en" ? "All" : "Todas"}</option>
             <option value="beginner">beginner</option>
@@ -67,7 +67,7 @@ export default function TaskFilterPanel({ tasks }: TaskFilterPanelProps) {
           <select
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
+            className="surface-subcard w-full rounded-lg border border-white/20 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
           >
             <option value="all">{locale === "en" ? "All" : "Todas"}</option>
             {labels.map((item) => (

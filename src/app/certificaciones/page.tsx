@@ -11,7 +11,7 @@ import {
 import { getCurrentMessages } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Certificaciones recomendadas para developers junior | PrimerIssue",
+  title: "Certificaciones recomendadas para developers junior | MiPrimerIssue",
   description:
     "Explora certificaciones de programación, datos, cloud, IA e inglés para fortalecer tu perfil técnico y crecer en open source.",
 };

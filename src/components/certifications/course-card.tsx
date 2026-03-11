@@ -22,7 +22,7 @@ function getCategoryIcon(category: CertificationCourse["category"]) {
 
 export default function CourseCard({ course, locale, messages }: CourseCardProps) {
   return (
-    <article className="rounded-xl border border-white/15 bg-black/20 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_16px_rgba(255,255,255,0.05)]">
+    <article className="surface-subcard rounded-xl p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-white">{course.title}</p>

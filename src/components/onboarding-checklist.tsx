@@ -14,10 +14,10 @@ export default function OnboardingChecklist({ onboarding }: OnboardingChecklistP
 
   return (
     <section
-      className={`rounded-2xl border p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_22px_rgba(255,255,255,0.05)] ${
+      className={`rounded-2xl p-6 ${
         onboarding.isCompleted
-          ? "border-emerald-500/25 bg-emerald-500/5"
-          : "border-white/20 bg-black/20"
+          ? "surface-outline-accent border-emerald-500/25 bg-emerald-500/5"
+          : "surface-card"
       }`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -27,7 +27,7 @@ export default function OnboardingChecklist({ onboarding }: OnboardingChecklistP
           <p className="mt-1 text-sm text-gray-300">{onboarding.motivationMessage}</p>
         </div>
 
-        <div className="rounded-xl border border-white/15 bg-black/25 px-3 py-2 text-right">
+        <div className="surface-subcard rounded-xl px-3 py-2 text-right">
           <p className="text-xs text-gray-400">{messages.onboarding.progress}</p>
           <p className="text-sm font-semibold text-white">
             {onboarding.completedSteps}/{onboarding.totalSteps} {locale === "en" ? "steps" : "pasos"}
@@ -63,14 +63,14 @@ export default function OnboardingChecklist({ onboarding }: OnboardingChecklistP
             {messages.onboarding.completedCtaLeaderboard}
           </Link>
           <Link
-            href="/good-first-issues"
+            href="/buena-primera-issue"
             className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm text-orange-300 hover:border-orange-400"
           >
             {messages.onboarding.completedCtaExplore}
           </Link>
         </div>
       ) : onboarding.nextStep ? (
-        <div className="mt-5 rounded-xl border border-white/15 bg-black/20 p-3 text-sm text-gray-300">
+        <div className="surface-subcard mt-5 rounded-xl p-3 text-sm text-gray-300">
           {messages.onboarding.nextStep} <span className="font-semibold text-white">{onboarding.nextStep.title}</span>
         </div>
       ) : null}

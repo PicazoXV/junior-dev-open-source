@@ -8,7 +8,7 @@ export const enMessages: MessageDictionary = {
   sidebar: {
     home: "Home",
     projects: "Projects",
-    goodFirstIssues: "Good First Issues",
+    goodFirstIssues: "First Good Issue",
     certifications: "Get certifications",
     developers: "Developers",
     activity: "Activity",

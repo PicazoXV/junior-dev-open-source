@@ -7,7 +7,7 @@ import Badge from "@/components/ui/badge";
 import { getCurrentLocale } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Para maintainers: escala contribuciones junior | PrimerIssue",
+  title: "Para maintainers: escala contribuciones junior | MiPrimerIssue",
   description:
     "Publica proyectos, organiza tareas y gestiona solicitudes de developers junior con un flujo conectado a issues y pull requests de GitHub.",
 };
@@ -32,7 +32,7 @@ export default async function ForMaintainersPage() {
 
   return (
     <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={locale === "en" ? "For Maintainers" : "Para maintainers"}
           description={
@@ -57,7 +57,7 @@ export default async function ForMaintainersPage() {
 
         <div className="mt-6 grid gap-3 md:grid-cols-2">
           {benefits.map((benefit) => (
-            <article key={benefit} className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <article key={benefit} className="surface-subcard rounded-xl p-4">
               <p className="text-sm text-gray-200">{benefit}</p>
             </article>
           ))}

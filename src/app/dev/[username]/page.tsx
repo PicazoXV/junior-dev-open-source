@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: DeveloperProfilePageProps): P
 
   if (!normalizedUsername) {
     return {
-      title: "Perfil de developer | PrimerIssue",
+      title: "Perfil de developer | MiPrimerIssue",
       description:
         "Consulta perfiles públicos de developers junior con historial de contribuciones, tareas y progreso en open source.",
     };
@@ -43,10 +43,10 @@ export async function generateMetadata({ params }: DeveloperProfilePageProps): P
   const displayName = profile?.full_name?.trim() || `@${githubUsername}`;
   const description =
     profile?.bio?.trim() ||
-    `Perfil público de @${githubUsername} en PrimerIssue con tareas completadas, PRs mergeados y evolución como contributor.`;
+    `Perfil público de @${githubUsername} en MiPrimerIssue con tareas completadas, PRs mergeados y evolución como contributor.`;
 
   return {
-    title: `${displayName} | PrimerIssue`,
+    title: `${displayName} | MiPrimerIssue`,
     description,
   };
 }
@@ -77,7 +77,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
 
   return (
     <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={developer.fullName || `@${developer.githubUsername}`}
           description={
@@ -95,7 +95,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
           }
         />
 
-        <div className="rounded-xl border border-white/15 bg-black/20 p-5">
+        <div className="surface-subcard rounded-xl p-5">
           <div className="flex flex-wrap items-center gap-2">
             <LevelBadge level={developer.level} />
             <span className="text-sm text-gray-400">@{developer.githubUsername}</span>
@@ -156,7 +156,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {verifiedContributions.map((item) => (
-              <article key={item.taskId} className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <article key={item.taskId} className="surface-subcard rounded-xl p-4">
                 <p className="text-sm font-semibold text-white">{item.taskTitle}</p>
                 <p className="mt-1 text-xs text-gray-400">{item.projectName}</p>
               </article>
@@ -228,7 +228,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
             label={locale === "en" ? "Last contributed project" : "Último proyecto contribuido"}
             value={developer.recentActivity.lastContributedProjectName || (locale === "en" ? "No activity" : "Sin actividad")}
           />
-          <div className="rounded-xl border border-white/15 bg-black/20 p-4">
+          <div className="surface-subcard rounded-xl p-4">
             <p className="text-sm text-gray-400">
               {locale === "en" ? "Latest linked PR" : "Último PR asociado"}
             </p>
@@ -267,7 +267,7 @@ export default async function DeveloperProfilePage({ params }: DeveloperProfileP
         {developer.projects.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2">
             {developer.projects.map((project) => (
-              <article key={project.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <article key={project.id} className="surface-subcard rounded-xl p-4">
                 <p className="text-white">{project.name || (locale === "en" ? "Project" : "Proyecto")}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {project.slug ? (

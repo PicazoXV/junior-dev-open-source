@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type MinimalSupabaseClient = SupabaseClient;
 
@@ -23,21 +24,51 @@ export async function createNotification(params: {
   body?: string | null;
   link?: string | null;
   metadata?: Record<string, unknown> | null;
+  asSystem?: boolean;
 }) {
-  const { supabase, userId, type, title, body = null, link = null, metadata = null } = params;
+  const {
+    supabase,
+    userId,
+    type,
+    title,
+    body = null,
+    link = null,
+    metadata = null,
+    asSystem = false,
+  } = params;
 
-  const { error } = await supabase.from("notifications").insert({
+  const payload = {
     user_id: userId,
     type,
     title,
     body,
     link,
     metadata,
-  });
+  };
 
-  if (error) {
-    console.error("Error creating notification:", error.message);
+  const insertWithClient = async (client: MinimalSupabaseClient, source: "session" | "admin") => {
+    const { error } = await client.from("notifications").insert(payload);
+    if (error) {
+      console.error(`Error creating notification (${source}):`, error.message);
+      return false;
+    }
+    return true;
+  };
+
+  if (asSystem) {
+    try {
+      const admin = createAdminClient();
+      const success = await insertWithClient(admin, "admin");
+      if (success) return;
+    } catch (error) {
+      console.error(
+        "Error creating notification with admin client:",
+        error instanceof Error ? error.message : String(error)
+      );
+    }
   }
+
+  await insertWithClient(supabase, "session");
 }
 
 export async function getUnreadNotificationsCount(params: {

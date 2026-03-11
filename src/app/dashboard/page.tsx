@@ -198,10 +198,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               {locale === "en" ? "Go to my tasks" : "Ir a mis tareas"}
             </Link>
             <Link
-              href="/good-first-issues"
+              href="/buena-primera-issue"
               className="inline-flex rounded-lg border border-white/20 bg-neutral-900/80 px-3 py-2 text-sm font-medium text-gray-100 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-200"
             >
-              {locale === "en" ? "Explore good first issues" : "Explorar good first issues"}
+              {locale === "en" ? "Explore First Good Issue" : "Explorar Buena Primera Issue"}
             </Link>
             {canReviewRequests ? (
               <Link
@@ -218,7 +218,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       <SectionCard className="p-8">
         <PageHeader
           as="h2"
-          title={locale === "en" ? "How to advance in PrimerIssue" : "Cómo avanzar en PrimerIssue"}
+          title={locale === "en" ? "How to advance in MiPrimerIssue" : "Cómo avanzar en MiPrimerIssue"}
           description={
             locale === "en"
               ? "A clear 4-step guide to move from finding tasks to completing real contributions."
@@ -344,12 +344,12 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     ? `You already have ${progress.inProgressTasks} active task(s). Continue before requesting new ones.`
                     : `Ya tienes ${progress.inProgressTasks} tarea(s) activa(s). Continúa antes de pedir nuevas.`
                   : locale === "en"
-                    ? "You have no active tasks. Pick one from good first issues and request it."
-                    : "No tienes tareas activas. Elige una good first issue y solicítala."}
+                    ? "You have no active tasks. Pick one from First Good Issue and request it."
+                    : "No tienes tareas activas. Elige una Buena Primera Issue y solicítala."}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
-                  href={progress.inProgressTasks > 0 ? "/dashboard/my-tasks" : "/good-first-issues"}
+                  href={progress.inProgressTasks > 0 ? "/dashboard/my-tasks" : "/buena-primera-issue"}
                   className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
                 >
                   {progress.inProgressTasks > 0
@@ -465,7 +465,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             }
             action={
               <Link
-                href="/good-first-issues"
+                href="/buena-primera-issue"
                 className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
               >
                 {locale === "en" ? "Explore issues" : "Explorar issues"}

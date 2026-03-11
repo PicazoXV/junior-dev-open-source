@@ -8,9 +8,9 @@ import { getPlatformStats } from "@/lib/platform-stats";
 import { getCurrentLocale } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Estadísticas de la comunidad | PrimerIssue",
+  title: "Estadísticas de la comunidad | MiPrimerIssue",
   description:
-    "Consulta métricas públicas de PrimerIssue: developers activos, tareas completadas, proyectos publicados y PRs mergeados.",
+    "Consulta métricas públicas de MiPrimerIssue: developers activos, tareas completadas, proyectos publicados y PRs mergeados.",
 };
 
 export default async function StatsPage() {
@@ -20,7 +20,7 @@ export default async function StatsPage() {
 
   return (
     <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={locale === "en" ? "Platform stats" : "Estadísticas de la plataforma"}
           description={
@@ -29,6 +29,11 @@ export default async function StatsPage() {
               : "Métricas públicas de actividad y crecimiento de MiPrimerIssue."
           }
         />
+        <p className="mb-4 text-sm text-gray-300">
+          {locale === "en"
+            ? "A quick snapshot of real contribution momentum across the community."
+            : "Una foto rápida del ritmo real de contribución de la comunidad."}
+        </p>
         <div className="grid gap-3 md:grid-cols-2">
           <StatCard label={locale === "en" ? "Total developers" : "Total developers"} value={stats.totalDevelopers} />
           <StatCard label={locale === "en" ? "Tasks completed" : "Tareas completadas"} value={stats.tasksCompleted} />

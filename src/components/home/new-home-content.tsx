@@ -146,10 +146,10 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
               />
             )}
             <Link
-              href="/good-first-issues"
+              href="/buena-primera-issue"
               className="inline-flex items-center rounded-xl border border-white/20 px-7 py-3 text-sm font-semibold text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
             >
-              {isEn ? "View Good First Issues" : "Ver Good First Issues"}
+              {isEn ? "View First Good Issue" : "Ver Buena Primera Issue"}
             </Link>
           </div>
 
@@ -244,10 +244,10 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
         <div className="mt-5">
           <Link
-            href="/good-first-issues"
+            href="/buena-primera-issue"
             className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
           >
-            {isEn ? "View all Good First Issues" : "Ver todas las Good First Issues"}
+            {isEn ? "View all First Good Issues" : "Ver tareas de Buena Primera Issue"}
           </Link>
         </div>
       </SectionCard>
@@ -317,7 +317,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         <div className="mt-6 flex justify-center">
           {isAuthenticated ? (
             <Link
-              href="/good-first-issues"
+              href="/buena-primera-issue"
               className="inline-flex rounded-xl border border-orange-500/40 bg-orange-500/10 px-8 py-3 text-sm font-semibold text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
             >
               {isEn ? "Explore tasks" : "Explorar tareas"}

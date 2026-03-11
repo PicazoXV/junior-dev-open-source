@@ -28,7 +28,7 @@ export default function UserTimelineCard({
       {description ? <p className="mt-1 text-sm text-gray-400">{description}</p> : null}
 
       {events.length === 0 ? (
-        <p className="mt-3 rounded-xl border border-dashed border-white/20 bg-black/20 p-4 text-sm text-gray-400">
+        <p className="surface-subcard mt-3 rounded-xl border-dashed p-4 text-sm text-gray-400">
           {locale === "en"
             ? "No timeline events yet."
             : "Todavía no hay eventos en el timeline."}
@@ -36,7 +36,7 @@ export default function UserTimelineCard({
       ) : (
         <div className="mt-4 space-y-3">
           {visibleEvents.map((event) => (
-            <article key={event.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+            <article key={event.id} className="surface-subcard rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-white">{event.title}</p>

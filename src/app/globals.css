@@ -3,6 +3,16 @@
 :root {
   --background: #000000;
   --foreground: #ffffff;
+  --surface-bg-strong: rgba(20, 20, 20, 0.9);
+  --surface-bg-soft: rgba(11, 11, 11, 0.5);
+  --surface-bg-accent: rgba(249, 115, 22, 0.09);
+  --surface-border-strong: rgba(255, 255, 255, 0.2);
+  --surface-border-soft: rgba(255, 255, 255, 0.16);
+  --surface-border-accent: rgba(249, 115, 22, 0.38);
+  --glow-white-subtle: 0 0 10px rgba(255, 255, 255, 0.04);
+  --glow-white-soft: 0 0 14px rgba(255, 255, 255, 0.055);
+  --glow-orange-soft: 0 0 20px rgba(249, 115, 22, 0.055);
+  --glow-orange-accent: 0 0 26px rgba(249, 115, 22, 0.15);
 }
 
 @theme inline {
@@ -33,28 +43,57 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2) 0.7px, transparent 1.4px),
-    radial-gradient(circle at 82% 24%, rgba(255, 255, 255, 0.18) 0.8px, transparent 1.5px),
-    radial-gradient(circle at 26% 72%, rgba(255, 255, 255, 0.16) 0.7px, transparent 1.4px),
-    radial-gradient(circle at 74% 82%, rgba(255, 255, 255, 0.18) 0.8px, transparent 1.5px),
-    radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.14) 0.7px, transparent 1.4px);
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.18) 0.7px, transparent 1.4px),
+    radial-gradient(circle at 74% 82%, rgba(255, 255, 255, 0.16) 0.8px, transparent 1.5px),
+    radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0.7px, transparent 1.4px);
   background-size:
-    340px 340px,
-    420px 420px,
-    500px 500px,
-    620px 620px,
-    780px 780px;
-  opacity: 0.42;
+    360px 360px,
+    560px 560px,
+    760px 760px;
+  opacity: 0.34;
   z-index: 0;
 }
 
 .sidebar-shell {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--surface-border-strong);
   background: rgba(17, 17, 17, 0.94);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 0 20px rgba(255, 255, 255, 0.05),
-    0 0 28px rgba(249, 115, 22, 0.08);
+    var(--glow-white-soft),
+    var(--glow-orange-soft);
+}
+
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(249, 115, 22, 0.55) rgba(255, 255, 255, 0.06);
+  scrollbar-gutter: stable;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 9px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(17, 17, 17, 0.95);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(251, 146, 60, 0.78) 0%,
+    rgba(249, 115, 22, 0.65) 100%
+  );
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(251, 146, 60, 0.9) 0%,
+    rgba(249, 115, 22, 0.78) 100%
+  );
 }
 
 .accent-dot {
@@ -66,124 +105,172 @@ body {
 }
 
 .surface-card {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(23, 23, 23, 0.86);
+  border: 1px solid var(--surface-border-strong);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 42%),
+    var(--surface-bg-strong);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 0 24px rgba(255, 255, 255, 0.07),
-    0 0 28px rgba(249, 115, 22, 0.06);
+    var(--glow-white-soft),
+    var(--glow-orange-soft);
 }
 
 .surface-subcard {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(12, 12, 12, 0.45);
+  border: 1px solid var(--surface-border-soft);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 55%),
+    var(--surface-bg-soft);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 0 16px rgba(255, 255, 255, 0.06),
-    0 0 20px rgba(249, 115, 22, 0.04);
+    var(--glow-white-subtle),
+    var(--glow-orange-soft);
 }
 
 .surface-accent {
-  border: 1px solid rgba(249, 115, 22, 0.38);
-  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid var(--surface-border-accent);
+  background:
+    linear-gradient(180deg, rgba(251, 146, 60, 0.12), transparent 45%),
+    var(--surface-bg-accent);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 0 20px rgba(255, 255, 255, 0.07),
-    0 0 30px rgba(249, 115, 22, 0.16);
+    var(--glow-white-soft),
+    var(--glow-orange-accent);
 }
 
-/* Dark reinterpretation of currently used Tailwind utility classes in this app */
-.bg-white {
-  background-color: rgba(18, 18, 18, 0.92) !important;
+/* Targeted utility wrappers to avoid broad global selectors */
+.surface-glow {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 0 20px rgba(255, 255, 255, 0.06),
-    0 0 34px rgba(249, 115, 22, 0.06);
+    var(--glow-white-soft),
+    var(--glow-orange-soft);
 }
 
-.bg-gray-50 {
+.surface-glow-accent {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    var(--glow-white-soft),
+    var(--glow-orange-accent);
+}
+
+.surface-hero {
+  border: 1px solid rgba(249, 115, 22, 0.32);
+  background:
+    radial-gradient(40rem 22rem at 18% 0%, rgba(249, 115, 22, 0.16), transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
+    rgba(17, 17, 17, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    var(--glow-white-soft),
+    var(--glow-orange-accent);
+}
+
+.surface-outline-accent {
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 0 18px rgba(249, 115, 22, 0.11);
+}
+
+/* Controlled dark reinterpretation of legacy Tailwind utility classes */
+.app-bg .bg-white {
+  background-color: rgba(18, 18, 18, 0.92) !important;
+}
+
+.app-bg .bg-gray-50 {
   background-color: transparent !important;
 }
 
-.bg-gray-100 {
+.app-bg .bg-gray-100 {
   background-color: rgba(249, 115, 22, 0.1) !important;
 }
 
-.bg-gray-200 {
+.app-bg .bg-gray-200 {
   background-color: rgba(255, 255, 255, 0.14) !important;
 }
 
-.border {
-  border-color: rgba(255, 255, 255, 0.22) !important;
-}
-
-.border-dashed {
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-.text-gray-900 {
+.app-bg .text-gray-900 {
   color: #ffffff !important;
 }
 
-.text-gray-800 {
+.app-bg .text-gray-800 {
   color: #e5e7eb !important;
 }
 
-.text-gray-700 {
+.app-bg .text-gray-700 {
   color: #d1d5db !important;
 }
 
-.text-gray-600 {
+.app-bg .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.text-gray-500 {
+.app-bg .text-gray-500 {
   color: #9ca3af !important;
 }
 
-.hover\:bg-gray-100:hover {
+.app-bg .hover\:bg-gray-100:hover {
   background-color: rgba(249, 115, 22, 0.14) !important;
 }
 
-.hover\:text-orange-400:hover {
+.app-bg .hover\:text-orange-400:hover {
   color: #fb923c !important;
 }
 
-.ring-orange-400\/20 {
+.app-bg .ring-orange-400\/20 {
   --tw-ring-color: rgb(251 146 60 / 0.2) !important;
 }
 
-input,
-textarea,
-select {
+/* Legacy card/button harmonization to keep visual consistency in older screens */
+.app-bg .border-white\/20.bg-black\/20,
+.app-bg .border-white\/15.bg-black\/20,
+.app-bg .border-white\/10.bg-black\/20 {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 55%),
+    var(--surface-bg-soft);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    var(--glow-white-subtle),
+    var(--glow-orange-soft);
+}
+
+.app-bg .border-white\/20.bg-neutral-900,
+.app-bg .border-white\/20.bg-neutral-900\/80 {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 62%),
+    rgba(20, 20, 20, 0.9);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.app-bg .border-white\/15.bg-black\/25 {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 58%),
+    rgba(15, 15, 15, 0.58);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    var(--glow-white-subtle);
+}
+
+.app-bg .border-dashed.border-white\/20.bg-black\/20 {
+  background: rgba(8, 8, 8, 0.45);
+}
+
+.app-bg :where(input, textarea, select) {
   background: rgba(23, 23, 23, 0.95);
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--surface-border-strong) !important;
   color: #fff;
 }
 
-input::placeholder,
-textarea::placeholder {
+.app-bg :where(input, textarea)::placeholder {
   color: #9ca3af;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+.app-bg :where(input, textarea, select):focus {
   outline: none;
   border-color: rgba(251, 146, 60, 0.75) !important;
   box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.2);
 }
 
-a,
-button {
+.app-bg :where(a, button) {
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
     box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-/* Consistent white glow for bordered containers across the app */
-:is(div, section, article, nav, aside)[class*="border"] {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-    0 0 18px rgba(255, 255, 255, 0.06),
-    0 0 26px rgba(249, 115, 22, 0.05) !important;
 }

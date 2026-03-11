@@ -1,14 +1,31 @@
 import type { ReactNode } from "react";
 
+type SectionCardVariant = "default" | "subtle" | "accent" | "hero";
+
 type SectionCardProps = {
   children: ReactNode;
   className?: string;
+  variant?: SectionCardVariant;
 };
 
-export default function SectionCard({ children, className = "" }: SectionCardProps) {
+const variantClassMap: Record<SectionCardVariant, string> = {
+  default: "surface-card",
+  subtle: "surface-subcard",
+  accent: "surface-accent",
+  hero: "surface-hero",
+};
+
+export default function SectionCard({
+  children,
+  className = "",
+  variant = "default",
+}: SectionCardProps) {
   const hasCustomSurface =
-    className.includes("surface-accent") || className.includes("surface-subcard") || className.includes("surface-card");
-  const surfaceClass = hasCustomSurface ? "" : "surface-card";
+    className.includes("surface-accent") ||
+    className.includes("surface-subcard") ||
+    className.includes("surface-card") ||
+    className.includes("surface-hero");
+  const surfaceClass = hasCustomSurface ? "" : variantClassMap[variant];
 
   return (
     <section

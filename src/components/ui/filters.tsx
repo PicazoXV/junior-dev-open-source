@@ -31,7 +31,7 @@ export function FiltersForm({ children, className = "", ...props }: FiltersFormP
 export function FilterField({ htmlFor, label, children, className = "" }: FilterFieldProps) {
   return (
     <div className={className}>
-      <label htmlFor={htmlFor} className="mb-1 block text-xs text-gray-400">
+      <label htmlFor={htmlFor} className="mb-1 block text-xs font-medium text-gray-400">
         {label}
       </label>
       {children}
@@ -42,7 +42,7 @@ export function FilterField({ htmlFor, label, children, className = "" }: Filter
 export function FilterSelect({ options, className = "", ...props }: FilterSelectProps) {
   return (
     <select
-      className={`w-full rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 ${className}`}
+      className={`surface-subcard w-full rounded-xl border border-white/20 bg-neutral-900/90 px-3 py-2 text-sm text-white outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 ${className}`}
       {...props}
     >
       {options.map((option) => (

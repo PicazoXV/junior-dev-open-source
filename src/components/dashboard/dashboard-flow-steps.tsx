@@ -16,8 +16,8 @@ export default function DashboardFlowSteps() {
       description: isEn
         ? "Explore projects and find tasks that match your current level and technologies."
         : "Explora proyectos y encuentra tareas que encajen con tu nivel y tecnologías actuales.",
-      cta: isEn ? "Explore good first issues" : "Explorar good first issues",
-      href: "/good-first-issues",
+      cta: isEn ? "Explore First Good Issue" : "Explorar Buena Primera Issue",
+      href: "/buena-primera-issue",
     },
     {
       id: "step-2",

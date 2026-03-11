@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getUserProgress } from "@/lib/user-progress";
+import { getUsersProgressBulk } from "@/lib/user-progress";
 
 type MinimalSupabaseClient = SupabaseClient;
 
@@ -33,9 +33,21 @@ export async function getTopContributorsByTech(params: {
   }
 
   const rows: TechRankingRow[] = [];
+  const profileRows = profiles || [];
+  const progressByUserId = await getUsersProgressBulk({
+    supabase,
+    userIds: profileRows.map((profile) => profile.id),
+    techStackByUserId: Object.fromEntries(
+      profileRows.map((profile) => [profile.id, profile.tech_stack || null])
+    ),
+  });
 
-  for (const profile of profiles || []) {
-    const progress = await getUserProgress(supabase, profile.id, profile.tech_stack || null);
+  for (const profile of profileRows) {
+    const progress = progressByUserId.get(profile.id);
+    if (!progress) {
+      continue;
+    }
+
     const score =
       progress.completedTasks * 5 + progress.mergedPullRequests * 4 + progress.contributedProjects * 3;
 

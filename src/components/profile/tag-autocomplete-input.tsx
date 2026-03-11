@@ -93,12 +93,12 @@ export default function TagAutocompleteInput({
             }
           }}
           disabled={reachedLimit}
-          className="w-full rounded-xl border border-white/20 bg-neutral-900 px-4 py-2 text-sm text-white placeholder:text-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20 disabled:cursor-not-allowed disabled:opacity-65"
+          className="surface-subcard w-full rounded-xl border border-white/20 px-4 py-2 text-sm text-white placeholder:text-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20 disabled:cursor-not-allowed disabled:opacity-65"
           placeholder={reachedLimit ? limitText : placeholder}
         />
 
         {isOpen && filtered.length > 0 && !reachedLimit ? (
-          <div className="absolute z-20 mt-2 w-full rounded-xl border border-white/15 bg-neutral-900/95 p-1 shadow-[0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_18px_rgba(0,0,0,0.35)]">
+          <div className="surface-subcard absolute z-20 mt-2 w-full rounded-xl p-1">
             {filtered.map((option) => (
               <button
                 key={option}
@@ -143,4 +143,3 @@ export default function TagAutocompleteInput({
     </div>
   );
 }
-

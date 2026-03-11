@@ -5,9 +5,10 @@ import { getUnreadNotificationsCount } from "@/lib/notifications";
 
 type NavbarProps = {
   containerClassName?: string;
+  variant?: "full" | "public";
 };
 
-export default async function Navbar({ containerClassName }: NavbarProps = {}) {
+export default async function Navbar({ containerClassName, variant = "full" }: NavbarProps = {}) {
   void containerClassName;
 
   const supabase = await createClient();
@@ -20,10 +21,13 @@ export default async function Navbar({ containerClassName }: NavbarProps = {}) {
     : { data: null };
 
   const isReviewer = isReviewerRole(profile?.role);
-  const unreadNotifications = await getUnreadNotificationsCount({
-    supabase,
-    userId: user?.id || null,
-  });
+  const unreadNotifications =
+    variant === "full"
+      ? await getUnreadNotificationsCount({
+          supabase,
+          userId: user?.id || null,
+        })
+      : 0;
 
   return (
     <RightSidebar

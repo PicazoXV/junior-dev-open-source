@@ -158,7 +158,7 @@ export async function getUserOnboardingState(params: {
       id: "explore_projects",
       title: messages.onboarding.exploreProjectsTitle,
       description: messages.onboarding.exploreProjectsDesc,
-      href: "/good-first-issues",
+      href: "/buena-primera-issue",
       ctaLabel: messages.onboarding.exploreProjectsCta,
       status: deriveStatus({
         completed: hasExploredProjects,
@@ -168,7 +168,7 @@ export async function getUserOnboardingState(params: {
       id: "first_request",
       title: messages.onboarding.firstRequestTitle,
       description: messages.onboarding.firstRequestDesc,
-      href: "/good-first-issues",
+      href: "/buena-primera-issue",
       ctaLabel: messages.onboarding.firstRequestCta,
       status: deriveStatus({
         completed: hasRequestedTask,

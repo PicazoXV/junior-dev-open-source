@@ -8,7 +8,7 @@ export const esMessages: MessageDictionary = {
   sidebar: {
     home: "Inicio",
     projects: "Proyectos",
-    goodFirstIssues: "Good First Issues",
+    goodFirstIssues: "Buena Primera Issue",
     certifications: "Obtener certificaciones",
     developers: "Developers",
     activity: "Actividad",

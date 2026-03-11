@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getUserProgress } from "@/lib/user-progress";
+import { getUsersProgressBulk } from "@/lib/user-progress";
 import { getUserBadges } from "@/lib/user-badges";
 
 type MinimalSupabaseClient = SupabaseClient;
@@ -76,40 +76,61 @@ export async function getDevelopersLeaderboard(
   }
 
   const profileRows = (profiles || []) as ProfileRow[];
-  const leaderboard = await Promise.all(
-    profileRows.map(async (profile) => {
-      const progress = await getUserProgress(supabase, profile.id, profile.tech_stack || null);
-      const score =
-        progress.completedTasks * 5 +
-        progress.mergedPullRequests * 4 +
-        progress.contributedProjects * 3 +
-        progress.inReviewPullRequests;
+  const progressByUserId = await getUsersProgressBulk({
+    supabase,
+    userIds: profileRows.map((profile) => profile.id),
+    techStackByUserId: Object.fromEntries(
+      profileRows.map((profile) => [profile.id, profile.tech_stack || null])
+    ),
+  });
 
-      const visualBadges: string[] = [];
-      if (progress.completedTasks >= 10 || progress.mergedPullRequests >= 8) {
-        visualBadges.push("Top contributor");
-      }
-      if (progress.level === "junior" || progress.level === "beginner") {
-        visualBadges.push("Rising developer");
-      }
-      if (progress.inProgressTasks > 0 || progress.inReviewPullRequests > 0) {
-        visualBadges.push("Active this week");
-      }
-
+  const leaderboard: LeaderboardRow[] = profileRows.map((profile) => {
+    const progress = progressByUserId.get(profile.id);
+    if (!progress) {
       return {
         id: profile.id,
         githubUsername: toPublicUsername(profile),
         fullName: profile.full_name,
         avatarUrl: profile.avatar_url,
-        level: progress.level,
-        completedTasks: progress.completedTasks,
-        mergedPullRequests: progress.mergedPullRequests,
-        contributedProjects: progress.contributedProjects,
-        badges: visualBadges,
-        score,
+        level: "beginner",
+        completedTasks: 0,
+        mergedPullRequests: 0,
+        contributedProjects: 0,
+        badges: [],
+        score: 0,
       };
-    })
-  );
+    }
+
+    const score =
+      progress.completedTasks * 5 +
+      progress.mergedPullRequests * 4 +
+      progress.contributedProjects * 3 +
+      progress.inReviewPullRequests;
+
+    const visualBadges: string[] = [];
+    if (progress.completedTasks >= 10 || progress.mergedPullRequests >= 8) {
+      visualBadges.push("Top contributor");
+    }
+    if (progress.level === "junior" || progress.level === "beginner") {
+      visualBadges.push("Rising developer");
+    }
+    if (progress.inProgressTasks > 0 || progress.inReviewPullRequests > 0) {
+      visualBadges.push("Active this week");
+    }
+
+    return {
+      id: profile.id,
+      githubUsername: toPublicUsername(profile),
+      fullName: profile.full_name,
+      avatarUrl: profile.avatar_url,
+      level: progress.level,
+      completedTasks: progress.completedTasks,
+      mergedPullRequests: progress.mergedPullRequests,
+      contributedProjects: progress.contributedProjects,
+      badges: visualBadges,
+      score,
+    };
+  });
 
   return leaderboard.sort((a, b) => b.score - a.score);
 }
@@ -134,7 +155,19 @@ export async function getDeveloperPublicProfile(
   }
 
   const typedProfile = profile as ProfileRow;
-  const progress = await getUserProgress(supabase, typedProfile.id, typedProfile.tech_stack || null);
+  const progressByUserId = await getUsersProgressBulk({
+    supabase,
+    userIds: [typedProfile.id],
+    techStackByUserId: {
+      [typedProfile.id]: typedProfile.tech_stack || null,
+    },
+  });
+  const progress = progressByUserId.get(typedProfile.id);
+
+  if (!progress) {
+    return null;
+  }
+
   const badges = getUserBadges(progress);
 
   const { data: contributedTasks } = await supabase
@@ -179,4 +212,3 @@ export async function getDeveloperPublicProfile(
     projects: (projects || []) as ContributedProject[],
   };
 }
-

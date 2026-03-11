@@ -19,7 +19,7 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
   const [state, formAction, pending] = useActionState(requestTaskAction, initialState);
 
   return (
-    <form action={formAction} className="rounded-2xl border border-white/20 bg-black/20 p-6">
+    <form action={formAction} className="surface-subcard rounded-2xl p-6">
       <input type="hidden" name="taskId" value={taskId} />
 
       {state.message ? (

@@ -26,6 +26,130 @@ export type UserProgressMetrics = {
 
 type MinimalSupabaseClient = SupabaseClient;
 
+type TaskStatus = "open" | "assigned" | "in_review" | "completed" | "closed";
+
+type TaskWithPrRow = {
+  assigned_to: string | null;
+  status: TaskStatus;
+  project_id: string | null;
+  title: string | null;
+  created_at: string;
+  github_pr_number: number | null;
+  github_pr_url: string | null;
+};
+
+type TaskFallbackRow = {
+  assigned_to: string | null;
+  status: TaskStatus;
+  project_id: string | null;
+  title: string | null;
+  created_at: string;
+};
+
+type RequestRow = {
+  user_id: string | null;
+};
+
+type ProfileChallengeRow = {
+  id: string;
+  created_at: string | null;
+  challenge_started_at: string | null;
+  challenge_completed_at: string | null;
+};
+
+type ProfileCreatedAtRow = {
+  id: string;
+  created_at: string | null;
+};
+
+type ProjectNameRow = {
+  id: string;
+  name: string | null;
+};
+
+type UserProgressAccumulator = {
+  completedTasks: number;
+  inProgressTasks: number;
+  assignedTasks: number;
+  requestsSent: number;
+  mergedPullRequests: number;
+  inReviewPullRequests: number;
+  contributedProjectIds: Set<string>;
+  profileCreatedAt: string | null;
+  challengeStartedAt: string | null;
+  challengeCompletedAt: string | null;
+  firstCompletedAt: string | null;
+  lastCompletedTaskTitle: string | null;
+  lastCompletedProjectId: string | null;
+  lastCompletedTaskAtTs: number | null;
+  lastPullRequestUrl: string | null;
+  lastPullRequestProjectId: string | null;
+  lastPullRequestAtTs: number | null;
+  techStack: string | null;
+};
+
+function normalizeTechStackValue(value: string | string[] | null | undefined) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean).join(", ") || null;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : null;
+  }
+
+  return null;
+}
+
+function createEmptyAccumulator(techStack: string | null): UserProgressAccumulator {
+  return {
+    completedTasks: 0,
+    inProgressTasks: 0,
+    assignedTasks: 0,
+    requestsSent: 0,
+    mergedPullRequests: 0,
+    inReviewPullRequests: 0,
+    contributedProjectIds: new Set<string>(),
+    profileCreatedAt: null,
+    challengeStartedAt: null,
+    challengeCompletedAt: null,
+    firstCompletedAt: null,
+    lastCompletedTaskTitle: null,
+    lastCompletedProjectId: null,
+    lastCompletedTaskAtTs: null,
+    lastPullRequestUrl: null,
+    lastPullRequestProjectId: null,
+    lastPullRequestAtTs: null,
+    techStack,
+  };
+}
+
+function createEmptyMetrics(techStack: string | null): UserProgressMetrics {
+  const metricsWithoutLevel = {
+    completedTasks: 0,
+    inProgressTasks: 0,
+    assignedTasks: 0,
+    contributedProjects: 0,
+    requestsSent: 0,
+    mergedPullRequests: 0,
+    inReviewPullRequests: 0,
+    challengeStartedAt: null,
+    challengeCompletedAt: null,
+    challengeCompletedInTime: false,
+    techStack,
+    recentActivity: {
+      lastCompletedTaskTitle: null,
+      lastContributedProjectName: null,
+      lastPullRequestUrl: null,
+    },
+  };
+
+  return {
+    ...metricsWithoutLevel,
+    level: calculateUserLevel(metricsWithoutLevel),
+  };
+}
+
 export function calculateUserLevel(metrics: Omit<UserProgressMetrics, "level">): UserLevel {
   if (
     metrics.completedTasks >= 12 ||
@@ -93,238 +217,289 @@ function addDays(dateIso: string, days: number) {
   return date.toISOString();
 }
 
+function toTimestamp(value: string | null | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+export async function getUsersProgressBulk(params: {
+  supabase: MinimalSupabaseClient;
+  userIds: string[];
+  techStackByUserId?: Record<string, string | string[] | null | undefined>;
+}): Promise<Map<string, UserProgressMetrics>> {
+  const { supabase, techStackByUserId = {} } = params;
+  const userIds = [...new Set(params.userIds.filter(Boolean))];
+
+  if (userIds.length === 0) {
+    return new Map<string, UserProgressMetrics>();
+  }
+
+  const accumulatorByUserId = new Map<string, UserProgressAccumulator>();
+  userIds.forEach((userId) => {
+    accumulatorByUserId.set(
+      userId,
+      createEmptyAccumulator(normalizeTechStackValue(techStackByUserId[userId]))
+    );
+  });
+
+  let hasGithubPrColumns = true;
+  let taskRows: Array<TaskWithPrRow | TaskFallbackRow> = [];
+
+  const tasksWithPrResult = await supabase
+    .from("tasks")
+    .select("assigned_to, status, project_id, title, created_at, github_pr_number, github_pr_url")
+    .in("assigned_to", userIds)
+    .in("status", ["assigned", "in_review", "completed", "closed"]);
+
+  if (tasksWithPrResult.error && isMissingColumnError(tasksWithPrResult.error)) {
+    hasGithubPrColumns = false;
+
+    const tasksFallbackResult = await supabase
+      .from("tasks")
+      .select("assigned_to, status, project_id, title, created_at")
+      .in("assigned_to", userIds)
+      .in("status", ["assigned", "in_review", "completed", "closed"]);
+
+    if (tasksFallbackResult.error) {
+      console.error(
+        "Error cargando métricas (tasks bulk fallback):",
+        tasksFallbackResult.error.message
+      );
+    } else {
+      taskRows = (tasksFallbackResult.data || []) as TaskFallbackRow[];
+    }
+  } else if (tasksWithPrResult.error) {
+    console.error("Error cargando métricas (tasks bulk):", tasksWithPrResult.error.message);
+  } else {
+    taskRows = (tasksWithPrResult.data || []) as TaskWithPrRow[];
+  }
+
+  for (const row of taskRows) {
+    const userId = row.assigned_to;
+    if (!userId) {
+      continue;
+    }
+
+    const accumulator = accumulatorByUserId.get(userId);
+    if (!accumulator) {
+      continue;
+    }
+
+    const status = row.status;
+
+    accumulator.assignedTasks += 1;
+
+    if (status === "assigned" || status === "in_review") {
+      accumulator.inProgressTasks += 1;
+    }
+
+    if (status === "completed") {
+      accumulator.completedTasks += 1;
+    }
+
+    if (row.project_id) {
+      accumulator.contributedProjectIds.add(row.project_id);
+    }
+
+    if (hasGithubPrColumns) {
+      const withPr = row as TaskWithPrRow;
+
+      if (status === "completed" && withPr.github_pr_number !== null) {
+        accumulator.mergedPullRequests += 1;
+      }
+
+      if (status === "in_review" && withPr.github_pr_number !== null) {
+        accumulator.inReviewPullRequests += 1;
+      }
+
+      const prTs = toTimestamp(withPr.created_at);
+      if (withPr.github_pr_url && prTs !== null) {
+        if (accumulator.lastPullRequestAtTs === null || prTs > accumulator.lastPullRequestAtTs) {
+          accumulator.lastPullRequestAtTs = prTs;
+          accumulator.lastPullRequestUrl = withPr.github_pr_url;
+          accumulator.lastPullRequestProjectId = withPr.project_id;
+        }
+      }
+    } else {
+      if (status === "completed") {
+        accumulator.mergedPullRequests += 1;
+      }
+
+      if (status === "in_review") {
+        accumulator.inReviewPullRequests += 1;
+      }
+    }
+
+    if (status === "completed") {
+      const completedTs = toTimestamp(row.created_at);
+
+      if (completedTs !== null) {
+        if (accumulator.lastCompletedTaskAtTs === null || completedTs > accumulator.lastCompletedTaskAtTs) {
+          accumulator.lastCompletedTaskAtTs = completedTs;
+          accumulator.lastCompletedTaskTitle = row.title;
+          accumulator.lastCompletedProjectId = row.project_id;
+        }
+
+        const firstCompletedTs = toTimestamp(accumulator.firstCompletedAt);
+        if (accumulator.firstCompletedAt === null || firstCompletedTs === null || completedTs < firstCompletedTs) {
+          accumulator.firstCompletedAt = row.created_at;
+        }
+      }
+    }
+  }
+
+  const requestsResult = await supabase
+    .from("task_requests")
+    .select("user_id")
+    .in("user_id", userIds);
+
+  if (requestsResult.error) {
+    console.error("Error cargando métricas (task requests bulk):", requestsResult.error.message);
+  } else {
+    for (const row of (requestsResult.data || []) as RequestRow[]) {
+      if (!row.user_id) continue;
+      const accumulator = accumulatorByUserId.get(row.user_id);
+      if (!accumulator) continue;
+      accumulator.requestsSent += 1;
+    }
+  }
+
+  const profileChallengeResult = await supabase
+    .from("profiles")
+    .select("id, created_at, challenge_started_at, challenge_completed_at")
+    .in("id", userIds);
+
+  if (profileChallengeResult.error && isMissingChallengeColumnError(profileChallengeResult.error)) {
+    const fallbackProfileResult = await supabase
+      .from("profiles")
+      .select("id, created_at")
+      .in("id", userIds);
+
+    if (fallbackProfileResult.error) {
+      console.error(
+        "Error cargando métricas (challenge profile bulk fallback):",
+        fallbackProfileResult.error.message
+      );
+    } else {
+      for (const row of (fallbackProfileResult.data || []) as ProfileCreatedAtRow[]) {
+        const accumulator = accumulatorByUserId.get(row.id);
+        if (!accumulator) continue;
+
+        accumulator.profileCreatedAt = row.created_at;
+        accumulator.challengeStartedAt = row.created_at;
+      }
+    }
+  } else if (profileChallengeResult.error) {
+    console.error(
+      "Error cargando métricas (challenge profile bulk):",
+      profileChallengeResult.error.message
+    );
+  } else {
+    for (const row of (profileChallengeResult.data || []) as ProfileChallengeRow[]) {
+      const accumulator = accumulatorByUserId.get(row.id);
+      if (!accumulator) continue;
+
+      accumulator.profileCreatedAt = row.created_at;
+      accumulator.challengeStartedAt = row.challenge_started_at || row.created_at;
+      accumulator.challengeCompletedAt = row.challenge_completed_at;
+    }
+  }
+
+  const recentProjectIds = new Set<string>();
+  for (const accumulator of accumulatorByUserId.values()) {
+    const recentProjectId = accumulator.lastCompletedProjectId || accumulator.lastPullRequestProjectId;
+    if (recentProjectId) {
+      recentProjectIds.add(recentProjectId);
+    }
+  }
+
+  const recentProjectNameById = new Map<string, string | null>();
+
+  if (recentProjectIds.size > 0) {
+    const projectsResult = await supabase
+      .from("projects")
+      .select("id, name")
+      .in("id", [...recentProjectIds]);
+
+    if (projectsResult.error) {
+      console.error("Error cargando actividad reciente (project names bulk):", projectsResult.error.message);
+    } else {
+      for (const project of (projectsResult.data || []) as ProjectNameRow[]) {
+        recentProjectNameById.set(project.id, project.name || null);
+      }
+    }
+  }
+
+  const metricsByUserId = new Map<string, UserProgressMetrics>();
+
+  for (const userId of userIds) {
+    const accumulator = accumulatorByUserId.get(userId);
+
+    if (!accumulator) {
+      metricsByUserId.set(userId, createEmptyMetrics(normalizeTechStackValue(techStackByUserId[userId])));
+      continue;
+    }
+
+    const challengeStartedAt = accumulator.challengeStartedAt || accumulator.profileCreatedAt || null;
+    const challengeCompletedAt = accumulator.challengeCompletedAt || accumulator.firstCompletedAt || null;
+
+    const challengeCompletedInTime =
+      !!challengeStartedAt &&
+      !!challengeCompletedAt &&
+      new Date(challengeCompletedAt).getTime() <= new Date(addDays(challengeStartedAt, 7)).getTime();
+
+    const recentProjectId = accumulator.lastCompletedProjectId || accumulator.lastPullRequestProjectId;
+    const lastContributedProjectName = recentProjectId
+      ? recentProjectNameById.get(recentProjectId) || null
+      : null;
+
+    const metricsWithoutLevel = {
+      completedTasks: accumulator.completedTasks,
+      inProgressTasks: accumulator.inProgressTasks,
+      assignedTasks: accumulator.assignedTasks,
+      contributedProjects: accumulator.contributedProjectIds.size,
+      requestsSent: accumulator.requestsSent,
+      mergedPullRequests: accumulator.mergedPullRequests,
+      inReviewPullRequests: accumulator.inReviewPullRequests,
+      challengeStartedAt,
+      challengeCompletedAt,
+      challengeCompletedInTime,
+      techStack: accumulator.techStack,
+      recentActivity: {
+        lastCompletedTaskTitle: accumulator.lastCompletedTaskTitle,
+        lastContributedProjectName,
+        lastPullRequestUrl: accumulator.lastPullRequestUrl,
+      },
+    };
+
+    metricsByUserId.set(userId, {
+      ...metricsWithoutLevel,
+      level: calculateUserLevel(metricsWithoutLevel),
+    });
+  }
+
+  return metricsByUserId;
+}
+
 export async function getUserProgress(
   supabase: MinimalSupabaseClient,
   userId: string,
-  techStackFromProfile?: string | null
+  techStackFromProfile?: string | string[] | null
 ): Promise<UserProgressMetrics> {
-  const [
-    completedTasksResult,
-    inProgressTasksResult,
-    assignedTasksResult,
-    contributionTasksResult,
-    requestsResult,
-    mergedPullRequestsResult,
-    inReviewPullRequestsResult,
-    profileChallengeResult,
-    recentCompletedTaskResult,
-    recentTaskWithPrResult,
-    firstCompletedTaskResult,
-  ] = await Promise.all([
-    supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .eq("status", "completed"),
-    supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .in("status", ["assigned", "in_review"]),
-    supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .in("status", ["assigned", "in_review", "completed", "closed"]),
-    supabase
-      .from("tasks")
-      .select("project_id")
-      .eq("assigned_to", userId)
-      .in("status", ["assigned", "in_review", "completed", "closed"]),
-    supabase
-      .from("task_requests")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId),
-    supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .eq("status", "completed")
-      .not("github_pr_number", "is", null),
-    supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .eq("status", "in_review")
-      .not("github_pr_number", "is", null),
-    supabase
-      .from("profiles")
-      .select("created_at, challenge_started_at, challenge_completed_at")
-      .eq("id", userId)
-      .maybeSingle(),
-    supabase
-      .from("tasks")
-      .select("id, title, project_id, created_at")
-      .eq("assigned_to", userId)
-      .eq("status", "completed")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("tasks")
-      .select("id, title, project_id, github_pr_url, created_at")
-      .eq("assigned_to", userId)
-      .not("github_pr_url", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("tasks")
-      .select("id, created_at")
-      .eq("assigned_to", userId)
-      .eq("status", "completed")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  if (completedTasksResult.error) {
-    console.error("Error cargando métricas (completed tasks):", completedTasksResult.error.message);
-  }
-
-  if (inProgressTasksResult.error) {
-    console.error("Error cargando métricas (in progress tasks):", inProgressTasksResult.error.message);
-  }
-
-  if (contributionTasksResult.error) {
-    console.error("Error cargando métricas (contributed projects):", contributionTasksResult.error.message);
-  }
-
-  if (requestsResult.error) {
-    console.error("Error cargando métricas (requests sent):", requestsResult.error.message);
-  }
-
-  if (profileChallengeResult.error && !isMissingChallengeColumnError(profileChallengeResult.error)) {
-    console.error(
-      "Error cargando métricas (challenge profile):",
-      profileChallengeResult.error.message
-    );
-  }
-
-  if (recentCompletedTaskResult.error) {
-    console.error(
-      "Error cargando actividad reciente (last completed task):",
-      recentCompletedTaskResult.error.message
-    );
-  }
-
-  if (recentTaskWithPrResult.error && !isMissingColumnError(recentTaskWithPrResult.error)) {
-    console.error(
-      "Error cargando actividad reciente (last PR task):",
-      recentTaskWithPrResult.error.message
-    );
-  }
-
-  const contributedProjectIds = new Set(
-    (contributionTasksResult.data || [])
-      .map((task) => task.project_id)
-      .filter((projectId): projectId is string => typeof projectId === "string")
-  );
-
-  const techStack =
-    typeof techStackFromProfile === "undefined" ? null : techStackFromProfile;
-
-  let mergedPrCount = 0;
-  if (!mergedPullRequestsResult.error) {
-    mergedPrCount = mergedPullRequestsResult.count || 0;
-  } else {
-    const mergedFallbackResult = await supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .eq("status", "completed");
-
-    if (mergedFallbackResult.error) {
-      console.error(
-        "Error cargando métricas (merged pull requests fallback):",
-        mergedFallbackResult.error.message
-      );
-    } else {
-      mergedPrCount = mergedFallbackResult.count || 0;
-    }
-  }
-
-  let inReviewPrCount = 0;
-  if (!inReviewPullRequestsResult.error) {
-    inReviewPrCount = inReviewPullRequestsResult.count || 0;
-  } else {
-    const inReviewFallbackResult = await supabase
-      .from("tasks")
-      .select("id", { count: "exact", head: true })
-      .eq("assigned_to", userId)
-      .eq("status", "in_review");
-
-    if (inReviewFallbackResult.error) {
-      console.error(
-        "Error cargando métricas (in review pull requests fallback):",
-        inReviewFallbackResult.error.message
-      );
-    } else {
-      inReviewPrCount = inReviewFallbackResult.count || 0;
-    }
-  }
-
-  let challengeStartedAt: string | null = null;
-  let challengeCompletedAt: string | null = null;
-
-  if (!profileChallengeResult.error && profileChallengeResult.data) {
-    challengeStartedAt =
-      profileChallengeResult.data.challenge_started_at || profileChallengeResult.data.created_at || null;
-    challengeCompletedAt = profileChallengeResult.data.challenge_completed_at || null;
-  } else if (isMissingChallengeColumnError(profileChallengeResult.error)) {
-    const fallbackProfileResult = await supabase
-      .from("profiles")
-      .select("created_at")
-      .eq("id", userId)
-      .maybeSingle();
-
-    challengeStartedAt = fallbackProfileResult.data?.created_at || null;
-  }
-
-  if (!challengeCompletedAt) {
-    challengeCompletedAt = firstCompletedTaskResult.data?.created_at || null;
-  }
-
-  const challengeCompletedInTime =
-    !!challengeStartedAt &&
-    !!challengeCompletedAt &&
-    new Date(challengeCompletedAt).getTime() <= new Date(addDays(challengeStartedAt, 7)).getTime();
-
-  const recentProjectId =
-    recentCompletedTaskResult.data?.project_id || recentTaskWithPrResult.data?.project_id || null;
-
-  let lastContributedProjectName: string | null = null;
-  if (recentProjectId) {
-    const { data: recentProject } = await supabase
-      .from("projects")
-      .select("name")
-      .eq("id", recentProjectId)
-      .maybeSingle();
-
-    lastContributedProjectName = recentProject?.name || null;
-  }
-
-  const metricsWithoutLevel = {
-    completedTasks: completedTasksResult.count || 0,
-    inProgressTasks: inProgressTasksResult.count || 0,
-    assignedTasks: assignedTasksResult.count || 0,
-    contributedProjects: contributedProjectIds.size,
-    requestsSent: requestsResult.count || 0,
-    mergedPullRequests: mergedPrCount,
-    inReviewPullRequests: inReviewPrCount,
-    challengeStartedAt,
-    challengeCompletedAt,
-    challengeCompletedInTime,
-    techStack,
-    recentActivity: {
-      lastCompletedTaskTitle: recentCompletedTaskResult.data?.title || null,
-      lastContributedProjectName,
-      lastPullRequestUrl: recentTaskWithPrResult.data?.github_pr_url || null,
+  const progressByUserId = await getUsersProgressBulk({
+    supabase,
+    userIds: [userId],
+    techStackByUserId: {
+      [userId]: techStackFromProfile,
     },
-  };
+  });
 
-  return {
-    ...metricsWithoutLevel,
-    level: calculateUserLevel(metricsWithoutLevel),
-  };
+  return (
+    progressByUserId.get(userId) ||
+    createEmptyMetrics(normalizeTechStackValue(techStackFromProfile))
+  );
 }

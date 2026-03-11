@@ -9,9 +9,9 @@ import { getPlatformActivity } from "@/lib/activity-feed";
 import { getCurrentLocale } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Actividad reciente de la comunidad | PrimerIssue",
+  title: "Actividad reciente de la comunidad | MiPrimerIssue",
   description:
-    "Sigue la actividad pública de PrimerIssue: tareas iniciadas, tareas completadas y pull requests mergeados en proyectos open source.",
+    "Sigue la actividad pública de MiPrimerIssue: tareas iniciadas, tareas completadas y pull requests mergeados en proyectos open source.",
 };
 
 export default async function ActivityPage() {
@@ -21,7 +21,7 @@ export default async function ActivityPage() {
 
   return (
     <PublicLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={locale === "en" ? "Activity feed" : "Feed de actividad"}
           description={
@@ -34,7 +34,7 @@ export default async function ActivityPage() {
         {activity.length > 0 ? (
           <div className="space-y-3">
             {activity.map((item) => (
-              <article key={item.id} className="rounded-xl border border-white/15 bg-black/20 p-4">
+              <article key={item.id} className="surface-subcard rounded-xl p-4">
                 <p className="text-sm text-gray-200">
                   <span className="text-orange-300">{item.actorName}</span>{" "}
                   {item.type === "merged_pr"

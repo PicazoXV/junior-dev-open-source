@@ -6,9 +6,9 @@ import NewHomeContent from "@/components/home/new-home-content";
 import PostLoginRoadmap from "@/components/roadmap/post-login-roadmap";
 
 export const metadata: Metadata = {
-  title: "PrimerIssue | Primera experiencia open source para developers junior",
+  title: "MiPrimerIssue | Primera experiencia open source para developers junior",
   description:
-    "Descubre proyectos open source, encuentra good first issues, solicita tareas y construye un perfil público con progreso real en GitHub con PrimerIssue.",
+    "Descubre proyectos open source, encuentra good first issues, solicita tareas y construye un perfil público con progreso real en GitHub con MiPrimerIssue.",
 };
 
 export default async function HomePage() {
@@ -17,7 +17,7 @@ export default async function HomePage() {
 
   if (!user) {
     return (
-      <main className="app-bg min-h-screen p-6">
+      <main className="app-bg min-h-screen px-6 pt-10 pb-32 lg:px-8 lg:pt-12 lg:pb-12">
         <div className="mx-auto w-full max-w-6xl">
           <NewHomeContent locale={locale} isAuthenticated={false} />
         </div>

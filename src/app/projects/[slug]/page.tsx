@@ -11,9 +11,16 @@ import TaskFilterPanel from "@/components/task-filter-panel";
 import { isReviewerRole } from "@/lib/roles";
 import { getCurrentLocale } from "@/lib/i18n/server";
 import FavoriteToggle from "@/components/favorites/favorite-toggle";
+import { FilterField, FiltersForm, FilterSelect } from "@/components/ui/filters";
+import Button from "@/components/ui/button";
 
 type ProjectDetailPageProps = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{
+    taskStatus?: string;
+    taskDifficulty?: string;
+    page?: string;
+  }>;
 };
 
 type TaskRow = {
@@ -35,6 +42,12 @@ type ProfileLite = {
   avatar_url: string | null;
 };
 
+type AssignedToRow = {
+  assigned_to: string | null;
+};
+
+const TASKS_PER_PAGE = 12;
+
 function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
   if (!error) return false;
   const code = error.code || "";
@@ -54,6 +67,37 @@ function slugToTitle(slug: string) {
     .join(" ");
 }
 
+function parsePage(value: string | undefined) {
+  const page = Number.parseInt(value || "1", 10);
+  return Number.isFinite(page) && page > 0 ? page : 1;
+}
+
+function buildTasksPageHref(
+  slug: string,
+  filters: {
+    taskStatus: string;
+    taskDifficulty: string;
+  },
+  page: number
+) {
+  const params = new URLSearchParams();
+
+  if (filters.taskStatus && filters.taskStatus !== "all") {
+    params.set("taskStatus", filters.taskStatus);
+  }
+
+  if (filters.taskDifficulty && filters.taskDifficulty !== "all") {
+    params.set("taskDifficulty", filters.taskDifficulty);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `/projects/${slug}?${query}` : `/projects/${slug}`;
+}
+
 export async function generateMetadata({ params }: ProjectDetailPageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const rawSlug = resolvedParams?.slug;
@@ -61,7 +105,7 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
 
   if (!slug) {
     return {
-      title: "Proyecto open source | PrimerIssue",
+      title: "Proyecto open source | MiPrimerIssue",
       description:
         "Conoce proyectos open source con tareas para juniors, nivel de dificultad y contexto para contribuir con impacto.",
     };
@@ -77,15 +121,15 @@ export async function generateMetadata({ params }: ProjectDetailPageProps): Prom
   const readableName = project?.name?.trim() || slugToTitle(slug) || "Proyecto open source";
   const description =
     project?.short_description?.trim() ||
-    `Explora ${readableName} en PrimerIssue y encuentra tareas abiertas para empezar a contribuir en open source.`;
+    `Explora ${readableName} en MiPrimerIssue y encuentra tareas abiertas para empezar a contribuir en open source.`;
 
   return {
-    title: `${readableName} | PrimerIssue`,
+    title: `${readableName} | MiPrimerIssue`,
     description,
   };
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({ params, searchParams }: ProjectDetailPageProps) {
   const locale = await getCurrentLocale();
   const supabase = await createClient();
   const {
@@ -100,6 +144,20 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
+  const resolvedSearchParams = await searchParams;
+  const taskStatus = ["all", "open", "assigned", "in_review", "completed", "closed"].includes(
+    resolvedSearchParams?.taskStatus || ""
+  )
+    ? (resolvedSearchParams?.taskStatus as "all" | "open" | "assigned" | "in_review" | "completed" | "closed")
+    : "all";
+  const taskDifficulty = ["all", "beginner", "intermediate", "advanced"].includes(
+    resolvedSearchParams?.taskDifficulty || ""
+  )
+    ? (resolvedSearchParams?.taskDifficulty as "all" | "beginner" | "intermediate" | "advanced")
+    : "all";
+
+  let currentPage = parsePage(resolvedSearchParams?.page);
+
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select(
@@ -112,35 +170,94 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     notFound();
   }
 
-  const tasksWithEstimate = await supabase
-    .from("tasks")
-    .select("id, title, description, status, difficulty, estimated_minutes, labels, github_issue_url, assigned_to")
-    .eq("project_id", project.id)
-    .order("created_at", { ascending: false });
-
-  let tasks = tasksWithEstimate.data;
-  let tasksError = tasksWithEstimate.error;
-
-  if (tasksError && isMissingEstimatedColumnError(tasksError)) {
-    const fallback = await supabase
+  const buildTasksQuery = (withEstimate: boolean) => {
+    let query = supabase
       .from("tasks")
-      .select("id, title, description, status, difficulty, labels, github_issue_url, assigned_to")
+      .select(
+        withEstimate
+          ? "id, title, description, status, difficulty, estimated_minutes, labels, github_issue_url, assigned_to"
+          : "id, title, description, status, difficulty, labels, github_issue_url, assigned_to",
+        { count: "exact" }
+      )
       .eq("project_id", project.id)
       .order("created_at", { ascending: false });
-    tasks = (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null }));
-    tasksError = fallback.error;
+
+    if (taskStatus !== "all") {
+      query = query.eq("status", taskStatus);
+    }
+
+    if (taskDifficulty !== "all") {
+      query = query.eq("difficulty", taskDifficulty);
+    }
+
+    return query;
+  };
+
+  const taskRangeStart = (currentPage - 1) * TASKS_PER_PAGE;
+  const taskRangeEnd = taskRangeStart + TASKS_PER_PAGE - 1;
+
+  let tasksResult = await buildTasksQuery(true).range(taskRangeStart, taskRangeEnd);
+
+  if (tasksResult.error && isMissingEstimatedColumnError(tasksResult.error)) {
+    const fallback = await buildTasksQuery(false).range(taskRangeStart, taskRangeEnd);
+    tasksResult = {
+      data: (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null })),
+      error: fallback.error,
+      count: fallback.count,
+    } as typeof tasksResult;
   }
 
-  if (tasksError) {
-    console.error("Error cargando tareas:", tasksError.message);
+  if (tasksResult.error) {
+    console.error("Error cargando tareas:", tasksResult.error.message);
   }
 
-  const taskRows = (tasks || []) as TaskRow[];
-  const openTasks = taskRows.filter((task) => task.status === "open");
+  let totalTasks = tasksResult.count || 0;
+  const totalPages = Math.max(1, Math.ceil(totalTasks / TASKS_PER_PAGE));
+
+  if (totalTasks > 0 && currentPage > totalPages) {
+    currentPage = totalPages;
+    const correctedStart = (currentPage - 1) * TASKS_PER_PAGE;
+    const correctedEnd = correctedStart + TASKS_PER_PAGE - 1;
+
+    let correctedTasksResult = await buildTasksQuery(true).range(correctedStart, correctedEnd);
+    if (correctedTasksResult.error && isMissingEstimatedColumnError(correctedTasksResult.error)) {
+      const fallback = await buildTasksQuery(false).range(correctedStart, correctedEnd);
+      correctedTasksResult = {
+        data: (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null })),
+        error: fallback.error,
+        count: fallback.count,
+      } as typeof correctedTasksResult;
+    }
+
+    tasksResult = correctedTasksResult;
+    totalTasks = tasksResult.count || totalTasks;
+    if (tasksResult.error) {
+      console.error("Error recargando tareas paginadas:", tasksResult.error.message);
+    }
+  }
+
+  const taskRows = (tasksResult.data || []) as TaskRow[];
+
+  const [{ count: openTasksCount }, contributorsResult] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", project.id)
+      .eq("status", "open"),
+    supabase
+      .from("tasks")
+      .select("assigned_to")
+      .eq("project_id", project.id)
+      .not("assigned_to", "is", null),
+  ]);
+
+  if (contributorsResult.error) {
+    console.error("Error cargando contributors del proyecto:", contributorsResult.error.message);
+  }
 
   const contributorIds = [
     ...new Set(
-      taskRows
+      ((contributorsResult.data || []) as AssignedToRow[])
         .map((task) => task.assigned_to)
         .filter((id): id is string => typeof id === "string" && id.length > 0)
     ),
@@ -173,9 +290,13 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     isFavoriteProject = !!favoriteProject;
   }
 
+  const showingFrom = totalTasks === 0 ? 0 : (currentPage - 1) * TASKS_PER_PAGE + 1;
+  const showingTo = totalTasks === 0 ? 0 : Math.min(currentPage * TASKS_PER_PAGE, totalTasks);
+  const taskFilters = { taskStatus, taskDifficulty };
+
   return (
     <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={project.name || (locale === "en" ? "Project" : "Proyecto")}
           description={
@@ -210,7 +331,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           }
         />
 
-        <div className="rounded-2xl border border-white/20 bg-black/20 p-6">
+        <div className="surface-subcard rounded-2xl p-6">
           <p className="whitespace-pre-line text-gray-200">
             {project.description ||
               (locale === "en"
@@ -220,7 +341,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge tone="info">
-              {openTasks.length} {locale === "en" ? "open tasks" : "tareas abiertas"}
+              {(openTasksCount || 0)} {locale === "en" ? "open tasks" : "tareas abiertas"}
             </Badge>
             <Badge tone="warning">
               {locale === "en" ? "Difficulty" : "Dificultad"}: {project.difficulty || (locale === "en" ? "not specified" : "no especificada")}
@@ -273,7 +394,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {contributorRows.map((contributor) => (
               <div
                 key={contributor.id}
-                className="flex items-center justify-between rounded-xl border border-white/15 bg-black/20 p-3"
+                className="surface-subcard flex items-center justify-between rounded-xl p-3"
               >
                 <div>
                   <p className="text-sm font-medium text-white">
@@ -312,19 +433,106 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           title={locale === "en" ? "Available tasks" : "Tareas disponibles"}
           description={
             locale === "en"
-              ? "Filter by difficulty or labels like frontend, backend, testing, or good first issue."
-              : "Filtra por dificultad o etiquetas como frontend, backend, testing o good first issue."
+              ? "Filter by status and difficulty while keeping a lightweight paginated list."
+              : "Filtra por estado y dificultad con una lista paginada más ligera."
           }
         />
+
+        <FiltersForm className="mb-5 md:grid-cols-4">
+          <FilterField htmlFor="taskStatus" label={locale === "en" ? "Status" : "Estado"}>
+            <FilterSelect
+              id="taskStatus"
+              name="taskStatus"
+              defaultValue={taskStatus}
+              options={[
+                { value: "all", label: locale === "en" ? "All" : "Todos" },
+                { value: "open", label: locale === "en" ? "Open" : "Abiertas" },
+                { value: "assigned", label: locale === "en" ? "Assigned" : "Asignadas" },
+                { value: "in_review", label: locale === "en" ? "In review" : "En review" },
+                { value: "completed", label: locale === "en" ? "Completed" : "Completadas" },
+                { value: "closed", label: locale === "en" ? "Closed" : "Cerradas" },
+              ]}
+            />
+          </FilterField>
+
+          <FilterField htmlFor="taskDifficulty" label={locale === "en" ? "Difficulty" : "Dificultad"}>
+            <FilterSelect
+              id="taskDifficulty"
+              name="taskDifficulty"
+              defaultValue={taskDifficulty}
+              options={[
+                { value: "all", label: locale === "en" ? "All" : "Todas" },
+                { value: "beginner", label: locale === "en" ? "Beginner" : "Principiante" },
+                { value: "intermediate", label: locale === "en" ? "Intermediate" : "Intermedia" },
+                { value: "advanced", label: locale === "en" ? "Advanced" : "Avanzada" },
+              ]}
+            />
+          </FilterField>
+
+          <div className="flex items-end gap-2 md:col-span-2">
+            <Button type="submit" variant="accent">
+              {locale === "en" ? "Apply filters" : "Aplicar filtros"}
+            </Button>
+            <Link
+              href={buildTasksPageHref(project.slug || slug, { taskStatus: "all", taskDifficulty: "all" }, 1)}
+              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
+            >
+              {locale === "en" ? "Reset" : "Limpiar"}
+            </Link>
+          </div>
+        </FiltersForm>
+
+        <p className="mb-4 text-xs text-gray-400">
+          {locale === "en"
+            ? `Showing ${showingFrom}-${showingTo} of ${totalTasks} tasks`
+            : `Mostrando ${showingFrom}-${showingTo} de ${totalTasks} tareas`}
+        </p>
+
         {taskRows.length > 0 ? (
-          <TaskFilterPanel tasks={taskRows} />
+          <>
+            <TaskFilterPanel tasks={taskRows} />
+
+            {totalPages > 1 ? (
+              <div className="mt-6 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+                <Link
+                  href={buildTasksPageHref(project.slug || slug, taskFilters, Math.max(1, currentPage - 1))}
+                  aria-disabled={currentPage <= 1}
+                  className={`inline-flex rounded-lg border px-3 py-2 text-sm transition ${
+                    currentPage <= 1
+                      ? "pointer-events-none border-white/10 text-gray-600"
+                      : "border-white/20 bg-neutral-900 text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
+                  }`}
+                >
+                  {locale === "en" ? "Previous" : "Anterior"}
+                </Link>
+
+                <p className="text-sm text-gray-400">
+                  {locale === "en"
+                    ? `Page ${currentPage} of ${totalPages}`
+                    : `Página ${currentPage} de ${totalPages}`}
+                </p>
+
+                <Link
+                  href={buildTasksPageHref(project.slug || slug, taskFilters, Math.min(totalPages, currentPage + 1))}
+                  aria-disabled={currentPage >= totalPages}
+                  className={`inline-flex rounded-lg border px-3 py-2 text-sm transition ${
+                    currentPage >= totalPages
+                      ? "pointer-events-none border-white/10 text-gray-600"
+                      : "border-white/20 bg-neutral-900 text-gray-200 hover:border-orange-500/35 hover:text-orange-300"
+                  }`}
+                >
+                  {locale === "en" ? "Next" : "Siguiente"}
+                </Link>
+              </div>
+            ) : null}
+          </>
         ) : (
           <EmptyState
-            title="Este proyecto todavía no tiene tareas"
+            title={locale === "en" ? "No tasks for these filters" : "No hay tareas para estos filtros"}
             description={
               locale === "en"
-                ? "The maintainer has not published collaboration tasks yet."
-                : "El maintainer aún no ha publicado tareas para colaborar."
+                ? "Try another combination of status and difficulty."
+                : "Prueba otra combinación de estado y dificultad."
             }
           />
         )}

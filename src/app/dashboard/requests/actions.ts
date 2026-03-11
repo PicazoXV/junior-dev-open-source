@@ -83,6 +83,7 @@ export async function approveRequest(requestId: string) {
     title: "Tu solicitud fue aprobada",
     body: "Te asignaron la tarea. Ya puedes empezar a colaborar.",
     link: `/tasks/${request.task_id}`,
+    asSystem: true,
   });
 
   try {
@@ -100,6 +101,8 @@ export async function approveRequest(requestId: string) {
       issueUrl: integrationResult.issueUrl,
       issueNumber: integrationResult.issueNumber,
       reason: integrationResult.reason,
+      collaboratorAccess: integrationResult.collaboratorAccess,
+      collaboratorAccessError: integrationResult.collaboratorAccessError,
     });
 
     if (integrationResult.issueUrl) {
@@ -110,13 +113,76 @@ export async function approveRequest(requestId: string) {
         title: "Issue creado en GitHub",
         body: "La tarea ya tiene un issue enlazado en GitHub.",
         link: integrationResult.issueUrl,
+        asSystem: true,
+      });
+    }
+
+    if (integrationResult.collaboratorAccess === "invited" && integrationResult.repository) {
+      await createNotification({
+        supabase,
+        userId: request.user_id,
+        type: "repo_access_invited",
+        title: "Acceso al repositorio enviado",
+        body: `Te enviamos invitación para colaborar en ${integrationResult.repository.owner}/${integrationResult.repository.repo}. Revisa tu email o notificaciones de GitHub.`,
+        link: `https://github.com/${integrationResult.repository.owner}/${integrationResult.repository.repo}`,
+        asSystem: true,
+      });
+    } else if (integrationResult.collaboratorAccess === "already_collaborator") {
+      await createNotification({
+        supabase,
+        userId: request.user_id,
+        type: "repo_access_ready",
+        title: "Ya tienes acceso al repositorio",
+        body: "Tu acceso de colaboración al repositorio ya estaba activo. Puedes empezar a trabajar.",
+        link: `/tasks/${request.task_id}`,
+        asSystem: true,
+      });
+    } else if (integrationResult.collaboratorAccess === "failed") {
+      await createNotification({
+        supabase,
+        userId: request.user_id,
+        type: "repo_access_pending",
+        title: "Acceso al repositorio pendiente",
+        body:
+          "Tu tarea está aprobada, pero no pudimos conceder acceso automático al repositorio. Un maintainer te dará acceso manualmente.",
+        link: `/tasks/${request.task_id}`,
+        metadata: {
+          collaboratorAccessError: integrationResult.collaboratorAccessError,
+        },
+        asSystem: true,
       });
     }
   } catch (error) {
+    const githubErrorMessage = error instanceof Error ? error.message : String(error);
+
     console.error("GitHub integration failed while approving task request", {
       requestId: request.id,
       taskId: request.task_id,
-      error: error instanceof Error ? error.message : String(error),
+      error: githubErrorMessage,
+    });
+
+    await createNotification({
+      supabase,
+      userId: user.id,
+      type: "github_sync_failed",
+      title: "Fallo en integración con GitHub",
+      body: `La solicitud se aprobó, pero no pudimos crear/sincronizar el issue automáticamente. Motivo: ${githubErrorMessage}`,
+      link: "/dashboard/requests",
+      metadata: {
+        requestId: request.id,
+        taskId: request.task_id,
+      },
+    });
+
+    await createNotification({
+      supabase,
+      userId: request.user_id,
+      type: "repo_access_pending",
+      title: "Tarea aprobada, integración GitHub pendiente",
+      body:
+        "Tu tarea fue aprobada, pero estamos resolviendo la integración con GitHub. Un maintainer te ayudará manualmente si hace falta.",
+      link: `/tasks/${request.task_id}`,
+      asSystem: true,
     });
   }
 
@@ -174,6 +240,7 @@ export async function rejectRequest(requestId: string) {
       title: "Tu solicitud fue rechazada",
       body: "Esta solicitud no fue aprobada. Puedes intentar con otra tarea.",
       link: `/tasks/${request.task_id}`,
+      asSystem: true,
     });
   }
 

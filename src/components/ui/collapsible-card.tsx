@@ -24,7 +24,9 @@ export default function CollapsibleCard({
   const HeadingTag = headingAs;
 
   return (
-    <section className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl`}>
+    <section
+      className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl transition hover:border-orange-500/30`}
+    >
       <button
         type="button"
         onClick={() => setIsOpen((previous) => !previous)}

@@ -31,7 +31,7 @@ export default function OnboardingStepCard({ step }: OnboardingStepCardProps) {
   const { messages } = useI18n();
 
   return (
-    <article className="rounded-xl border border-white/15 bg-black/20 p-4">
+    <article className="surface-subcard rounded-xl p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-white">

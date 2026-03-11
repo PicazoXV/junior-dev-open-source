@@ -171,7 +171,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
 
   return (
     <AppLayout containerClassName="mx-auto max-w-5xl space-y-6">
-      <SectionCard className="p-8">
+      <SectionCard variant="hero" className="p-8">
         <PageHeader
           title={task.title || (locale === "en" ? "Untitled task" : "Tarea sin título")}
           description={locale === "en" ? "Task details and project context" : "Detalle de la tarea y contexto del proyecto"}
@@ -211,7 +211,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           }
         />
 
-        <section className="rounded-2xl border border-white/20 bg-black/20 p-6">
+        <section className="surface-subcard rounded-2xl p-6">
           <div className="flex flex-wrap gap-2">
             <StatusBadge status={task.status} />
             <DifficultyBadge difficulty={task.difficulty} />
@@ -270,7 +270,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
           </div>
 
           {canShareContribution ? (
-            <div className="mt-6 rounded-xl border border-white/20 bg-black/20 p-4">
+            <div className="surface-subcard mt-6 rounded-xl p-4">
               <p className="text-sm font-semibold text-white">
                 {locale === "en" ? "🎉 Contribution completed" : "🎉 Contribución completada"}
               </p>
@@ -338,7 +338,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
             )}
           </div>
 
-          <div className="mt-8 rounded-xl border border-white/20 bg-black/20 p-4">
+          <div className="surface-subcard mt-8 rounded-xl p-4">
             <h3 className="text-base font-semibold text-white">
               {locale === "en" ? "Task comments" : "Comentarios de la tarea"}
             </h3>
@@ -384,7 +384,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
                   return (
                     <article
                       key={comment.id}
-                      className="rounded-lg border border-white/10 bg-black/20 p-3"
+                      className="surface-subcard rounded-lg p-3"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium text-white">{author}</p>

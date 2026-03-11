@@ -26,7 +26,7 @@ export async function requestTask(taskId: string): Promise<RequestTaskResult> {
 
   const { data: task, error: taskError } = await supabase
     .from("tasks")
-    .select("id, project_id, status")
+    .select("id, project_id, title, status")
     .eq("id", taskId)
     .maybeSingle();
 
@@ -94,6 +94,43 @@ export async function requestTask(taskId: string): Promise<RequestTaskResult> {
     body: "Tu solicitud fue enviada correctamente. Te avisaremos cuando se revise.",
     link: `/tasks/${task.id}`,
   });
+
+  const [{ data: requesterProfile }, { data: projectOwner }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("github_username, full_name")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("projects")
+      .select("created_by, name")
+      .eq("id", task.project_id)
+      .maybeSingle(),
+  ]);
+
+  if (projectOwner?.created_by && projectOwner.created_by !== user.id) {
+    const requesterName =
+      requesterProfile?.github_username
+        ? `@${requesterProfile.github_username}`
+        : requesterProfile?.full_name || "Un developer";
+
+    await createNotification({
+      supabase,
+      userId: projectOwner.created_by,
+      type: "new_task_request",
+      title: "Nueva solicitud de tarea",
+      body: `${requesterName} solicitó trabajar en "${task.title || "una tarea"}"${
+        projectOwner.name ? ` del proyecto ${projectOwner.name}` : ""
+      }.`,
+      link: "/dashboard/requests",
+      metadata: {
+        taskId: task.id,
+        projectId: task.project_id,
+        requesterId: user.id,
+      },
+      asSystem: true,
+    });
+  }
 
   return {
     status: "success",
