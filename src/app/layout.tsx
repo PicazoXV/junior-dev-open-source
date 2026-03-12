@@ -23,8 +23,11 @@ export const metadata: Metadata = {
   description:
     "MiPrimerIssue conecta developers junior con proyectos open source reales para ganar experiencia demostrable.",
   icons: {
-    icon: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
-    shortcut: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/icon.svg?v=2", type: "image/svg+xml" },
+    ],
+    shortcut: [{ url: "/favicon.ico", type: "image/x-icon" }],
   },
 };
 

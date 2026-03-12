@@ -29,30 +29,50 @@ export default async function Navbar({ containerClassName, variant = "full" }: N
     );
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
-    : { data: null };
+    const { data: profile } = user
+      ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
+      : { data: null };
 
-  const isReviewer = isReviewerRole(profile?.role);
-  const unreadNotifications =
-    variant === "full"
-      ? await getUnreadNotificationsCount({
-          supabase,
-          userId: user?.id || null,
-        })
-      : 0;
+    const isReviewer = isReviewerRole(profile?.role);
+    const unreadNotifications =
+      variant === "full"
+        ? await getUnreadNotificationsCount({
+            supabase,
+            userId: user?.id || null,
+          })
+        : 0;
 
-  return (
-    <RightSidebar
-      isAuthenticated={!!user}
-      isReviewer={isReviewer}
-      unreadNotifications={unreadNotifications}
-      currentTheme={currentTheme}
-    />
-  );
+    return (
+      <RightSidebar
+        isAuthenticated={!!user}
+        isReviewer={isReviewer}
+        unreadNotifications={unreadNotifications}
+        currentTheme={currentTheme}
+      />
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Dynamic server usage")) {
+      throw error;
+    }
+
+    console.error(
+      "Error loading authenticated navbar state (fallback to public nav):",
+      error instanceof Error ? error.message : String(error)
+    );
+
+    return (
+      <RightSidebar
+        isAuthenticated={false}
+        isReviewer={false}
+        unreadNotifications={0}
+        currentTheme={currentTheme}
+      />
+    );
+  }
 }
