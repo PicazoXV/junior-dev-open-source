@@ -11,6 +11,9 @@
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
 	},
+	"vars": {
+		"GITHUB_APP_ID": "3057768"
+	},
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name
