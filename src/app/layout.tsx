@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "MiPrimerIssue",
   description:
     "MiPrimerIssue conecta developers junior con proyectos open source reales para ganar experiencia demostrable.",
+  icons: {
+    icon: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
+    shortcut: [{ url: "/icon.svg?v=2", type: "image/svg+xml" }],
+  },
 };
 
 export default async function RootLayout({

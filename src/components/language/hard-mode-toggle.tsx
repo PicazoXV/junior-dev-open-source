@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n/client";
 
 function setLocaleCookie(value: "es" | "en") {
   const maxAge = 60 * 60 * 24 * 365;
-  document.cookie = `${LOCALE_COOKIE_NAME}=${value}; path=/; max-age=${maxAge}; samesite=lax`;
+  document.cookie = `${LOCALE_COOKIE_NAME}=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
 }
 
 type HardModeToggleProps = {

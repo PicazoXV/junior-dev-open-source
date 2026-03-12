@@ -15,20 +15,10 @@ export default async function HomePage() {
   const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
 
-  if (!user) {
-    return (
-      <main className="app-bg min-h-screen px-6 pt-10 pb-32 lg:px-8 lg:pt-12 lg:pb-12">
-        <div className="mx-auto w-full max-w-6xl">
-          <NewHomeContent locale={locale} isAuthenticated={false} />
-        </div>
-      </main>
-    );
-  }
-
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl">
-      <PostLoginRoadmap userId={user.id} />
-      <NewHomeContent locale={locale} isAuthenticated />
+      {user ? <PostLoginRoadmap userId={user.id} /> : null}
+      <NewHomeContent locale={locale} isAuthenticated={!!user} />
     </AppLayout>
   );
 }
