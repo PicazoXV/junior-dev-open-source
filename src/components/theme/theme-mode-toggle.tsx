@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useI18n } from "@/lib/i18n/client";
 import {
@@ -11,12 +11,13 @@ import {
 
 function persistTheme(theme: AppTheme) {
   const maxAge = 60 * 60 * 24 * 365;
-  document.cookie = `${THEME_COOKIE_NAME}=${theme}; path=/; max-age=${maxAge}; samesite=lax`;
+  document.cookie = `${THEME_COOKIE_NAME}=${theme}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
   localStorage.setItem(THEME_STORAGE_KEY, theme);
 }
 
 function applyTheme(theme: AppTheme) {
   document.documentElement.setAttribute("data-theme", theme);
+  document.documentElement.style.colorScheme = theme;
 }
 
 type ThemeModeToggleProps = {
@@ -26,7 +27,13 @@ type ThemeModeToggleProps = {
 
 export default function ThemeModeToggle({ initialTheme, forceExpanded = false }: ThemeModeToggleProps) {
   const { messages } = useI18n();
+  const mountedThemeRef = useRef<AppTheme>(initialTheme);
   const [theme, setTheme] = useState<AppTheme>(initialTheme);
+
+  useEffect(() => {
+    applyTheme(mountedThemeRef.current);
+    // Apply server-provided theme once on mount; subsequent changes are handled in toggleTheme.
+  }, []);
 
   const isLightMode = theme === "light";
   const desktopRevealTextClass = forceExpanded
