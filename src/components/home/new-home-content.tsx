@@ -358,52 +358,137 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="p-8">
-        <h2 className="text-2xl font-semibold text-white md:text-3xl">
-          {isEn ? "Start your first contribution" : "Empieza con tu primera contribución"}
-        </h2>
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {sampleIssues.map((issue) => (
-            <article key={issue.title} className="surface-subcard rounded-xl p-4">
-              <p className="text-sm font-semibold text-white">{issue.title}</p>
-              <p className="mt-1 text-xs text-gray-400">{issue.project}</p>
-              <div className="mt-3">
-                <Badge>{issue.level}</Badge>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="mt-5">
-          <Link
-            href="/buena-primera-issue"
-            className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-          >
-            {isEn ? "View all First Good Issues" : "Ver tareas de Buena Primera Issue"}
-          </Link>
+      <SectionCard className="surface-card relative overflow-hidden p-8 md:p-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(251,146,60,0.16),transparent_58%)]" />
+        <div className="relative">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-3xl">
+              <Badge>{isEn ? "First contribution path" : "Ruta de primera contribución"}</Badge>
+              <h2 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
+                {isEn ? "Start your first contribution" : "Empieza con tu primera contribución"}
+              </h2>
+              <p className="mt-2 text-sm text-gray-300 md:text-base">
+                {isEn
+                  ? "Pick a beginner-friendly task and move step by step until your first merged PR."
+                  : "Elige una tarea beginner-friendly y avanza paso a paso hasta tu primer PR mergeado."}
+              </p>
+            </div>
+
+            <div className="surface-subcard rounded-xl px-4 py-3 text-sm">
+              <p className="text-gray-400">{isEn ? "Current sample board" : "Tablero de ejemplo"}</p>
+              <p className="mt-1 font-semibold text-white">{sampleIssues.length} issues</p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {sampleIssues.map((issue, index) => (
+              <article key={issue.title} className="surface-subcard group rounded-2xl p-4 transition hover:border-orange-500/35">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs uppercase tracking-[0.1em] text-gray-500">{issue.project}</p>
+                  <span
+                    className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                      issue.level === "beginner"
+                        ? "border-orange-500/40 bg-orange-500/10 text-orange-300"
+                        : "border-white/20 bg-white/5 text-gray-300"
+                    }`}
+                  >
+                    {issue.level}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-white">{issue.title}</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {isEn
+                    ? "Good first task with clear scope and fast feedback."
+                    : "Buena primera tarea con alcance claro y feedback rápido."}
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">#{String(index + 1).padStart(2, "0")}</span>
+                  <ArrowRight className="h-4 w-4 text-orange-300 transition group-hover:translate-x-0.5" />
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link
+              href="/buena-primera-issue"
+              className="inline-flex rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+            >
+              {isEn ? "View all First Good Issues" : "Ver tareas de Buena Primera Issue"}
+            </Link>
+            <p className="text-xs text-gray-400">
+              {isEn
+                ? "Most issues are prepared for junior contributors."
+                : "La mayoría de tareas están preparadas para contributors junior."}
+            </p>
+          </div>
         </div>
       </SectionCard>
 
-      <SectionCard className="p-8">
-        <h2 className="text-2xl font-semibold text-white md:text-3xl">
-          {isEn ? "Build your developer profile" : "Construye tu perfil como developer"}
-        </h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-[1.3fr_1fr]">
-          <div className="space-y-2 text-sm text-gray-300">
-            <p>• {isEn ? "Completed tasks" : "Tareas completadas"}</p>
-            <p>• {isEn ? "Merged PRs" : "PRs merged"}</p>
-            <p>• {isEn ? "Contributed projects" : "Proyectos contribuidos"}</p>
-            <p>• {isEn ? "Badges and achievements" : "Badges y logros"}</p>
-            <p>• {isEn ? "Technologies" : "Tecnologías"}</p>
-            <p>• {isEn ? "Public shareable profile" : "Perfil público compartible"}</p>
+      <SectionCard className="surface-card relative overflow-hidden p-8 md:p-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(251,146,60,0.14),transparent_52%)]" />
+        <div className="relative grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <Badge>{isEn ? "Developer identity" : "Identidad developer"}</Badge>
+            <h2 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
+              {isEn ? "Build your developer profile" : "Construye tu perfil como developer"}
+            </h2>
+            <p className="mt-2 text-sm text-gray-300 md:text-base">
+              {isEn
+                ? "Turn every contribution into visible proof of your growth as an open source developer."
+                : "Convierte cada contribución en prueba visible de tu crecimiento como developer open source."}
+            </p>
+
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {[
+                { icon: BadgeCheck, text: isEn ? "Completed tasks" : "Tareas completadas" },
+                { icon: GitPullRequest, text: isEn ? "Merged PRs" : "PRs merged" },
+                { icon: Layers2, text: isEn ? "Contributed projects" : "Proyectos contribuidos" },
+                { icon: Sparkles, text: isEn ? "Badges and achievements" : "Badges y logros" },
+                { icon: Braces, text: isEn ? "Technologies" : "Tecnologías" },
+                { icon: Rocket, text: isEn ? "Public shareable profile" : "Perfil público compartible" },
+              ].map((item) => (
+                <article key={item.text} className="surface-subcard flex items-center gap-2 rounded-lg px-3 py-2">
+                  <item.icon className="h-4 w-4 text-orange-300" />
+                  <p className="text-xs text-gray-200">{item.text}</p>
+                </article>
+              ))}
+            </div>
           </div>
-          <article className="surface-subcard rounded-xl p-4">
-            <p className="text-xs uppercase tracking-[0.12em] text-gray-500">Developer profile</p>
-            <p className="mt-2 text-sm font-semibold text-white">@junior-dev</p>
+
+          <article className="surface-accent rounded-2xl p-5">
+            <p className="text-xs uppercase tracking-[0.12em] text-orange-200/90">Developer profile</p>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-white">@junior-dev</p>
+              <span className="inline-flex items-center rounded-full border border-orange-500/45 bg-orange-500/15 px-2 py-0.5 text-[10px] font-medium text-orange-200">
+                {isEn ? "Rising" : "En progreso"}
+              </span>
+            </div>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-              <div className="surface-subcard rounded-lg p-2 text-gray-300">12 tasks</div>
-              <div className="surface-subcard rounded-lg p-2 text-gray-300">9 PRs</div>
-              <div className="surface-subcard rounded-lg p-2 text-gray-300">4 projects</div>
-              <div className="surface-subcard rounded-lg p-2 text-gray-300">8 badges</div>
+              <div className="surface-subcard rounded-lg p-2 text-gray-200">12 tasks</div>
+              <div className="surface-subcard rounded-lg p-2 text-gray-200">9 PRs</div>
+              <div className="surface-subcard rounded-lg p-2 text-gray-200">4 projects</div>
+              <div className="surface-subcard rounded-lg p-2 text-gray-200">8 badges</div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] text-gray-300">
+                  <span>{isEn ? "Profile completeness" : "Perfil completado"}</span>
+                  <span>84%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-black/40">
+                  <div className="h-full w-[84%] rounded-full bg-gradient-to-r from-orange-400/85 to-orange-300/75" />
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between text-[11px] text-gray-300">
+                  <span>{isEn ? "Open source momentum" : "Ritmo open source"}</span>
+                  <span>72%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-black/40">
+                  <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-orange-400/75 to-white/70" />
+                </div>
+              </div>
             </div>
           </article>
         </div>

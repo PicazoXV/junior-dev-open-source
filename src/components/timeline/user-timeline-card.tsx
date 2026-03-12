@@ -8,6 +8,9 @@ type UserTimelineCardProps = {
   title?: string;
   description?: string;
   maxVisible?: number;
+  withContainer?: boolean;
+  showHeader?: boolean;
+  containerClassName?: string;
 };
 
 export default function UserTimelineCard({
@@ -16,25 +19,28 @@ export default function UserTimelineCard({
   title,
   description,
   maxVisible,
+  withContainer = true,
+  showHeader = true,
+  containerClassName,
 }: UserTimelineCardProps) {
   const visibleEvents = typeof maxVisible === "number" ? events.slice(0, maxVisible) : events;
   const hiddenEvents = events.length - visibleEvents.length;
+  const resolvedContainerClassName = containerClassName ?? (withContainer ? "p-6" : "");
+  const headingTitle = title || (locale === "en" ? "Contribution timeline" : "Timeline de contribuciones");
 
-  return (
-    <SectionCard className="p-6">
-      <h3 className="text-lg font-semibold text-white">
-        {title || (locale === "en" ? "Contribution timeline" : "Timeline de contribuciones")}
-      </h3>
-      {description ? <p className="mt-1 text-sm text-gray-400">{description}</p> : null}
+  const content = (
+    <>
+      {showHeader ? <h3 className="text-lg font-semibold text-white">{headingTitle}</h3> : null}
+      {showHeader && description ? <p className="mt-1 text-sm text-gray-400">{description}</p> : null}
 
       {events.length === 0 ? (
-        <p className="surface-subcard mt-3 rounded-xl border-dashed p-4 text-sm text-gray-400">
+        <p className={`surface-subcard rounded-xl border-dashed p-4 text-sm text-gray-400 ${showHeader ? "mt-3" : ""}`}>
           {locale === "en"
             ? "No timeline events yet."
             : "Todavía no hay eventos en el timeline."}
         </p>
       ) : (
-        <div className="mt-4 space-y-3">
+        <div className={`space-y-3 ${showHeader ? "mt-4" : ""}`}>
           {visibleEvents.map((event) => (
             <article key={event.id} className="surface-subcard rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
@@ -65,6 +71,12 @@ export default function UserTimelineCard({
           ) : null}
         </div>
       )}
-    </SectionCard>
+    </>
   );
+
+  if (!withContainer) {
+    return <div className={resolvedContainerClassName}>{content}</div>;
+  }
+
+  return <SectionCard className={resolvedContainerClassName}>{content}</SectionCard>;
 }
