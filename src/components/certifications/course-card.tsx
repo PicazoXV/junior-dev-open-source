@@ -1,5 +1,17 @@
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Cloud, Code2, Languages, BarChart3, Brain } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  BookOpen,
+  Cloud,
+  Code2,
+  Languages,
+  BarChart3,
+  Brain,
+  Palette,
+  Database,
+  Shield,
+} from "lucide-react";
 import type { AppLocale, MessageDictionary } from "@/lib/i18n/types";
 import type { CertificationCourse } from "@/lib/certifications";
 import { getLocalizedText } from "@/lib/certifications";
@@ -14,9 +26,12 @@ type CourseCardProps = {
 function getCategoryIcon(category: CertificationCourse["category"]) {
   if (category === "english") return <Languages className="h-5 w-5 text-orange-300" />;
   if (category === "programming") return <Code2 className="h-5 w-5 text-orange-300" />;
+  if (category === "design") return <Palette className="h-5 w-5 text-orange-300" />;
+  if (category === "database") return <Database className="h-5 w-5 text-orange-300" />;
   if (category === "ai") return <Brain className="h-5 w-5 text-orange-300" />;
   if (category === "cloud") return <Cloud className="h-5 w-5 text-orange-300" />;
   if (category === "data") return <BarChart3 className="h-5 w-5 text-orange-300" />;
+  if (category === "security") return <Shield className="h-5 w-5 text-orange-300" />;
   return <BookOpen className="h-5 w-5 text-orange-300" />;
 }
 
@@ -49,15 +64,22 @@ export default function CourseCard({ course, locale, messages }: CourseCardProps
       </div>
 
       <div className="mt-4">
-        <Link
-          href={course.url}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
-        >
-          {messages.certifications.viewCourse}
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
+        {course.url ? (
+          <Link
+            href={course.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 rounded-lg border border-orange-500/35 bg-orange-500/10 px-3 py-1.5 text-xs font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+          >
+            {messages.certifications.viewCourse}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-lg border border-white/20 bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-gray-300">
+            <AlertCircle className="h-3.5 w-3.5 text-orange-300" />
+            {messages.certifications.urlPending}
+          </span>
+        )}
       </div>
     </article>
   );

@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MiPrimerIssue
 
-## Getting Started
+Plataforma para developers junior que conecta tareas reales de open source con un flujo guiado de solicitud, asignación, contribución en GitHub y progreso público.
 
-First, run the development server:
+## Requisitos
+
+- Node.js `>= 20.9.0` (Next.js 16)
+- npm `>= 10`
+
+## Variables de entorno
+
+Crea `.env.local` con:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_APP_URL=
+PLATFORM_BASE_URL=
+
+GITHUB_APP_ID=
+GITHUB_APP_PRIVATE_KEY=
+GITHUB_WEBHOOK_SECRET=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Notas:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `NEXT_PUBLIC_APP_URL` y `PLATFORM_BASE_URL` deben apuntar al dominio final en producción.
+- `GITHUB_APP_PRIVATE_KEY` debe pegarse completa (incluyendo `-----BEGIN PRIVATE KEY-----` y saltos de línea).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desarrollo
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Checks previos a deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy (Cloudflare / Vercel)
 
-## Deploy on Vercel
+Antes de desplegar:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Configura Node 20+ en el proveedor.
+2. Añade todas las variables de entorno.
+3. Verifica callbacks OAuth con dominio real (`/auth/callback`).
+4. Ejecuta los checks locales de arriba.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura principal
+
+- `src/app`: rutas App Router
+- `src/components`: UI y bloques reutilizables
+- `src/lib`: integraciones (Supabase, GitHub, i18n, métricas)
+- `supabase`: SQL de seeds y utilidades de datos

@@ -35,6 +35,7 @@ import StatusBadge from "@/components/ui/status-badge";
 import Table from "@/components/ui/table";
 import DashboardProfileEditor from "@/components/dashboard/dashboard-profile-editor";
 import DashboardFlowSteps from "@/components/dashboard/dashboard-flow-steps";
+import CollapsibleCard from "@/components/ui/collapsible-card";
 
 type DashboardAssignedTask = {
   id: string;
@@ -215,31 +216,30 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
       </SectionCard>
 
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "How to advance in MiPrimerIssue" : "Cómo avanzar en MiPrimerIssue"}
-          description={
-            locale === "en"
-              ? "A clear 4-step guide to move from finding tasks to completing real contributions."
-              : "Una guía clara de 4 pasos para pasar de encontrar tareas a completar contribuciones reales."
-          }
-        />
-
+      <CollapsibleCard
+        title={locale === "en" ? "How to advance in MiPrimerIssue" : "Cómo avanzar en MiPrimerIssue"}
+        description={
+          locale === "en"
+            ? "A clear 4-step guide to move from finding tasks to completing real contributions."
+            : "Una guía clara de 4 pasos para pasar de encontrar tareas a completar contribuciones reales."
+        }
+        headingAs="h2"
+      >
         <DashboardFlowSteps />
-      </SectionCard>
+      </CollapsibleCard>
 
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "1. Next recommended step" : "1. Próximo paso recomendado"}
-          description={
-            locale === "en"
-              ? "Focus on one concrete next action and keep momentum."
-              : "Concéntrate en una siguiente acción concreta y mantén el ritmo."
-          }
-        />
-
+      <div className="flex flex-col gap-6">
+      <CollapsibleCard
+        title={locale === "en" ? "1. Next recommended step" : "1. Próximo paso recomendado"}
+        description={
+          locale === "en"
+            ? "Focus on one concrete next action and keep momentum."
+            : "Concéntrate en una siguiente acción concreta y mantén el ritmo."
+        }
+        headingAs="h2"
+        defaultOpen
+        className="order-1"
+      >
         <div className="grid gap-4 xl:grid-cols-[1.25fr_0.95fr]">
           <DashboardInfoPanels
             primerIssuePanel={
@@ -434,26 +434,26 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           )}
         </div>
-      </SectionCard>
+      </CollapsibleCard>
 
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "2. Assigned tasks" : "2. Tareas asignadas"}
-          description={
-            locale === "en"
-              ? "Your active work queue with direct access to each task."
-              : "Tu cola de trabajo activa con acceso directo a cada tarea."
-          }
-          actions={
-            <Link
-              href="/dashboard/my-tasks"
-              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
-            >
-              {locale === "en" ? "View all my tasks" : "Ver todas mis tareas"}
-            </Link>
-          }
-        />
+      <CollapsibleCard
+        title={locale === "en" ? "4. Assigned tasks" : "4. Tareas asignadas"}
+        description={
+          locale === "en"
+            ? "Your active work queue with direct access to each task."
+            : "Tu cola de trabajo activa con acceso directo a cada tarea."
+        }
+        headingAs="h2"
+        className="order-4"
+      >
+        <div className="mb-4 flex justify-end">
+          <Link
+            href="/dashboard/my-tasks"
+            className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
+          >
+            {locale === "en" ? "View all my tasks" : "Ver todas mis tareas"}
+          </Link>
+        </div>
 
         {assignedTasks.length === 0 ? (
           <EmptyState
@@ -521,19 +521,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </tbody>
           </Table>
         )}
-      </SectionCard>
+      </CollapsibleCard>
 
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "3. Personal progress" : "3. Progreso personal"}
-          description={
-            locale === "en"
-              ? "Track your growth and contribution outcomes in one place."
-              : "Sigue tu crecimiento y resultados de contribución en un solo lugar."
-          }
-        />
-
+      <CollapsibleCard
+        title={locale === "en" ? "3. Personal progress" : "3. Progreso personal"}
+        description={
+          locale === "en"
+            ? "Track your growth and contribution outcomes in one place."
+            : "Sigue tu crecimiento y resultados de contribución en un solo lugar."
+        }
+        headingAs="h2"
+        className="order-3"
+      >
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label={locale === "en" ? "Tasks completed" : "Tareas completadas"} value={progress.completedTasks} />
           <StatCard label={locale === "en" ? "Current tasks" : "Tareas actuales"} value={progress.inProgressTasks} />
@@ -626,19 +625,18 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
           )}
         </div>
-      </SectionCard>
+      </CollapsibleCard>
 
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "4. Recent activity" : "4. Actividad reciente"}
-          description={
-            locale === "en"
-              ? "Understand what happened most recently and where to continue."
-              : "Entiende lo último que pasó y desde dónde continuar."
-          }
-        />
-
+      <CollapsibleCard
+        title={locale === "en" ? "5. Recent activity" : "5. Actividad reciente"}
+        description={
+          locale === "en"
+            ? "Understand what happened most recently and where to continue."
+            : "Entiende lo último que pasó y desde dónde continuar."
+        }
+        headingAs="h2"
+        className="order-5"
+      >
         <div className="grid gap-3 md:grid-cols-3">
           <StatCard
             label={locale === "en" ? "Last completed task" : "Última tarea completada"}
@@ -674,31 +672,37 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             )}
           </div>
         </div>
-      </SectionCard>
+      </CollapsibleCard>
 
-      <UserTimelineCard
-        events={timeline}
-        locale={locale}
+      <CollapsibleCard
         title={locale === "en" ? "Recent contribution timeline" : "Timeline reciente de contribuciones"}
         description={
           locale === "en"
             ? "Latest milestones and project actions in chronological order."
             : "Últimos hitos y acciones en proyectos en orden cronológico."
         }
-        maxVisible={8}
-      />
-
-      <SectionCard className="p-8">
-        <PageHeader
-          as="h2"
-          title={locale === "en" ? "5. Secondary metrics" : "5. Métricas secundarias"}
-          description={
-            locale === "en"
-              ? "Supporting context: profile details, favorites, maintainer signals and your public badge."
-              : "Contexto de apoyo: perfil, favoritos, señales de maintainer y tu badge público."
-          }
+        headingAs="h2"
+        className="order-6"
+      >
+        <UserTimelineCard
+          events={timeline}
+          locale={locale}
+          maxVisible={8}
+          withContainer={false}
+          showHeader={false}
         />
+      </CollapsibleCard>
 
+      <CollapsibleCard
+        title={locale === "en" ? "2. Secondary metrics" : "2. Métricas secundarias"}
+        description={
+          locale === "en"
+            ? "Supporting context: profile details, favorites, maintainer signals and your public badge."
+            : "Contexto de apoyo: perfil, favoritos, señales de maintainer y tu badge público."
+        }
+        headingAs="h2"
+        className="order-2"
+      >
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label={locale === "en" ? "Merged PRs" : "PRs mergeados"} value={progress.mergedPullRequests} />
           <StatCard label={locale === "en" ? "Contributed projects" : "Proyectos contribuidos"} value={progress.contributedProjects} />
@@ -898,7 +902,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             {readmeBadgeSnippet}
           </pre>
         </section>
-      </SectionCard>
+      </CollapsibleCard>
+      </div>
     </AppLayout>
   );
 }

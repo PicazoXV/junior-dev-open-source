@@ -9,6 +9,7 @@ type CollapsibleCardProps = {
   defaultOpen?: boolean;
   accent?: boolean;
   headingAs?: "h2" | "h3" | "h4";
+  className?: string;
   children: ReactNode;
 };
 
@@ -18,6 +19,7 @@ export default function CollapsibleCard({
   defaultOpen = false,
   accent = false,
   headingAs = "h2",
+  className = "",
   children,
 }: CollapsibleCardProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -25,7 +27,7 @@ export default function CollapsibleCard({
 
   return (
     <section
-      className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl transition hover:border-orange-500/30`}
+      className={`${accent ? "surface-accent" : "surface-card"} rounded-2xl transition hover:border-orange-500/30 ${className}`}
     >
       <button
         type="button"

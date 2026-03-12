@@ -44,6 +44,10 @@ export type MessageDictionary = {
     statusOn: string;
     statusOff: string;
   };
+  themeMode: {
+    dark: string;
+    light: string;
+  };
   hero: {
     heading: string;
     description: string;
@@ -138,12 +142,18 @@ export type MessageDictionary = {
     categoryEnglishDesc: string;
     categoryProgramming: string;
     categoryProgrammingDesc: string;
+    categoryDesign: string;
+    categoryDesignDesc: string;
+    categoryDatabase: string;
+    categoryDatabaseDesc: string;
     categoryAi: string;
     categoryAiDesc: string;
     categoryCloud: string;
     categoryCloudDesc: string;
     categoryData: string;
     categoryDataDesc: string;
+    categorySecurity: string;
+    categorySecurityDesc: string;
     platformLabel: string;
     levelLabel: string;
     durationLabel: string;
@@ -151,6 +161,7 @@ export type MessageDictionary = {
     levelIntermediate: string;
     includedBadge: string;
     viewCourse: string;
+    urlPending: string;
   };
   profileEditor: {
     fullName: string;

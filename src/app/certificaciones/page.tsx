@@ -31,6 +31,20 @@ function getCategoryCopy(category: CertificationCategory, messages: Awaited<Retu
     };
   }
 
+  if (category === "design") {
+    return {
+      title: messages.certifications.categoryDesign,
+      description: messages.certifications.categoryDesignDesc,
+    };
+  }
+
+  if (category === "database") {
+    return {
+      title: messages.certifications.categoryDatabase,
+      description: messages.certifications.categoryDatabaseDesc,
+    };
+  }
+
   if (category === "ai") {
     return {
       title: messages.certifications.categoryAi,
@@ -42,6 +56,13 @@ function getCategoryCopy(category: CertificationCategory, messages: Awaited<Retu
     return {
       title: messages.certifications.categoryCloud,
       description: messages.certifications.categoryCloudDesc,
+    };
+  }
+
+  if (category === "security") {
+    return {
+      title: messages.certifications.categorySecurity,
+      description: messages.certifications.categorySecurityDesc,
     };
   }
 

@@ -44,6 +44,10 @@ export const esMessages: MessageDictionary = {
     statusOn: "EN",
     statusOff: "ES",
   },
+  themeMode: {
+    dark: "MODO CLARO",
+    light: "MODO OSCURO",
+  },
   hero: {
     heading: "Únete a nosotros y gana experiencia demostrable",
     description:
@@ -148,12 +152,18 @@ export const esMessages: MessageDictionary = {
     categoryEnglishDesc: "Cursos recomendados para mejorar tu inglés técnico en contexto real.",
     categoryProgramming: "Programación",
     categoryProgrammingDesc: "Rutas prácticas de frontend, backend y fundamentos de desarrollo.",
+    categoryDesign: "Diseño y producto",
+    categoryDesignDesc: "Recursos de UI/UX para diseñar interfaces claras y modernas.",
+    categoryDatabase: "Bases de datos",
+    categoryDatabaseDesc: "Aprende SQL, modelado relacional y administración básica de datos.",
     categoryAi: "Inteligencia artificial",
     categoryAiDesc: "Cursos introductorios de IA, machine learning y aplicaciones modernas.",
     categoryCloud: "Cloud y DevOps",
     categoryCloudDesc: "Conceptos de despliegue, infraestructura y herramientas cloud.",
     categoryData: "Data y análisis",
     categoryDataDesc: "Aprende SQL, Python y análisis para tomar decisiones con datos.",
+    categorySecurity: "Redes y ciberseguridad",
+    categorySecurityDesc: "Fundamentos de redes y seguridad práctica para perfiles técnicos.",
     platformLabel: "Plataforma",
     levelLabel: "Nivel",
     durationLabel: "Duración",
@@ -161,6 +171,7 @@ export const esMessages: MessageDictionary = {
     levelIntermediate: "Intermediate",
     includedBadge: "Certificado incluido",
     viewCourse: "Ver curso",
+    urlPending: "URL pendiente",
   },
   profileEditor: {
     fullName: "Nombre completo",

@@ -70,5 +70,82 @@ export async function deleteNotification(notificationId: string) {
     }
   }
 
+  // Último fallback: ocultar notificación si no es posible borrar por políticas RLS.
+  const verifyStillExists = await supabase
+    .from("notifications")
+    .select("id")
+    .eq("id", notificationId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (verifyStillExists.data) {
+    await supabase
+      .from("notifications")
+      .update({
+        is_read: true,
+        read_at: new Date().toISOString(),
+        metadata: {
+          hidden: true,
+          hidden_at: new Date().toISOString(),
+          hidden_by: "user_fallback",
+        },
+      })
+      .eq("id", notificationId)
+      .eq("user_id", userId);
+  }
+
+  revalidatePath("/dashboard/notifications");
+}
+
+export async function deleteAllNotifications() {
+  const { supabase, userId } = await getCurrentUserId();
+  if (!userId) return;
+
+  const directDelete = await supabase
+    .from("notifications")
+    .delete()
+    .eq("user_id", userId);
+
+  if (directDelete.error) {
+    try {
+      const admin = createAdminClient();
+      const adminDelete = await admin
+        .from("notifications")
+        .delete()
+        .eq("user_id", userId);
+
+      if (adminDelete.error) {
+        console.error("Error deleting all notifications (admin fallback):", adminDelete.error.message);
+      }
+    } catch (error) {
+      console.error(
+        "Error deleting all notifications (admin fallback client):",
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+
+  // Último fallback: ocultar todas.
+  const verifyRemaining = await supabase
+    .from("notifications")
+    .select("id")
+    .eq("user_id", userId)
+    .limit(1);
+
+  if ((verifyRemaining.data || []).length > 0) {
+    await supabase
+      .from("notifications")
+      .update({
+        is_read: true,
+        read_at: new Date().toISOString(),
+        metadata: {
+          hidden: true,
+          hidden_at: new Date().toISOString(),
+          hidden_by: "user_fallback_bulk",
+        },
+      })
+      .eq("user_id", userId);
+  }
+
   revalidatePath("/dashboard/notifications");
 }
