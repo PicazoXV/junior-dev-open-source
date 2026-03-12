@@ -16,18 +16,25 @@ export default function GitHubLoginButton({
   const safeLabel = label || (locale === 'en' ? 'Continue with GitHub' : 'Continuar con GitHub')
 
   const handleLogin = async () => {
-    const supabase = createClient()
-    const redirectTo = new URL('/auth/callback', window.location.origin).toString()
+    try {
+      const supabase = createClient()
+      const redirectTo = new URL('/auth/callback', window.location.origin).toString()
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo,
-      },
-    })
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo,
+        },
+      })
 
-    if (error) {
-      console.error('Error al iniciar sesión con GitHub:', error.message)
+      if (error) {
+        console.error('Error al iniciar sesión con GitHub:', error.message)
+      }
+    } catch (error) {
+      console.error(
+        'Error de configuración de Supabase en cliente:',
+        error instanceof Error ? error.message : String(error)
+      )
     }
   }
 

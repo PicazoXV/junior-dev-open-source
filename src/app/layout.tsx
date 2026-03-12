@@ -40,12 +40,22 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get(THEME_COOKIE_NAME)?.value;
   const theme = normalizeTheme(themeCookie || DEFAULT_THEME);
+  const browserEnvPayload = JSON.stringify({
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  }).replace(/</g, "\\u003c");
 
   return (
     <html lang={locale} data-theme={theme}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          id="miprimerissue-runtime-env"
+          dangerouslySetInnerHTML={{
+            __html: `window.__MIPRIMERISSUE_ENV=${browserEnvPayload};`,
+          }}
+        />
         <I18nProvider locale={locale} messages={messages}>
           {children}
         </I18nProvider>
