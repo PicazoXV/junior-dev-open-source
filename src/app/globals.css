@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root {
+:root,
+html[data-theme="dark"] {
   --background: #000000;
   --foreground: #ffffff;
   --surface-bg-strong: rgba(20, 20, 20, 0.9);
@@ -13,6 +14,75 @@
   --glow-white-soft: 0 0 14px rgba(255, 255, 255, 0.055);
   --glow-orange-soft: 0 0 20px rgba(249, 115, 22, 0.055);
   --glow-orange-accent: 0 0 26px rgba(249, 115, 22, 0.15);
+  --app-bg-base: #000000;
+  --app-bg-accent-1: rgba(249, 115, 22, 0.08);
+  --app-bg-accent-2: rgba(249, 115, 22, 0.05);
+  --app-bg-dot-1: rgba(255, 255, 255, 0.18);
+  --app-bg-dot-2: rgba(255, 255, 255, 0.16);
+  --app-bg-dot-3: rgba(255, 255, 255, 0.12);
+  --app-bg-dots-opacity: 0.34;
+  --sidebar-bg: rgba(17, 17, 17, 0.94);
+  --scrollbar-track: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb-border: rgba(17, 17, 17, 0.95);
+  --scrollbar-thumb-from: rgba(251, 146, 60, 0.78);
+  --scrollbar-thumb-to: rgba(249, 115, 22, 0.65);
+  --scrollbar-thumb-from-hover: rgba(251, 146, 60, 0.9);
+  --scrollbar-thumb-to-hover: rgba(249, 115, 22, 0.78);
+  --surface-hero-base: rgba(17, 17, 17, 0.9);
+  --field-bg: rgba(20, 20, 20, 0.96);
+  --field-text: #ffffff;
+  --field-placeholder: #9ca3af;
+  --field-hover-border: rgba(255, 255, 255, 0.28);
+  --field-autofill-bg: rgba(20, 20, 20, 0.96);
+  --field-autofill-text: #ffffff;
+  --select-option-bg: #0b0b0b;
+  --select-option-text: #f3f4f6;
+  --select-option-active-bg: rgba(249, 115, 22, 0.42);
+  --select-option-hover-bg: rgba(249, 115, 22, 0.5);
+  --select-option-active-text: #ffffff;
+  --form-color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --background: #f7f2e9;
+  --foreground: #0f172a;
+  --surface-bg-strong: rgba(255, 255, 255, 0.9);
+  --surface-bg-soft: rgba(255, 255, 255, 0.78);
+  --surface-bg-accent: rgba(249, 115, 22, 0.12);
+  --surface-border-strong: rgba(15, 23, 42, 0.18);
+  --surface-border-soft: rgba(30, 41, 59, 0.14);
+  --surface-border-accent: rgba(249, 115, 22, 0.4);
+  --glow-white-subtle: 0 8px 24px rgba(15, 23, 42, 0.06);
+  --glow-white-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --glow-orange-soft: 0 8px 20px rgba(249, 115, 22, 0.09);
+  --glow-orange-accent: 0 12px 28px rgba(249, 115, 22, 0.14);
+  --app-bg-base: #f7f2e9;
+  --app-bg-accent-1: rgba(249, 115, 22, 0.12);
+  --app-bg-accent-2: rgba(251, 146, 60, 0.08);
+  --app-bg-dot-1: rgba(251, 146, 60, 0.2);
+  --app-bg-dot-2: rgba(15, 23, 42, 0.12);
+  --app-bg-dot-3: rgba(249, 115, 22, 0.16);
+  --app-bg-dots-opacity: 0.2;
+  --sidebar-bg: rgba(255, 255, 255, 0.86);
+  --scrollbar-track: rgba(148, 163, 184, 0.24);
+  --scrollbar-thumb-border: rgba(255, 255, 255, 0.92);
+  --scrollbar-thumb-from: rgba(251, 146, 60, 0.7);
+  --scrollbar-thumb-to: rgba(249, 115, 22, 0.58);
+  --scrollbar-thumb-from-hover: rgba(251, 146, 60, 0.82);
+  --scrollbar-thumb-to-hover: rgba(249, 115, 22, 0.68);
+  --surface-hero-base: rgba(255, 255, 255, 0.86);
+  --field-bg: rgba(255, 255, 255, 0.9);
+  --field-text: #0f172a;
+  --field-placeholder: #64748b;
+  --field-hover-border: rgba(30, 41, 59, 0.28);
+  --field-autofill-bg: rgba(255, 255, 255, 0.94);
+  --field-autofill-text: #0f172a;
+  --select-option-bg: #fefbf7;
+  --select-option-text: #0f172a;
+  --select-option-active-bg: rgba(249, 115, 22, 0.26);
+  --select-option-hover-bg: rgba(249, 115, 22, 0.32);
+  --select-option-active-text: #0f172a;
+  --form-color-scheme: light;
 }
 
 @theme inline {
@@ -32,9 +102,9 @@ body {
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(60rem 35rem at 0% 0%, rgba(249, 115, 22, 0.08), transparent 55%),
-    radial-gradient(45rem 25rem at 100% 100%, rgba(249, 115, 22, 0.05), transparent 60%),
-    #000;
+    radial-gradient(60rem 35rem at 0% 0%, var(--app-bg-accent-1), transparent 55%),
+    radial-gradient(45rem 25rem at 100% 100%, var(--app-bg-accent-2), transparent 60%),
+    var(--app-bg-base);
 }
 
 .app-bg::before {
@@ -43,20 +113,20 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.18) 0.7px, transparent 1.4px),
-    radial-gradient(circle at 74% 82%, rgba(255, 255, 255, 0.16) 0.8px, transparent 1.5px),
-    radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0.7px, transparent 1.4px);
+    radial-gradient(circle at 12% 18%, var(--app-bg-dot-1) 0.7px, transparent 1.4px),
+    radial-gradient(circle at 74% 82%, var(--app-bg-dot-2) 0.8px, transparent 1.5px),
+    radial-gradient(circle at 48% 44%, var(--app-bg-dot-3) 0.7px, transparent 1.4px);
   background-size:
     360px 360px,
     560px 560px,
     760px 760px;
-  opacity: 0.34;
+  opacity: var(--app-bg-dots-opacity);
   z-index: 0;
 }
 
 .sidebar-shell {
   border: 1px solid var(--surface-border-strong);
-  background: rgba(17, 17, 17, 0.94);
+  background: var(--sidebar-bg);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     var(--glow-white-soft),
@@ -65,7 +135,7 @@ body {
 
 .sidebar-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(249, 115, 22, 0.55) rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(249, 115, 22, 0.55) var(--scrollbar-track);
   scrollbar-gutter: stable;
 }
 
@@ -75,24 +145,24 @@ body {
 
 .sidebar-scroll::-webkit-scrollbar-track {
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--scrollbar-track);
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  border: 2px solid rgba(17, 17, 17, 0.95);
+  border: 2px solid var(--scrollbar-thumb-border);
   border-radius: 999px;
   background: linear-gradient(
     180deg,
-    rgba(251, 146, 60, 0.78) 0%,
-    rgba(249, 115, 22, 0.65) 100%
+    var(--scrollbar-thumb-from) 0%,
+    var(--scrollbar-thumb-to) 100%
   );
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(
     180deg,
-    rgba(251, 146, 60, 0.9) 0%,
-    rgba(249, 115, 22, 0.78) 100%
+    var(--scrollbar-thumb-from-hover) 0%,
+    var(--scrollbar-thumb-to-hover) 100%
   );
 }
 
@@ -157,7 +227,7 @@ body {
   background:
     radial-gradient(40rem 22rem at 18% 0%, rgba(249, 115, 22, 0.16), transparent 65%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%),
-    rgba(17, 17, 17, 0.9);
+    var(--surface-hero-base);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     var(--glow-white-soft),
@@ -172,58 +242,58 @@ body {
 }
 
 /* Controlled dark reinterpretation of legacy Tailwind utility classes */
-.app-bg .bg-white {
+html[data-theme="dark"] .app-bg .bg-white {
   background-color: rgba(18, 18, 18, 0.92) !important;
 }
 
-.app-bg .bg-gray-50 {
+html[data-theme="dark"] .app-bg .bg-gray-50 {
   background-color: transparent !important;
 }
 
-.app-bg .bg-gray-100 {
+html[data-theme="dark"] .app-bg .bg-gray-100 {
   background-color: rgba(249, 115, 22, 0.1) !important;
 }
 
-.app-bg .bg-gray-200 {
+html[data-theme="dark"] .app-bg .bg-gray-200 {
   background-color: rgba(255, 255, 255, 0.14) !important;
 }
 
-.app-bg .text-gray-900 {
+html[data-theme="dark"] .app-bg .text-gray-900 {
   color: #ffffff !important;
 }
 
-.app-bg .text-gray-800 {
+html[data-theme="dark"] .app-bg .text-gray-800 {
   color: #e5e7eb !important;
 }
 
-.app-bg .text-gray-700 {
+html[data-theme="dark"] .app-bg .text-gray-700 {
   color: #d1d5db !important;
 }
 
-.app-bg .text-gray-600 {
+html[data-theme="dark"] .app-bg .text-gray-600 {
   color: #d1d5db !important;
 }
 
-.app-bg .text-gray-500 {
+html[data-theme="dark"] .app-bg .text-gray-500 {
   color: #9ca3af !important;
 }
 
-.app-bg .hover\:bg-gray-100:hover {
+html[data-theme="dark"] .app-bg .hover\:bg-gray-100:hover {
   background-color: rgba(249, 115, 22, 0.14) !important;
 }
 
-.app-bg .hover\:text-orange-400:hover {
+html[data-theme="dark"] .app-bg .hover\:text-orange-400:hover {
   color: #fb923c !important;
 }
 
-.app-bg .ring-orange-400\/20 {
+html[data-theme="dark"] .app-bg .ring-orange-400\/20 {
   --tw-ring-color: rgb(251 146 60 / 0.2) !important;
 }
 
 /* Legacy card/button harmonization to keep visual consistency in older screens */
-.app-bg .border-white\/20.bg-black\/20,
-.app-bg .border-white\/15.bg-black\/20,
-.app-bg .border-white\/10.bg-black\/20 {
+html[data-theme="dark"] .app-bg .border-white\/20.bg-black\/20,
+html[data-theme="dark"] .app-bg .border-white\/15.bg-black\/20,
+html[data-theme="dark"] .app-bg .border-white\/10.bg-black\/20 {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 55%),
     var(--surface-bg-soft);
@@ -233,15 +303,15 @@ body {
     var(--glow-orange-soft);
 }
 
-.app-bg .border-white\/20.bg-neutral-900,
-.app-bg .border-white\/20.bg-neutral-900\/80 {
+html[data-theme="dark"] .app-bg .border-white\/20.bg-neutral-900,
+html[data-theme="dark"] .app-bg .border-white\/20.bg-neutral-900\/80 {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 62%),
     rgba(20, 20, 20, 0.9);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
 }
 
-.app-bg .border-white\/15.bg-black\/25 {
+html[data-theme="dark"] .app-bg .border-white\/15.bg-black\/25 {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 58%),
     rgba(15, 15, 15, 0.58);
@@ -250,8 +320,74 @@ body {
     var(--glow-white-subtle);
 }
 
-.app-bg .border-dashed.border-white\/20.bg-black\/20 {
+html[data-theme="dark"] .app-bg .border-dashed.border-white\/20.bg-black\/20 {
   background: rgba(8, 8, 8, 0.45);
+}
+
+/* Controlled light reinterpretation for legacy utility-heavy screens */
+html[data-theme="light"] .app-bg .bg-white {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.66) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-gray-100 {
+  background-color: rgba(249, 115, 22, 0.14) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-gray-200 {
+  background-color: rgba(30, 41, 59, 0.1) !important;
+}
+
+html[data-theme="light"] .app-bg .text-white,
+html[data-theme="light"] .app-bg .text-gray-100 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .app-bg .text-gray-200 {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .app-bg .text-gray-300 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .app-bg .text-gray-400,
+html[data-theme="light"] .app-bg .text-gray-500 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .app-bg .text-gray-600,
+html[data-theme="light"] .app-bg .text-gray-700,
+html[data-theme="light"] .app-bg .text-gray-800,
+html[data-theme="light"] .app-bg .text-gray-900 {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .app-bg .hover\:bg-gray-100:hover {
+  background-color: rgba(249, 115, 22, 0.18) !important;
+}
+
+html[data-theme="light"] .app-bg .hover\:bg-white\/5:hover {
+  background-color: rgba(30, 41, 59, 0.06) !important;
+}
+
+html[data-theme="light"] .app-bg .focus-visible\:ring-offset-black:focus-visible {
+  --tw-ring-offset-color: #f7f2e9 !important;
+}
+
+html[data-theme="light"] .app-bg [class~="bg-black"],
+html[data-theme="light"] .app-bg [class*="bg-black/"],
+html[data-theme="light"] .app-bg [class*="bg-neutral-9"],
+html[data-theme="light"] .app-bg [class*="bg-neutral-8"] {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+}
+
+html[data-theme="light"] .app-bg [class*="border-white/"],
+html[data-theme="light"] .app-bg [class~="border-white"] {
+  border-color: rgba(30, 41, 59, 0.18) !important;
 }
 
 .app-bg :where(
@@ -268,8 +404,8 @@ body {
   border: 1px solid var(--surface-border-strong);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 70%),
-    rgba(20, 20, 20, 0.96);
-  color: #fff;
+    var(--field-bg);
+  color: var(--field-text);
   font-size: 0.875rem;
   line-height: 1.25rem;
   padding: 0.55rem 0.85rem;
@@ -285,7 +421,7 @@ body {
 .app-bg :where(select),
 .form-select {
   appearance: none;
-  color-scheme: dark;
+  color-scheme: var(--form-color-scheme);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23fb923c' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-position: right 0.72rem center;
   background-repeat: no-repeat;
@@ -301,7 +437,7 @@ body {
 
 .app-bg :where(input, textarea)::placeholder,
 .form-control::placeholder {
-  color: #9ca3af;
+  color: var(--field-placeholder);
 }
 
 .app-bg :where(
@@ -312,7 +448,7 @@ body {
     select
   ):hover,
 .form-control:hover {
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: var(--field-hover-border);
 }
 
 .app-bg :where(
@@ -339,8 +475,8 @@ body {
 }
 
 .app-bg :where(select option) {
-  background-color: #0b0b0b !important;
-  color: #f3f4f6 !important;
+  background-color: var(--select-option-bg) !important;
+  color: var(--select-option-text) !important;
 }
 
 .app-bg :where(select option:checked),
@@ -349,19 +485,19 @@ body {
 .form-select option[selected],
 .form-select:focus > option:checked,
 .form-select option:checked {
-  background-color: rgba(249, 115, 22, 0.42) !important;
-  color: #fff !important;
+  background-color: var(--select-option-active-bg) !important;
+  color: var(--select-option-active-text) !important;
   /* Helps Firefox/Chromium avoid default OS-blue selected option. */
-  box-shadow: 0 0 0 9999px rgba(249, 115, 22, 0.42) inset !important;
+  box-shadow: 0 0 0 9999px var(--select-option-active-bg) inset !important;
 }
 
 .app-bg :where(select option:hover, select option:focus, select option:active),
 .form-select option:hover,
 .form-select option:focus,
 .form-select option:active {
-  background-color: rgba(249, 115, 22, 0.5) !important;
-  color: #fff !important;
-  box-shadow: 0 0 0 9999px rgba(249, 115, 22, 0.5) inset !important;
+  background-color: var(--select-option-hover-bg) !important;
+  color: var(--select-option-active-text) !important;
+  box-shadow: 0 0 0 9999px var(--select-option-hover-bg) inset !important;
 }
 
 .app-bg :where(input[type="checkbox"], input[type="radio"]) {
@@ -377,9 +513,9 @@ body {
 .app-bg :where(input, textarea, select):-webkit-autofill,
 .app-bg :where(input, textarea, select):-webkit-autofill:hover,
 .app-bg :where(input, textarea, select):-webkit-autofill:focus {
-  -webkit-text-fill-color: #fff;
+  -webkit-text-fill-color: var(--field-autofill-text);
   transition: background-color 9999s ease-in-out 0s;
-  box-shadow: 0 0 0 1000px rgba(20, 20, 20, 0.96) inset;
+  box-shadow: 0 0 0 1000px var(--field-autofill-bg) inset;
 }
 
 .app-bg :where(a, button) {

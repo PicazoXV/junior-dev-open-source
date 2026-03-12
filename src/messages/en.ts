@@ -44,6 +44,10 @@ export const enMessages: MessageDictionary = {
     statusOn: "EN",
     statusOff: "ES",
   },
+  themeMode: {
+    dark: "DARK MODE",
+    light: "LIGHT MODE",
+  },
   hero: {
     heading: "Join us and build verifiable experience",
     description:

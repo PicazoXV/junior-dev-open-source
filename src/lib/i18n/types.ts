@@ -44,6 +44,10 @@ export type MessageDictionary = {
     statusOn: string;
     statusOff: string;
   };
+  themeMode: {
+    dark: string;
+    light: string;
+  };
   hero: {
     heading: string;
     description: string;

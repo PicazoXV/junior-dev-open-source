@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import RightSidebar from "@/components/right-sidebar";
 import { isReviewerRole } from "@/lib/roles";
 import { getUnreadNotificationsCount } from "@/lib/notifications";
+import { cookies } from "next/headers";
+import { DEFAULT_THEME, normalizeTheme, THEME_COOKIE_NAME } from "@/lib/theme";
 
 type NavbarProps = {
   containerClassName?: string;
@@ -10,6 +12,8 @@ type NavbarProps = {
 
 export default async function Navbar({ containerClassName, variant = "full" }: NavbarProps = {}) {
   void containerClassName;
+  const cookieStore = await cookies();
+  const currentTheme = normalizeTheme(cookieStore.get(THEME_COOKIE_NAME)?.value || DEFAULT_THEME);
 
   const supabase = await createClient();
   const {
@@ -34,6 +38,7 @@ export default async function Navbar({ containerClassName, variant = "full" }: N
       isAuthenticated={!!user}
       isReviewer={isReviewer}
       unreadNotifications={unreadNotifications}
+      currentTheme={currentTheme}
     />
   );
 }
