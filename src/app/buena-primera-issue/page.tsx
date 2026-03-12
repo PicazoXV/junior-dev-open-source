@@ -111,6 +111,14 @@ const TRACK_LABELS: Record<string, string[]> = {
   testing: ["testing", "test", "qa", "e2e", "unit-test"],
 };
 
+function toTaskRows(data: unknown): TaskRow[] {
+  return Array.isArray(data) ? (data as TaskRow[]) : [];
+}
+
+function toTaskWithoutEstimateRows(data: unknown): TaskWithoutEstimateRow[] {
+  return Array.isArray(data) ? (data as TaskWithoutEstimateRow[]) : [];
+}
+
 function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
   if (!error) return false;
   const code = error.code || "";
@@ -376,29 +384,32 @@ export default async function BuenaPrimeraIssuePage({ searchParams }: BuenaPrime
     const start = (currentPage - 1) * TASKS_PER_PAGE;
     const end = start + TASKS_PER_PAGE - 1;
 
-    let withEstimateResult = await buildTasksQuery(true).range(start, end);
+    const withEstimateResult = await buildTasksQuery(true).range(start, end);
+    let taskQueryError = withEstimateResult.error;
+    let taskQueryCount = withEstimateResult.count || 0;
+    let taskQueryRows = toTaskRows(withEstimateResult.data);
 
-    if (withEstimateResult.error && isMissingEstimatedColumnError(withEstimateResult.error)) {
+    if (taskQueryError && isMissingEstimatedColumnError(taskQueryError)) {
       if (estimate) {
-        withEstimateResult = { data: [], error: null, count: 0 } as typeof withEstimateResult;
+        taskQueryError = null;
+        taskQueryCount = 0;
+        taskQueryRows = [];
       } else {
         const fallbackResult = await buildTasksQuery(false).range(start, end);
-        withEstimateResult = {
-          data: ((fallbackResult.data || []) as TaskWithoutEstimateRow[]).map((task) => ({
-            ...task,
-            estimated_minutes: null,
-          })) as TaskRow[],
-          error: fallbackResult.error,
-          count: fallbackResult.count,
-        } as typeof withEstimateResult;
+        taskQueryError = fallbackResult.error;
+        taskQueryCount = fallbackResult.count || 0;
+        taskQueryRows = toTaskWithoutEstimateRows(fallbackResult.data).map((task) => ({
+          ...task,
+          estimated_minutes: null,
+        }));
       }
     }
 
-    if (withEstimateResult.error) {
-      console.error("Error cargando Buena Primera Issue:", withEstimateResult.error.message);
+    if (taskQueryError) {
+      console.error("Error cargando Buena Primera Issue:", taskQueryError.message);
     }
 
-    totalTasks = withEstimateResult.count || 0;
+    totalTasks = taskQueryCount;
     const totalPages = Math.max(1, Math.ceil(totalTasks / TASKS_PER_PAGE));
 
     if (totalTasks > 0 && currentPage > totalPages) {
@@ -406,34 +417,38 @@ export default async function BuenaPrimeraIssuePage({ searchParams }: BuenaPrime
       const correctedStart = (currentPage - 1) * TASKS_PER_PAGE;
       const correctedEnd = correctedStart + TASKS_PER_PAGE - 1;
 
-      let correctedResult = await buildTasksQuery(true).range(correctedStart, correctedEnd);
+      const correctedResult = await buildTasksQuery(true).range(correctedStart, correctedEnd);
+      let correctedError = correctedResult.error;
+      let correctedCount = correctedResult.count || totalTasks;
+      let correctedRows = toTaskRows(correctedResult.data);
 
-      if (correctedResult.error && isMissingEstimatedColumnError(correctedResult.error)) {
+      if (correctedError && isMissingEstimatedColumnError(correctedError)) {
         if (estimate) {
-          correctedResult = { data: [], error: null, count: 0 } as typeof correctedResult;
+          correctedError = null;
+          correctedCount = 0;
+          correctedRows = [];
         } else {
           const fallbackResult = await buildTasksQuery(false).range(correctedStart, correctedEnd);
-          correctedResult = {
-            data: ((fallbackResult.data || []) as TaskWithoutEstimateRow[]).map((task) => ({
-              ...task,
-              estimated_minutes: null,
-            })) as TaskRow[],
-            error: fallbackResult.error,
-            count: fallbackResult.count,
-          } as typeof correctedResult;
+          correctedError = fallbackResult.error;
+          correctedCount = fallbackResult.count || totalTasks;
+          correctedRows = toTaskWithoutEstimateRows(fallbackResult.data).map((task) => ({
+            ...task,
+            estimated_minutes: null,
+          }));
         }
       }
 
-      if (correctedResult.error) {
-        console.error("Error recargando Buena Primera Issue paginada:", correctedResult.error.message);
+      if (correctedError) {
+        console.error("Error recargando Buena Primera Issue paginada:", correctedError.message);
       } else {
-        withEstimateResult = correctedResult;
+        taskQueryError = correctedError;
+        taskQueryRows = correctedRows;
       }
 
-      totalTasks = correctedResult.count || totalTasks;
+      totalTasks = correctedCount;
     }
 
-    tasks = ((withEstimateResult.data || []) as TaskRow[])
+    tasks = taskQueryRows
       .map((task) => ({ ...task, project: normalizeProject(task.project) }))
       .filter((task): task is NormalizedTaskRow => !!task.project);
   }

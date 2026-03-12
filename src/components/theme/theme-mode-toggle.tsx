@@ -46,6 +46,7 @@ export default function ThemeModeToggle({ initialTheme, forceExpanded = false }:
       aria-pressed={isLightMode}
       onClick={toggleTheme}
       title={isLightMode ? messages.themeMode.light : messages.themeMode.dark}
+      data-theme-mode-toggle="true"
       className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
         isLightMode
           ? "border-orange-500/45 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
@@ -54,6 +55,7 @@ export default function ThemeModeToggle({ initialTheme, forceExpanded = false }:
     >
       {isLightMode ? <Sun className="h-5 w-5 shrink-0" /> : <Moon className="h-5 w-5 shrink-0" />}
       <span
+        data-theme-mode-toggle-label="true"
         className={`max-w-[200px] overflow-hidden whitespace-nowrap font-semibold uppercase tracking-[0.12em] opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
       >
         {isLightMode ? messages.themeMode.light : messages.themeMode.dark}

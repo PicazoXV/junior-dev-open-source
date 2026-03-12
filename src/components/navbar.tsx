@@ -14,6 +14,20 @@ export default async function Navbar({ containerClassName, variant = "full" }: N
   void containerClassName;
   const cookieStore = await cookies();
   const currentTheme = normalizeTheme(cookieStore.get(THEME_COOKIE_NAME)?.value || DEFAULT_THEME);
+  const hasAuthCookie = cookieStore
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));
+
+  if (!hasAuthCookie) {
+    return (
+      <RightSidebar
+        isAuthenticated={false}
+        isReviewer={false}
+        unreadNotifications={0}
+        currentTheme={currentTheme}
+      />
+    );
+  }
 
   const supabase = await createClient();
   const {

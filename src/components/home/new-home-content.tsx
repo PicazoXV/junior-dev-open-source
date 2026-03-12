@@ -227,7 +227,10 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
       <SectionCard className="surface-accent relative overflow-hidden p-8 md:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.2),transparent_45%)]" />
         <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-white md:text-6xl">
+          <p className="text-balance text-4xl font-semibold tracking-tight text-transparent [text-shadow:0_0_16px_rgba(251,146,60,0.22)] bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text md:text-6xl">
+            MiPrimerIssue
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-white md:text-6xl">
             {isEn
               ? "Make your first open source contribution even if you're junior."
               : "Haz tu primera contribución open source aunque seas junior."}

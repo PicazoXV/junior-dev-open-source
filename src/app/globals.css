@@ -346,7 +346,20 @@ html[data-theme="light"] .app-bg .text-gray-100 {
   color: #0f172a !important;
 }
 
+html[data-theme="light"] .app-bg [class*="text-white/"] {
+  color: #0f172a !important;
+}
+
 html[data-theme="light"] .app-bg .text-gray-200 {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .app-bg [class*="text-gray-50/"],
+html[data-theme="light"] .app-bg [class*="text-gray-100/"] {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .app-bg [class*="text-gray-200/"] {
   color: #1e293b !important;
 }
 
@@ -354,8 +367,17 @@ html[data-theme="light"] .app-bg .text-gray-300 {
   color: #334155 !important;
 }
 
+html[data-theme="light"] .app-bg [class*="text-gray-300/"] {
+  color: #334155 !important;
+}
+
 html[data-theme="light"] .app-bg .text-gray-400,
 html[data-theme="light"] .app-bg .text-gray-500 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .app-bg [class*="text-gray-400/"],
+html[data-theme="light"] .app-bg [class*="text-gray-500/"] {
   color: #475569 !important;
 }
 
@@ -366,12 +388,67 @@ html[data-theme="light"] .app-bg .text-gray-900 {
   color: #0f172a !important;
 }
 
+html[data-theme="light"] .app-bg [class*="text-gray-600/"],
+html[data-theme="light"] .app-bg [class*="text-gray-700/"],
+html[data-theme="light"] .app-bg [class*="text-gray-800/"],
+html[data-theme="light"] .app-bg [class*="text-gray-900/"] {
+  color: #0f172a !important;
+}
+
 html[data-theme="light"] .app-bg .hover\:bg-gray-100:hover {
   background-color: rgba(249, 115, 22, 0.18) !important;
 }
 
 html[data-theme="light"] .app-bg .hover\:bg-white\/5:hover {
   background-color: rgba(30, 41, 59, 0.06) !important;
+}
+
+html[data-theme="light"] .app-bg .text-orange-100,
+html[data-theme="light"] .app-bg .text-orange-200,
+html[data-theme="light"] .app-bg .text-orange-300 {
+  color: #c26b06 !important;
+}
+
+html[data-theme="light"] .app-bg .text-orange-400 {
+  color: #d97706 !important;
+}
+
+html[data-theme="light"] .app-bg [class*="text-orange-100/"],
+html[data-theme="light"] .app-bg [class*="text-orange-200/"],
+html[data-theme="light"] .app-bg [class*="text-orange-300/"] {
+  color: #c26b06 !important;
+}
+
+html[data-theme="light"] .app-bg [class*="text-orange-400/"] {
+  color: #d97706 !important;
+}
+
+html[data-theme="light"] .app-bg .text-emerald-300 {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .app-bg .text-sky-300 {
+  color: #0369a1 !important;
+}
+
+html[data-theme="light"] .app-bg .bg-orange-500\/10 {
+  background-color: rgba(249, 115, 22, 0.16) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-orange-500\/12 {
+  background-color: rgba(249, 115, 22, 0.18) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-orange-500\/15 {
+  background-color: rgba(249, 115, 22, 0.22) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-black\/25 {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .app-bg .bg-black\/40 {
+  background-color: rgba(15, 23, 42, 0.12) !important;
 }
 
 html[data-theme="light"] .app-bg .focus-visible\:ring-offset-black:focus-visible {
@@ -521,4 +598,48 @@ html[data-theme="light"] .app-bg [class~="border-white"] {
 .app-bg :where(a, button) {
   transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease,
     box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.cta-primary {
+  border: 2px solid rgba(251, 146, 60, 0.68);
+  background: linear-gradient(180deg, rgba(251, 146, 60, 0.35), rgba(249, 115, 22, 0.3));
+  color: #fff7ed;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 10px 24px rgba(249, 115, 22, 0.22),
+    0 0 18px rgba(251, 146, 60, 0.18);
+}
+
+.cta-primary:hover {
+  border-color: rgba(251, 146, 60, 0.88);
+  background: linear-gradient(180deg, rgba(251, 146, 60, 0.46), rgba(249, 115, 22, 0.38));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 12px 28px rgba(249, 115, 22, 0.26),
+    0 0 22px rgba(251, 146, 60, 0.22);
+}
+
+html[data-theme="light"] .cta-primary {
+  border-color: rgba(194, 65, 12, 0.55);
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.92), rgba(234, 88, 12, 0.9));
+  color: #fff7ed;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
+    0 12px 28px rgba(234, 88, 12, 0.22);
+}
+
+html[data-theme="light"] .cta-primary:hover {
+  border-color: rgba(194, 65, 12, 0.72);
+  background: linear-gradient(180deg, rgba(249, 115, 22, 0.96), rgba(234, 88, 12, 0.95));
+}
+
+/* In light theme, when English mode is active, ensure "Switch to Spanish" keeps strong contrast. */
+html[data-theme="light"] [data-hard-mode-toggle="true"][aria-pressed="true"] [data-hard-mode-toggle-label="true"] {
+  color: #92400e;
+}
+
+/* Match active labels color in light theme for language and theme toggles. */
+html[data-theme="light"] [data-theme-mode-toggle="true"][aria-pressed="true"] [data-theme-mode-toggle-label="true"] {
+  color: #92400e;
 }

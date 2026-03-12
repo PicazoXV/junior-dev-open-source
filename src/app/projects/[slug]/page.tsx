@@ -46,7 +46,17 @@ type AssignedToRow = {
   assigned_to: string | null;
 };
 
+type TaskWithoutEstimateRow = Omit<TaskRow, "estimated_minutes">;
+
 const TASKS_PER_PAGE = 12;
+
+function toTaskRows(data: unknown): TaskRow[] {
+  return Array.isArray(data) ? (data as TaskRow[]) : [];
+}
+
+function toTaskWithoutEstimateRows(data: unknown): TaskWithoutEstimateRow[] {
+  return Array.isArray(data) ? (data as TaskWithoutEstimateRow[]) : [];
+}
 
 function isMissingEstimatedColumnError(error: { code?: string; message?: string } | null) {
   if (!error) return false;
@@ -196,22 +206,26 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
   const taskRangeStart = (currentPage - 1) * TASKS_PER_PAGE;
   const taskRangeEnd = taskRangeStart + TASKS_PER_PAGE - 1;
 
-  let tasksResult = await buildTasksQuery(true).range(taskRangeStart, taskRangeEnd);
+  const initialTasksResult = await buildTasksQuery(true).range(taskRangeStart, taskRangeEnd);
+  let tasksError = initialTasksResult.error;
+  let tasksCount = initialTasksResult.count || 0;
+  let taskRows = toTaskRows(initialTasksResult.data);
 
-  if (tasksResult.error && isMissingEstimatedColumnError(tasksResult.error)) {
+  if (tasksError && isMissingEstimatedColumnError(tasksError)) {
     const fallback = await buildTasksQuery(false).range(taskRangeStart, taskRangeEnd);
-    tasksResult = {
-      data: (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null })),
-      error: fallback.error,
-      count: fallback.count,
-    } as typeof tasksResult;
+    tasksError = fallback.error;
+    tasksCount = fallback.count || 0;
+    taskRows = toTaskWithoutEstimateRows(fallback.data).map((task) => ({
+      ...task,
+      estimated_minutes: null,
+    }));
   }
 
-  if (tasksResult.error) {
-    console.error("Error cargando tareas:", tasksResult.error.message);
+  if (tasksError) {
+    console.error("Error cargando tareas:", tasksError.message);
   }
 
-  let totalTasks = tasksResult.count || 0;
+  let totalTasks = tasksCount;
   const totalPages = Math.max(1, Math.ceil(totalTasks / TASKS_PER_PAGE));
 
   if (totalTasks > 0 && currentPage > totalPages) {
@@ -219,24 +233,28 @@ export default async function ProjectDetailPage({ params, searchParams }: Projec
     const correctedStart = (currentPage - 1) * TASKS_PER_PAGE;
     const correctedEnd = correctedStart + TASKS_PER_PAGE - 1;
 
-    let correctedTasksResult = await buildTasksQuery(true).range(correctedStart, correctedEnd);
-    if (correctedTasksResult.error && isMissingEstimatedColumnError(correctedTasksResult.error)) {
+    const correctedTasksResult = await buildTasksQuery(true).range(correctedStart, correctedEnd);
+    let correctedError = correctedTasksResult.error;
+    let correctedCount = correctedTasksResult.count || totalTasks;
+    let correctedRows = toTaskRows(correctedTasksResult.data);
+
+    if (correctedError && isMissingEstimatedColumnError(correctedError)) {
       const fallback = await buildTasksQuery(false).range(correctedStart, correctedEnd);
-      correctedTasksResult = {
-        data: (fallback.data || []).map((task) => ({ ...task, estimated_minutes: null })),
-        error: fallback.error,
-        count: fallback.count,
-      } as typeof correctedTasksResult;
+      correctedError = fallback.error;
+      correctedCount = fallback.count || totalTasks;
+      correctedRows = toTaskWithoutEstimateRows(fallback.data).map((task) => ({
+        ...task,
+        estimated_minutes: null,
+      }));
     }
 
-    tasksResult = correctedTasksResult;
-    totalTasks = tasksResult.count || totalTasks;
-    if (tasksResult.error) {
-      console.error("Error recargando tareas paginadas:", tasksResult.error.message);
+    tasksError = correctedError;
+    taskRows = correctedRows;
+    totalTasks = correctedCount;
+    if (tasksError) {
+      console.error("Error recargando tareas paginadas:", tasksError.message);
     }
   }
-
-  const taskRows = (tasksResult.data || []) as TaskRow[];
 
   const [{ count: openTasksCount }, contributorsResult] = await Promise.all([
     supabase

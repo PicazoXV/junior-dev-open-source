@@ -228,6 +228,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <DashboardFlowSteps />
       </CollapsibleCard>
 
+      <div className="flex flex-col gap-6">
       <CollapsibleCard
         title={locale === "en" ? "1. Next recommended step" : "1. Próximo paso recomendado"}
         description={
@@ -237,6 +238,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         }
         headingAs="h2"
         defaultOpen
+        className="order-1"
       >
         <div className="grid gap-4 xl:grid-cols-[1.25fr_0.95fr]">
           <DashboardInfoPanels
@@ -435,13 +437,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </CollapsibleCard>
 
       <CollapsibleCard
-        title={locale === "en" ? "2. Assigned tasks" : "2. Tareas asignadas"}
+        title={locale === "en" ? "4. Assigned tasks" : "4. Tareas asignadas"}
         description={
           locale === "en"
             ? "Your active work queue with direct access to each task."
             : "Tu cola de trabajo activa con acceso directo a cada tarea."
         }
         headingAs="h2"
+        className="order-4"
       >
         <div className="mb-4 flex justify-end">
           <Link
@@ -528,6 +531,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             : "Sigue tu crecimiento y resultados de contribución en un solo lugar."
         }
         headingAs="h2"
+        className="order-3"
       >
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label={locale === "en" ? "Tasks completed" : "Tareas completadas"} value={progress.completedTasks} />
@@ -624,13 +628,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </CollapsibleCard>
 
       <CollapsibleCard
-        title={locale === "en" ? "4. Recent activity" : "4. Actividad reciente"}
+        title={locale === "en" ? "5. Recent activity" : "5. Actividad reciente"}
         description={
           locale === "en"
             ? "Understand what happened most recently and where to continue."
             : "Entiende lo último que pasó y desde dónde continuar."
         }
         headingAs="h2"
+        className="order-5"
       >
         <div className="grid gap-3 md:grid-cols-3">
           <StatCard
@@ -677,6 +682,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             : "Últimos hitos y acciones en proyectos en orden cronológico."
         }
         headingAs="h2"
+        className="order-6"
       >
         <UserTimelineCard
           events={timeline}
@@ -688,13 +694,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </CollapsibleCard>
 
       <CollapsibleCard
-        title={locale === "en" ? "5. Secondary metrics" : "5. Métricas secundarias"}
+        title={locale === "en" ? "2. Secondary metrics" : "2. Métricas secundarias"}
         description={
           locale === "en"
             ? "Supporting context: profile details, favorites, maintainer signals and your public badge."
             : "Contexto de apoyo: perfil, favoritos, señales de maintainer y tu badge público."
         }
         headingAs="h2"
+        className="order-2"
       >
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label={locale === "en" ? "Merged PRs" : "PRs mergeados"} value={progress.mergedPullRequests} />
@@ -896,6 +903,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </pre>
         </section>
       </CollapsibleCard>
+      </div>
     </AppLayout>
   );
 }

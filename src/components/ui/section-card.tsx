@@ -6,6 +6,7 @@ type SectionCardProps = {
   children: ReactNode;
   className?: string;
   variant?: SectionCardVariant;
+  id?: string;
 };
 
 const variantClassMap: Record<SectionCardVariant, string> = {
@@ -19,6 +20,7 @@ export default function SectionCard({
   children,
   className = "",
   variant = "default",
+  id,
 }: SectionCardProps) {
   const hasCustomSurface =
     className.includes("surface-accent") ||
@@ -29,6 +31,7 @@ export default function SectionCard({
 
   return (
     <section
+      id={id}
       className={`${surfaceClass} rounded-2xl p-6 ${className}`}
     >
       {children}

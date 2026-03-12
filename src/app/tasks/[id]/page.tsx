@@ -406,7 +406,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
         </section>
       </SectionCard>
 
-      <SectionCard className="p-8">
+      <SectionCard className="surface-accent p-8">
         <PageHeader
           as="h2"
           title={locale === "en" ? "Request this task" : "Solicitar esta tarea"}

@@ -98,7 +98,7 @@ export async function getRecommendedTasksForUser(
   const userTerms = normalizeTerms(profile?.tech_stack || null);
   const historicalLabels = new Set(
     (completedTasksResult.data || []).flatMap((task) =>
-      (task.labels || []).map((label) => label.toLowerCase())
+      (task.labels || []).map((label: string) => label.toLowerCase())
     )
   );
 

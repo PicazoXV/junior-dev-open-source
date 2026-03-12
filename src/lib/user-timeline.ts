@@ -22,6 +22,17 @@ export type TimelineEvent = {
   link: string | null;
 };
 
+type TaskTimelineRow = {
+  id: string;
+  title: string | null;
+  status: string | null;
+  github_issue_url: string | null;
+  github_pr_url: string | null;
+  github_pr_number: number | null;
+  created_at: string;
+  assigned_to: string | null;
+};
+
 function pushIf<T>(arr: T[], value: T | null | undefined) {
   if (value) {
     arr.push(value);
@@ -66,22 +77,29 @@ export async function getUserTimeline(params: {
       .limit(40),
   ]);
 
-  let tasksResult = tasksWithPr;
-  if (tasksResult.error && isMissingPrColumnsError(tasksResult.error)) {
+  let tasksError = tasksWithPr.error;
+  let tasksRows = (tasksWithPr.data || []) as TaskTimelineRow[];
+
+  if (tasksError && isMissingPrColumnsError(tasksError)) {
     const fallback = await supabase
       .from("tasks")
       .select("id, title, status, github_issue_url, created_at, assigned_to")
       .eq("assigned_to", userId)
       .order("created_at", { ascending: false })
       .limit(40);
-    tasksResult = {
-      ...fallback,
-      data: (fallback.data || []).map((task) => ({
+
+    tasksError = fallback.error;
+    tasksRows = ((fallback.data || []) as Omit<TaskTimelineRow, "github_pr_url" | "github_pr_number">[]).map(
+      (task) => ({
         ...task,
         github_pr_url: null,
         github_pr_number: null,
-      })),
-    };
+      })
+    );
+  }
+
+  if (tasksError) {
+    console.error("Error cargando timeline de tareas:", tasksError.message);
   }
 
   (requestsResult.data || []).forEach((request) => {
@@ -112,7 +130,7 @@ export async function getUserTimeline(params: {
     }
   });
 
-  (tasksResult.data || []).forEach((task) => {
+  tasksRows.forEach((task) => {
     if (task.github_issue_url) {
       pushIf(events, {
         id: `task-${task.id}-issue`,

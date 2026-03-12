@@ -18,6 +18,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { getCurrentLocale } from "@/lib/i18n/server";
 import {
+  deleteAllNotifications,
   deleteNotification,
   markAllNotificationsRead,
   markNotificationRead,
@@ -76,6 +77,11 @@ function getNotificationAccentClass(tone: NotificationTone, isRead: boolean) {
   return isRead ? "border-white/10 bg-white/[0.02]" : "border-orange-500/30 bg-orange-500/10";
 }
 
+function isHiddenNotification(metadata: NotificationRow["metadata"]) {
+  if (!metadata || typeof metadata !== "object") return false;
+  return metadata.hidden === true;
+}
+
 export default async function NotificationsPage() {
   const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
@@ -96,7 +102,9 @@ export default async function NotificationsPage() {
     console.error("Error loading notifications:", error.message);
   }
 
-  const notifications = (data || []) as NotificationRow[];
+  const notifications = ((data || []) as NotificationRow[]).filter(
+    (notification) => !isHiddenNotification(notification.metadata)
+  );
   const unreadCount = notifications.filter((notification) => !notification.is_read).length;
   const readCount = notifications.length - unreadCount;
 
@@ -128,6 +136,14 @@ export default async function NotificationsPage() {
                   className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-3 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/40 hover:bg-orange-500/10 hover:text-orange-300"
                 >
                   {locale === "en" ? "Mark all as read" : "Marcar todo como leído"}
+                </button>
+              </form>
+              <form action={deleteAllNotifications}>
+                <button
+                  type="submit"
+                  className="inline-flex rounded-lg border border-red-500/35 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300 transition hover:border-red-400 hover:bg-red-500/15"
+                >
+                  {locale === "en" ? "Delete all" : "Borrar todas"}
                 </button>
               </form>
               <Link

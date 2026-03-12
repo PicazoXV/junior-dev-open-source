@@ -38,7 +38,10 @@ export default function HardModeToggle({ forceExpanded = false }: HardModeToggle
       type="button"
       onClick={toggle}
       disabled={isPending}
+      aria-pressed={isHardMode}
+      aria-label={messages.hardMode.title}
       title={messages.hardMode.title}
+      data-hard-mode-toggle="true"
       className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
         isHardMode
           ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
@@ -47,6 +50,7 @@ export default function HardModeToggle({ forceExpanded = false }: HardModeToggle
     >
       <Skull className="h-5 w-5 shrink-0" />
       <span
+        data-hard-mode-toggle-label="true"
         className={`max-w-[200px] overflow-hidden whitespace-nowrap font-semibold uppercase tracking-[0.12em] text-yellow-300 opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
       >
         {messages.hardMode.title}

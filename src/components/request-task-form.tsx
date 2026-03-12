@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Send } from "lucide-react";
 import { requestTaskAction, type RequestTaskResult } from "@/app/tasks/[id]/actions";
 import { useI18n } from "@/lib/i18n/client";
 
@@ -19,8 +20,14 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
   const [state, formAction, pending] = useActionState(requestTaskAction, initialState);
 
   return (
-    <form action={formAction} className="surface-subcard rounded-2xl p-6">
+    <form action={formAction} className="surface-subcard rounded-2xl border border-orange-500/30 p-6">
       <input type="hidden" name="taskId" value={taskId} />
+
+      <p className="mb-4 text-sm text-gray-300">
+        {locale === "en"
+          ? "Claim this task now and let a maintainer review your request."
+          : "Solicita esta tarea ahora y deja que un maintainer revise tu solicitud."}
+      </p>
 
       {state.message ? (
         <p
@@ -42,15 +49,16 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15 disabled:cursor-not-allowed disabled:opacity-70"
+          className="cta-primary inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-base font-semibold tracking-[0.01em] transition disabled:cursor-not-allowed disabled:opacity-70"
         >
+          <Send className="h-4.5 w-4.5" />
           {pending
             ? locale === "en"
               ? "Sending..."
               : "Enviando..."
             : locale === "en"
-              ? "Request task"
-              : "Solicitar tarea"}
+              ? "Request this task"
+              : "Solicitar esta tarea"}
         </button>
       ) : null}
     </form>
