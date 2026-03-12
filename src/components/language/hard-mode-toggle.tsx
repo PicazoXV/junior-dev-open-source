@@ -51,7 +51,7 @@ export default function HardModeToggle({ forceExpanded = false }: HardModeToggle
       <Skull className="h-5 w-5 shrink-0" />
       <span
         data-hard-mode-toggle-label="true"
-        className={`max-w-[200px] overflow-hidden whitespace-nowrap font-semibold uppercase tracking-[0.12em] text-yellow-300 opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
+        className={`max-w-[200px] overflow-hidden whitespace-nowrap font-semibold uppercase tracking-[0.12em] opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
       >
         {messages.hardMode.title}
       </span>
