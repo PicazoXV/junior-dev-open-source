@@ -12,6 +12,7 @@ import {
 } from "@/lib/github/collaborators";
 import { buildTaskIssueBody, buildTaskIssueTitle } from "@/lib/github/issue-body";
 import { parseRepositoryFromUrl, type RepositoryRef } from "@/lib/github/repository";
+import { createAdminClient } from "@/lib/supabase/admin";
 // Next phase extension point:
 // import { linkPullRequestToTaskPlaceholder } from "@/lib/github/pull-requests";
 
@@ -96,7 +97,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
 }): Promise<EnsureTaskIssueResult> {
   const { supabase, taskId, assignedUserId, approvedByUserId } = params;
 
-  const [{ data: task, error: taskError }, { data: assignee }] = await Promise.all([
+  const [{ data: task, error: taskError }, assigneeResult] = await Promise.all([
     supabase
       .from("tasks")
       .select("id, title, description, github_issue_url, github_issue_number, project_id")
@@ -108,6 +109,32 @@ export async function ensureGitHubIssueForApprovedTask(params: {
       .eq("id", assignedUserId)
       .maybeSingle(),
   ]);
+
+  let assignee = assigneeResult.data;
+
+  const needsAssigneeFallback =
+    !assignee ||
+    (!assignee.github_username && !assignee.full_name && !assignee.email);
+
+  if (needsAssigneeFallback) {
+    try {
+      const admin = createAdminClient();
+      const adminAssigneeResult = await admin
+        .from("profiles")
+        .select("github_username, full_name, email")
+        .eq("id", assignedUserId)
+        .maybeSingle();
+
+      if (!adminAssigneeResult.error && adminAssigneeResult.data) {
+        assignee = adminAssigneeResult.data;
+      }
+    } catch (error) {
+      console.warn("Could not load assignee with admin fallback", {
+        assignedUserId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   if (taskError || !task) {
     return {

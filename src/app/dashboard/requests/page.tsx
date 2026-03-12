@@ -10,6 +10,7 @@ import EmptyState from "@/components/ui/empty-state";
 import StatusBadge from "@/components/ui/status-badge";
 import { isReviewerRole, normalizeRole } from "@/lib/roles";
 import { getCurrentLocale } from "@/lib/i18n/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type PendingRequest = {
   id: string;
@@ -36,6 +37,54 @@ type RequestProject = {
   id: string;
   name: string | null;
 };
+
+async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
+  if (userIds.length === 0) {
+    return [] as RequestProfile[];
+  }
+
+  const supabase = await createClient();
+  const directResult = await supabase
+    .from("profiles")
+    .select("id, full_name, github_username, email")
+    .in("id", userIds);
+
+  if (directResult.error) {
+    console.error("Error cargando requesters con cliente de sesión:", directResult.error.message);
+  }
+
+  const directData = (directResult.data || []) as RequestProfile[];
+  if (directData.length >= userIds.length) {
+    return directData;
+  }
+
+  try {
+    const admin = createAdminClient();
+    const adminResult = await admin
+      .from("profiles")
+      .select("id, full_name, github_username, email")
+      .in("id", userIds);
+
+    if (adminResult.error) {
+      console.error("Error cargando requesters con cliente admin:", adminResult.error.message);
+      return directData;
+    }
+
+    const adminData = (adminResult.data || []) as RequestProfile[];
+    if (adminData.length > directData.length) {
+      return adminData;
+    }
+  } catch (error) {
+    console.error(
+      locale === "en"
+        ? "Admin profile fallback unavailable while loading requesters."
+        : "Fallback admin no disponible al cargar requesters.",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+
+  return directData;
+}
 
 export default async function DashboardRequestsPage() {
   const locale = await getCurrentLocale();
@@ -85,13 +134,8 @@ export default async function DashboardRequestsPage() {
   const taskIds = [...new Set(pendingRequests.map((item) => item.task_id))];
   const projectIds = [...new Set(pendingRequests.map((item) => item.project_id))];
 
-  const [profilesResult, tasksResult, projectsResult] = await Promise.all([
-    userIds.length > 0
-      ? supabase
-          .from("profiles")
-          .select("id, full_name, github_username, email")
-          .in("id", userIds)
-      : Promise.resolve({ data: [], error: null }),
+  const [profilesData, tasksResult, projectsResult] = await Promise.all([
+    loadRequestProfiles(userIds, locale),
     taskIds.length > 0
       ? supabase.from("tasks").select("id, title").in("id", taskIds)
       : Promise.resolve({ data: [], error: null }),
@@ -99,10 +143,6 @@ export default async function DashboardRequestsPage() {
       ? supabase.from("projects").select("id, name").in("id", projectIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
-
-  if (profilesResult.error) {
-    console.error("Error cargando requesters:", profilesResult.error.message);
-  }
 
   if (tasksResult.error) {
     console.error("Error cargando tareas:", tasksResult.error.message);
@@ -113,7 +153,7 @@ export default async function DashboardRequestsPage() {
   }
 
   const profileById = new Map(
-    ((profilesResult.data || []) as RequestProfile[]).map((item) => [item.id, item])
+    (profilesData || []).map((item) => [item.id, item])
   );
   const taskById = new Map(
     ((tasksResult.data || []) as RequestTask[]).map((item) => [item.id, item])
@@ -174,7 +214,12 @@ export default async function DashboardRequestsPage() {
                     <tr key={request.id} className="border-t border-white/10">
                       <td className="px-4 py-3 align-top">
                         <p className="font-medium text-white">
-                          {requester?.full_name || (locale === "en" ? "No name" : "Sin nombre")}
+                          {requester?.full_name ||
+                            (requester?.github_username
+                              ? `@${requester.github_username}`
+                              : locale === "en"
+                                ? "No name"
+                                : "Sin nombre")}
                         </p>
                         <p className="text-gray-300">
                           @{requester?.github_username || (locale === "en" ? "no-username" : "sin-username")}
