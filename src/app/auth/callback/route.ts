@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { syncProfileFromAuthUser } from "@/lib/create-profile-if-needed";
 
 function getSafeNextPath(next: string | null) {
   if (!next) {
@@ -21,7 +22,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      console.error("Error exchanging OAuth code for session:", error.message);
+    } else {
+      const user = data?.user || data?.session?.user;
+      if (user) {
+        await syncProfileFromAuthUser(supabase, user);
+      }
+    }
   }
 
   return NextResponse.redirect(new URL(next, url.origin));
