@@ -13,6 +13,7 @@ export async function githubInstallationRequest<T>(
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${installationToken}`,
+      "User-Agent": "MiPrimerIssue-GitHubIntegration/1.0",
       "X-GitHub-Api-Version": "2022-11-28",
       ...(init?.headers || {}),
     },

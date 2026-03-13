@@ -112,23 +112,32 @@ async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
       directById.set(profile.id, profile);
     }
 
-    const missingIds = userIds.filter((id) => !directById.has(id));
-    if (missingIds.length > 0) {
+    const idsNeedingAuthFallback = userIds.filter((id) => {
+      const profile = directById.get(id);
+      if (!profile) return true;
+      return !profile.github_username || !profile.email || !profile.full_name;
+    });
+
+    if (idsNeedingAuthFallback.length > 0) {
       const authUsersResult = await admin
         .schema("auth")
         .from("users")
         .select("id, email, raw_user_meta_data")
-        .in("id", missingIds);
+        .in("id", idsNeedingAuthFallback);
 
       if (!authUsersResult.error) {
         const authUsers = (authUsersResult.data || []) as AuthUserRow[];
 
         for (const authUser of authUsers) {
+          const existing = directById.get(authUser.id);
           directById.set(authUser.id, {
             id: authUser.id,
-            email: authUser.email,
-            full_name: pickFullNameFromMetadata(authUser.raw_user_meta_data),
-            github_username: pickGithubUsernameFromMetadata(authUser.raw_user_meta_data),
+            email: existing?.email || authUser.email,
+            full_name:
+              existing?.full_name || pickFullNameFromMetadata(authUser.raw_user_meta_data),
+            github_username:
+              existing?.github_username ||
+              pickGithubUsernameFromMetadata(authUser.raw_user_meta_data),
           });
         }
       } else {

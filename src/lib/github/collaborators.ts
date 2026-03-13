@@ -18,6 +18,7 @@ export async function isRepositoryCollaborator(
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${installationToken}`,
+        "User-Agent": "MiPrimerIssue-GitHubIntegration/1.0",
         "X-GitHub-Api-Version": "2022-11-28",
       },
     }
@@ -68,6 +69,7 @@ export async function inviteRepositoryCollaborator(
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${installationToken}`,
+        "User-Agent": "MiPrimerIssue-GitHubIntegration/1.0",
         "X-GitHub-Api-Version": "2022-11-28",
       },
       body: JSON.stringify({

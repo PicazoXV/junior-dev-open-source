@@ -57,6 +57,7 @@ async function githubAppRequest<T>(path: string, init?: RequestInit): Promise<T>
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${jwt}`,
+        "User-Agent": "MiPrimerIssue-GitHubApp/1.0",
         "X-GitHub-Api-Version": "2022-11-28",
         ...(init?.headers || {}),
       },

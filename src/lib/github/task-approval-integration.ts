@@ -149,9 +149,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
 
   let assignee: AssigneeIdentity | null = assigneeResult.data;
 
-  const needsAssigneeFallback =
-    !assignee ||
-    (!assignee.github_username && !assignee.full_name && !assignee.email);
+  const needsAssigneeFallback = !assignee || !assignee.github_username;
 
   if (needsAssigneeFallback) {
     try {
