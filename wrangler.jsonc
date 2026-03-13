@@ -12,7 +12,11 @@
 		"binding": "ASSETS"
 	},
 	"vars": {
-		"GITHUB_APP_ID": "3057768"
+		"GITHUB_APP_ID": "3057768",
+		"NEXT_PUBLIC_SUPABASE_URL": "https://uukzkxidkqzumkhbcyki.supabase.co",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_vzGxqiIGmcCjvgkDLh6QyQ_Q1CPYUJa",
+		"NEXT_PUBLIC_APP_URL": "https://staging.miprimerissue.dev",
+		"PLATFORM_BASE_URL": "https://staging.miprimerissue.dev"
 	},
 	"services": [
 		{
