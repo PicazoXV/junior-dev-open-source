@@ -79,7 +79,7 @@ export default async function TechRankingPage({ searchParams }: TechRankingPageP
                     {row.fullName ? <p className="text-xs text-gray-500">{row.fullName}</p> : null}
                     <div className="mt-1">
                       <Link
-                        href={`/dev/${row.githubUsername}`}
+                        href={`/dev/${encodeURIComponent(row.githubUsername)}`}
                         className="text-xs text-orange-300 hover:underline"
                       >
                         {locale === "en" ? "View profile" : "Ver perfil"}

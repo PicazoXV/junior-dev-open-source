@@ -21,6 +21,11 @@ type ContributedProject = {
   repo_url: string | null;
 };
 
+type AuthUserRow = {
+  id: string;
+  raw_user_meta_data: Record<string, unknown> | null;
+};
+
 export type LeaderboardRow = {
   id: string;
   githubUsername: string;
@@ -60,6 +65,32 @@ export type DeveloperPublicProfile = {
 
 function toPublicUsername(profile: ProfileRow) {
   return profile.github_username || profile.full_name?.toLowerCase().replace(/\s+/g, "-") || "developer";
+}
+
+function cleanValue(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function pickGithubUsernameFromMetadata(metadata: Record<string, unknown> | null) {
+  if (!metadata) return null;
+
+  const candidates = [
+    metadata.user_name,
+    metadata.preferred_username,
+    metadata.user_login,
+    metadata.login,
+  ];
+
+  for (const candidate of candidates) {
+    const value = cleanValue(candidate);
+    if (value) {
+      return value.replace(/^@+/, "");
+    }
+  }
+
+  return null;
 }
 
 export async function getDevelopersLeaderboard(
@@ -149,12 +180,47 @@ export async function getDeveloperPublicProfile(
     .select("id, github_username, full_name, avatar_url, bio, location, tech_stack")
     .ilike("github_username", sanitizedUsername)
     .maybeSingle();
+  let typedProfile: ProfileRow | null = null;
 
-  if (error || !profile) {
-    return null;
+  if (!error && profile) {
+    typedProfile = profile as ProfileRow;
+  } else {
+    try {
+      const { data: authUsers, error: authUsersError } = await supabase
+        .schema("auth")
+        .from("users")
+        .select("id, raw_user_meta_data")
+        .limit(1000);
+
+      if (!authUsersError) {
+        const authRows = (authUsers || []) as AuthUserRow[];
+        const matched = authRows.find((row) => {
+          const githubUsername = pickGithubUsernameFromMetadata(row.raw_user_meta_data);
+          return githubUsername?.toLowerCase() === sanitizedUsername;
+        });
+
+        if (matched) {
+          typedProfile = {
+            id: matched.id,
+            github_username: pickGithubUsernameFromMetadata(matched.raw_user_meta_data),
+            full_name:
+              cleanValue(matched.raw_user_meta_data?.full_name) ||
+              cleanValue(matched.raw_user_meta_data?.name),
+            avatar_url:
+              cleanValue(matched.raw_user_meta_data?.avatar_url) ||
+              cleanValue(matched.raw_user_meta_data?.picture),
+            bio: null,
+            location: null,
+            tech_stack: null,
+          };
+        }
+      }
+    } catch {}
   }
 
-  const typedProfile = profile as ProfileRow;
+  if (!typedProfile) {
+    return null;
+  }
   const progressByUserId = await getUsersProgressBulk({
     supabase,
     userIds: [typedProfile.id],
@@ -164,9 +230,7 @@ export async function getDeveloperPublicProfile(
   });
   const progress = progressByUserId.get(typedProfile.id);
 
-  if (!progress) {
-    return null;
-  }
+  if (!progress) return null;
 
   const badges = getUserBadges(progress);
 

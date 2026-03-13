@@ -15,6 +15,7 @@ import { getUserTimeline } from "@/lib/user-timeline";
 import UserTimelineCard from "@/components/timeline/user-timeline-card";
 import { getVerifiedContributions } from "@/lib/verified-contributions";
 import { getUserStreaks } from "@/lib/user-streaks";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type DeveloperProfilePageProps = {
   params: Promise<{ username: string }>;
@@ -54,7 +55,16 @@ export async function generateMetadata({ params }: DeveloperProfilePageProps): P
 export default async function DeveloperProfilePage({ params }: DeveloperProfilePageProps) {
   const locale = await getCurrentLocale();
   const { username } = await params;
-  const supabase = await createClient();
+  let supabase = await createClient();
+
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.warn(
+      "No se pudo usar cliente admin para perfil público de developer, usando cliente público.",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
 
   const developer = await getDeveloperPublicProfile(supabase, username);
   if (!developer) {

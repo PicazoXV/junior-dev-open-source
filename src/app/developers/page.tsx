@@ -213,7 +213,7 @@ export default async function DevelopersPage() {
                         {developer.fullName || (locale === "en" ? "Developer on MiPrimerIssue" : "Developer en MiPrimerIssue")}
                       </p>
                       <Link
-                        href={`/dev/${developer.githubUsername}`}
+                        href={`/dev/${encodeURIComponent(developer.githubUsername)}`}
                         className="mt-1 inline-flex text-xs text-orange-300 hover:underline"
                       >
                         {locale === "en" ? "View public profile" : "Ver perfil público"}
