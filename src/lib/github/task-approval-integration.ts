@@ -33,6 +33,43 @@ export type EnsureTaskIssueResult = {
   collaboratorAccessError: string | null;
 };
 
+type AssigneeIdentity = {
+  github_username: string | null;
+  full_name: string | null;
+  email: string | null;
+};
+
+type AuthUserIdentityRow = {
+  email: string | null;
+  raw_user_meta_data: Record<string, unknown> | null;
+};
+
+function cleanValue(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function pickGithubUsernameFromMetadata(metadata: Record<string, unknown> | null) {
+  if (!metadata) return null;
+
+  const candidates = [
+    metadata.user_name,
+    metadata.preferred_username,
+    metadata.user_login,
+    metadata.login,
+  ];
+
+  for (const candidate of candidates) {
+    const value = cleanValue(candidate);
+    if (value) {
+      return value.replace(/^@+/, "");
+    }
+  }
+
+  return null;
+}
+
 function buildAssignmentGitHubComment(params: {
   githubUsername: string | null;
   taskTitle: string | null;
@@ -110,7 +147,7 @@ export async function ensureGitHubIssueForApprovedTask(params: {
       .maybeSingle(),
   ]);
 
-  let assignee = assigneeResult.data;
+  let assignee: AssigneeIdentity | null = assigneeResult.data;
 
   const needsAssigneeFallback =
     !assignee ||
@@ -127,6 +164,29 @@ export async function ensureGitHubIssueForApprovedTask(params: {
 
       if (!adminAssigneeResult.error && adminAssigneeResult.data) {
         assignee = adminAssigneeResult.data;
+      }
+
+      if (!assignee?.github_username) {
+        const authAssigneeResult = await admin
+          .schema("auth")
+          .from("users")
+          .select("email, raw_user_meta_data")
+          .eq("id", assignedUserId)
+          .maybeSingle();
+
+        if (!authAssigneeResult.error && authAssigneeResult.data) {
+          const authUser = authAssigneeResult.data as AuthUserIdentityRow;
+          assignee = {
+            github_username:
+              assignee?.github_username ||
+              pickGithubUsernameFromMetadata(authUser.raw_user_meta_data),
+            full_name:
+              assignee?.full_name ||
+              cleanValue(authUser.raw_user_meta_data?.full_name) ||
+              cleanValue(authUser.raw_user_meta_data?.name),
+            email: assignee?.email || authUser.email,
+          };
+        }
       }
     } catch (error) {
       console.warn("Could not load assignee with admin fallback", {

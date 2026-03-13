@@ -28,6 +28,12 @@ type RequestProfile = {
   email: string | null;
 };
 
+type AuthUserRow = {
+  id: string;
+  email: string | null;
+  raw_user_meta_data: Record<string, unknown> | null;
+};
+
 type RequestTask = {
   id: string;
   title: string | null;
@@ -37,6 +43,36 @@ type RequestProject = {
   id: string;
   name: string | null;
 };
+
+function cleanValue(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function pickGithubUsernameFromMetadata(metadata: Record<string, unknown> | null) {
+  if (!metadata) return null;
+  const candidates = [
+    metadata.user_name,
+    metadata.preferred_username,
+    metadata.user_login,
+    metadata.login,
+  ];
+
+  for (const candidate of candidates) {
+    const value = cleanValue(candidate);
+    if (value) {
+      return value.replace(/^@+/, "");
+    }
+  }
+
+  return null;
+}
+
+function pickFullNameFromMetadata(metadata: Record<string, unknown> | null) {
+  if (!metadata) return null;
+  return cleanValue(metadata.full_name) || cleanValue(metadata.name);
+}
 
 async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
   if (userIds.length === 0) {
@@ -54,8 +90,9 @@ async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
   }
 
   const directData = (directResult.data || []) as RequestProfile[];
-  if (directData.length >= userIds.length) {
-    return directData;
+  const directById = new Map(directData.map((profile) => [profile.id, profile]));
+  if (directById.size >= userIds.length) {
+    return [...directById.values()];
   }
 
   try {
@@ -71,8 +108,35 @@ async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
     }
 
     const adminData = (adminResult.data || []) as RequestProfile[];
-    if (adminData.length > directData.length) {
-      return adminData;
+    for (const profile of adminData) {
+      directById.set(profile.id, profile);
+    }
+
+    const missingIds = userIds.filter((id) => !directById.has(id));
+    if (missingIds.length > 0) {
+      const authUsersResult = await admin
+        .schema("auth")
+        .from("users")
+        .select("id, email, raw_user_meta_data")
+        .in("id", missingIds);
+
+      if (!authUsersResult.error) {
+        const authUsers = (authUsersResult.data || []) as AuthUserRow[];
+
+        for (const authUser of authUsers) {
+          directById.set(authUser.id, {
+            id: authUser.id,
+            email: authUser.email,
+            full_name: pickFullNameFromMetadata(authUser.raw_user_meta_data),
+            github_username: pickGithubUsernameFromMetadata(authUser.raw_user_meta_data),
+          });
+        }
+      } else {
+        console.error(
+          "Error cargando requesters desde auth.users:",
+          authUsersResult.error.message
+        );
+      }
     }
   } catch (error) {
     console.error(
@@ -83,7 +147,7 @@ async function loadRequestProfiles(userIds: string[], locale: "es" | "en") {
     );
   }
 
-  return directData;
+  return [...directById.values()];
 }
 
 export default async function DashboardRequestsPage() {
