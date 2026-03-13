@@ -21,7 +21,7 @@ type ContributedProject = {
   repo_url: string | null;
 };
 
-type LeaderboardRow = {
+export type LeaderboardRow = {
   id: string;
   githubUsername: string;
   fullName: string | null;

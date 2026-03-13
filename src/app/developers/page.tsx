@@ -8,7 +8,7 @@ import LevelBadge from "@/components/ui/level-badge";
 import Badge from "@/components/ui/badge";
 import EmptyState from "@/components/ui/empty-state";
 import Table from "@/components/ui/table";
-import { getDevelopersLeaderboard } from "@/lib/developer-stats";
+import { getDevelopersLeaderboard, type LeaderboardRow } from "@/lib/developer-stats";
 import { getCurrentLocale } from "@/lib/i18n/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -18,12 +18,128 @@ export const metadata: Metadata = {
     "Descubre developers junior activos, sus tareas completadas, PRs mergeados y progreso público dentro de MiPrimerIssue.",
 };
 
+type AuthUserRow = {
+  id: string;
+  email: string | null;
+  created_at: string | null;
+  raw_user_meta_data: Record<string, unknown> | null;
+  raw_app_meta_data: Record<string, unknown> | null;
+};
+
+function cleanValue(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function pickGithubUsername(row: AuthUserRow) {
+  const metadata = row.raw_user_meta_data || {};
+  const candidates = [
+    metadata.user_name,
+    metadata.preferred_username,
+    metadata.user_login,
+    metadata.login,
+  ];
+
+  for (const candidate of candidates) {
+    const value = cleanValue(candidate);
+    if (value) {
+      return value.replace(/^@+/, "");
+    }
+  }
+
+  return null;
+}
+
+function isGithubRegistered(row: AuthUserRow) {
+  const appMeta = row.raw_app_meta_data || {};
+  const providers = Array.isArray(appMeta.providers) ? appMeta.providers : [];
+  const provider = cleanValue(appMeta.provider);
+  const username = pickGithubUsername(row);
+
+  if (provider === "github") return true;
+  if (providers.some((value) => cleanValue(value) === "github")) return true;
+  return !!username;
+}
+
+function withRegisteredUsers(
+  leaderboard: LeaderboardRow[],
+  authUsers: AuthUserRow[]
+) {
+  const mergedMap = new Map(leaderboard.map((row) => [row.id, row]));
+  const createdAtById = new Map<string, string | null>();
+
+  for (const authUser of authUsers) {
+    createdAtById.set(authUser.id, authUser.created_at);
+    if (!isGithubRegistered(authUser)) continue;
+
+    const githubUsername = pickGithubUsername(authUser);
+    if (!githubUsername) continue;
+
+    const existing = mergedMap.get(authUser.id);
+    if (existing) {
+      mergedMap.set(authUser.id, {
+        ...existing,
+        githubUsername: existing.githubUsername || githubUsername,
+        fullName:
+          existing.fullName ||
+          cleanValue(authUser.raw_user_meta_data?.full_name) ||
+          cleanValue(authUser.raw_user_meta_data?.name),
+        avatarUrl:
+          existing.avatarUrl ||
+          cleanValue(authUser.raw_user_meta_data?.avatar_url) ||
+          cleanValue(authUser.raw_user_meta_data?.picture),
+      });
+      continue;
+    }
+
+    mergedMap.set(authUser.id, {
+      id: authUser.id,
+      githubUsername,
+      fullName:
+        cleanValue(authUser.raw_user_meta_data?.full_name) ||
+        cleanValue(authUser.raw_user_meta_data?.name),
+      avatarUrl:
+        cleanValue(authUser.raw_user_meta_data?.avatar_url) ||
+        cleanValue(authUser.raw_user_meta_data?.picture),
+      level: "beginner",
+      completedTasks: 0,
+      mergedPullRequests: 0,
+      contributedProjects: 0,
+      badges: [],
+      score: 0,
+    });
+  }
+
+  const rows = [...mergedMap.values()];
+  rows.sort((a, b) => {
+    const aActivity = a.completedTasks + a.mergedPullRequests + a.contributedProjects;
+    const bActivity = b.completedTasks + b.mergedPullRequests + b.contributedProjects;
+
+    if (aActivity === 0 && bActivity > 0) return 1;
+    if (bActivity === 0 && aActivity > 0) return -1;
+    if (b.score !== a.score) return b.score - a.score;
+
+    const aCreatedAt = createdAtById.get(a.id);
+    const bCreatedAt = createdAtById.get(b.id);
+    if (aCreatedAt && bCreatedAt) {
+      return new Date(bCreatedAt).getTime() - new Date(aCreatedAt).getTime();
+    }
+
+    return a.githubUsername.localeCompare(b.githubUsername);
+  });
+
+  return rows;
+}
+
 export default async function DevelopersPage() {
   const locale = await getCurrentLocale();
   let supabase = await createClient();
+  let adminClient: ReturnType<typeof createAdminClient> | null = null;
 
   try {
-    supabase = createAdminClient();
+    adminClient = createAdminClient();
+    supabase = adminClient;
   } catch (error) {
     console.warn(
       "No se pudo usar cliente admin para leaderboard de developers, usando cliente público.",
@@ -31,7 +147,22 @@ export default async function DevelopersPage() {
     );
   }
 
-  const leaderboard = await getDevelopersLeaderboard(supabase);
+  const rawLeaderboard = await getDevelopersLeaderboard(supabase);
+  let leaderboard = rawLeaderboard;
+
+  if (adminClient) {
+    const { data: authUsers, error } = await adminClient
+      .schema("auth")
+      .from("users")
+      .select("id, email, created_at, raw_user_meta_data, raw_app_meta_data")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error cargando usuarios auth para developers:", error.message);
+    } else {
+      leaderboard = withRegisteredUsers(rawLeaderboard, (authUsers || []) as AuthUserRow[]);
+    }
+  }
 
   return (
     <PublicLayout containerClassName="mx-auto max-w-6xl space-y-6">

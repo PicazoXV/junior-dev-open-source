@@ -2,6 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 type MinimalSupabaseClient = SupabaseClient;
 
+type AuthUserRow = {
+  id: string;
+  raw_user_meta_data: Record<string, unknown> | null;
+  raw_app_meta_data: Record<string, unknown> | null;
+};
+
 function isMissingColumnError(error: { code?: string; message?: string } | null) {
   if (!error) {
     return false;
@@ -23,6 +29,29 @@ export type PlatformStats = {
   projects: number;
   pullRequestsMerged: number;
 };
+
+function cleanValue(value: unknown) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function hasGitHubIdentity(row: AuthUserRow) {
+  const appMeta = row.raw_app_meta_data || {};
+  const userMeta = row.raw_user_meta_data || {};
+  const providers = Array.isArray(appMeta.providers) ? appMeta.providers : [];
+  const provider = cleanValue(appMeta.provider);
+
+  if (provider === "github") return true;
+  if (providers.some((value) => cleanValue(value) === "github")) return true;
+
+  return !!(
+    cleanValue(userMeta.user_name) ||
+    cleanValue(userMeta.preferred_username) ||
+    cleanValue(userMeta.user_login) ||
+    cleanValue(userMeta.login)
+  );
+}
 
 export async function getPlatformStats(
   supabase: MinimalSupabaseClient
@@ -46,11 +75,30 @@ export async function getPlatformStats(
     ? completedTasksResult.count || 0
     : mergedPrsResult.count || 0;
 
+  let totalDevelopers = developersResult.count || 0;
+
+  try {
+    const authUsersResult = await supabase
+      .schema("auth")
+      .from("users")
+      .select("id, raw_user_meta_data, raw_app_meta_data");
+
+    if (!authUsersResult.error) {
+      const authUsers = (authUsersResult.data || []) as AuthUserRow[];
+      const githubUsersCount = authUsers.filter(hasGitHubIdentity).length;
+      totalDevelopers = Math.max(totalDevelopers, githubUsersCount);
+    }
+  } catch (error) {
+    console.warn(
+      "No se pudo leer auth.users para totalDevelopers, usando conteo de profiles.",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+
   return {
-    totalDevelopers: developersResult.count || 0,
+    totalDevelopers,
     tasksCompleted: completedTasksResult.count || 0,
     projects: projectsResult.count || 0,
     pullRequestsMerged,
   };
 }
-
