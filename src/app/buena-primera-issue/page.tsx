@@ -595,23 +595,23 @@ export default async function BuenaPrimeraIssuePage({ searchParams }: BuenaPrime
             <Badge tone="success">{isEn ? "Real GitHub contributions" : "Contribuciones reales en GitHub"}</Badge>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-7 flex flex-wrap items-center gap-3 pt-1">
             <Link
               href="#tareas"
-              className="inline-flex rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
+              className="inline-flex min-h-10 items-center rounded-lg border border-orange-500/40 bg-orange-500/10 px-4 py-2 text-sm font-medium text-orange-300 transition hover:border-orange-400 hover:bg-orange-500/15"
             >
               {isEn ? "View tasks" : "Ver tareas"}
             </Link>
             <Link
               href="#como-empezar"
-              className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+              className="inline-flex min-h-10 items-center rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
             >
               {isEn ? "How to start" : "Cómo empezar"}
             </Link>
             {user ? (
               <Link
                 href="/dashboard"
-                className="inline-flex rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
+                className="inline-flex min-h-10 items-center rounded-lg border border-white/20 bg-neutral-900 px-4 py-2 text-sm font-medium text-gray-200 transition hover:border-orange-500/35 hover:text-orange-300"
               >
                 {isEn ? "Go to dashboard" : "Ir al dashboard"}
               </Link>

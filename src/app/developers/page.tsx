@@ -10,6 +10,7 @@ import EmptyState from "@/components/ui/empty-state";
 import Table from "@/components/ui/table";
 import { getDevelopersLeaderboard } from "@/lib/developer-stats";
 import { getCurrentLocale } from "@/lib/i18n/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = {
   title: "Ranking de developers open source | MiPrimerIssue",
@@ -19,7 +20,17 @@ export const metadata: Metadata = {
 
 export default async function DevelopersPage() {
   const locale = await getCurrentLocale();
-  const supabase = await createClient();
+  let supabase = await createClient();
+
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.warn(
+      "No se pudo usar cliente admin para leaderboard de developers, usando cliente público.",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+
   const leaderboard = await getDevelopersLeaderboard(supabase);
 
   return (

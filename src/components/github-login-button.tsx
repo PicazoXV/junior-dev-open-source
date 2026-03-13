@@ -40,8 +40,9 @@ export default function GitHubLoginButton({
 
   return (
     <button
+      type="button"
       onClick={handleLogin}
-      className={`rounded-lg border border-orange-400/40 bg-orange-500/10 px-6 py-3 text-base font-medium text-orange-300 transition hover:border-orange-300 hover:bg-orange-500/15 ${className}`}
+      className={`cursor-pointer rounded-lg border border-orange-400/40 bg-orange-500/10 px-6 py-3 text-base font-medium text-orange-300 transition hover:border-orange-300 hover:bg-orange-500/15 ${className}`}
     >
       {safeLabel}
     </button>

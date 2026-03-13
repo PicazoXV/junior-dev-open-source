@@ -24,7 +24,7 @@ export default function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-65 ${variantClasses[variant]} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-65 ${variantClasses[variant]} ${className}`}
       {...props}
     />
   );

@@ -291,7 +291,7 @@ export default function RightSidebar({
         </nav>
       </aside>
 
-      <div className="fixed bottom-4 right-4 z-50 lg:hidden">
+      <div className="fixed right-4 top-4 z-50 md:right-5 md:top-5 lg:hidden">
         <button
           type="button"
           aria-label={isMobileMenuOpen ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}

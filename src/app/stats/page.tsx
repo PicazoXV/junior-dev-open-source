@@ -6,6 +6,7 @@ import StatCard from "@/components/ui/stat-card";
 import { createClient } from "@/lib/supabase/server";
 import { getPlatformStats } from "@/lib/platform-stats";
 import { getCurrentLocale } from "@/lib/i18n/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = {
   title: "Estadísticas de la comunidad | MiPrimerIssue",
@@ -15,7 +16,17 @@ export const metadata: Metadata = {
 
 export default async function StatsPage() {
   const locale = await getCurrentLocale();
-  const supabase = await createClient();
+  let supabase = await createClient();
+
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.warn(
+      "No se pudo usar cliente admin para estadísticas públicas, usando cliente público.",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
+
   const stats = await getPlatformStats(supabase);
 
   return (
