@@ -204,7 +204,7 @@ export default function RightSidebar({
           aria-label={locale === "en" ? "Main navigation" : "Navegación principal"}
           className={`sidebar-shell sidebar-scroll w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 pr-1 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
         >
-          <div className="mb-4 flex min-h-14 items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5">
+          <div className="mb-3 flex min-h-14 items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5 [@media(max-height:860px)]:mb-2">
             <div className="min-w-0 flex-1">
               <div className={`min-w-0 ${desktopExpandedOnlyClass}`}>
                 <p className="truncate text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-300">
@@ -223,16 +223,16 @@ export default function RightSidebar({
             </div>
           </div>
 
-          <div className="mb-3">
+          <div className="mb-3 [@media(max-height:860px)]:mb-2">
             <HardModeToggle />
           </div>
-          <div className="mb-4">
+          <div className="mb-4 [@media(max-height:860px)]:mb-3">
             <ThemeModeToggle initialTheme={currentTheme} />
           </div>
 
-          <div className="space-y-3 [@media(max-height:860px)]:grid [@media(max-height:860px)]:grid-cols-2 [@media(max-height:860px)]:gap-3 [@media(max-height:860px)]:space-y-0">
+          <div className="space-y-3 [@media(max-height:860px)]:space-y-2">
             {visibleGroups.map((group) => (
-              <div key={group.id} className="space-y-2">
+              <div key={group.id} className="space-y-2 [@media(max-height:860px)]:space-y-1.5">
                 <p
                   className={`max-w-[220px] overflow-hidden whitespace-nowrap px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-500 opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
                 >
@@ -247,7 +247,7 @@ export default function RightSidebar({
                       key={item.href}
                       href={item.href}
                       aria-current={isActive ? "page" : undefined}
-                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition ${
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition [@media(max-height:860px)]:py-2 ${
                         isActive
                           ? "border-orange-500/40 bg-orange-500/15 text-orange-300 shadow-[0_0_18px_rgba(251,146,60,0.15)]"
                           : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"

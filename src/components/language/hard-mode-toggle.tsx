@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Skull } from "lucide-react";
+import { Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n/client";
@@ -48,7 +48,7 @@ export default function HardModeToggle({ forceExpanded = false }: HardModeToggle
           : "border-white/10 text-gray-300 hover:border-orange-500/30 hover:bg-white/5 hover:text-orange-200"
       } ${isPending ? "cursor-not-allowed opacity-80" : ""} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black`}
     >
-      <Skull className="h-5 w-5 shrink-0" />
+      <Languages className="h-5 w-5 shrink-0" />
       <span
         data-hard-mode-toggle-label="true"
         className={`max-w-[200px] overflow-hidden whitespace-nowrap font-semibold uppercase tracking-[0.12em] opacity-100 transition-all duration-300 ${desktopRevealTextClass}`}
