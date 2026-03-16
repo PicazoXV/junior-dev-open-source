@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { createProfileIfNeeded } from "@/lib/create-profile-if-needed";
 import { getCurrentLocale } from "@/lib/i18n/server";
 import AppLayout from "@/components/layout/app-layout";
@@ -11,14 +12,36 @@ export const metadata: Metadata = {
     "Descubre proyectos open source, encuentra good first issues, solicita tareas y construye un perfil público con progreso real en GitHub con MiPrimerIssue.",
 };
 
-export default async function HomePage() {
+type HomePageProps = {
+  searchParams?: Promise<{
+    notice?: string;
+    next?: string;
+  }>;
+};
+
+export default async function HomePage({ searchParams }: HomePageProps) {
   const locale = await getCurrentLocale();
-  const user = await createProfileIfNeeded();
+  const cookieStore = await cookies();
+  const hasAuthCookie = cookieStore
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));
+
+  const user = hasAuthCookie ? await createProfileIfNeeded() : null;
+  const resolvedSearchParams = await searchParams;
+  const authNotice = resolvedSearchParams?.notice === "login-required";
+  const rawNextPath = resolvedSearchParams?.next || "";
+  const nextPath =
+    rawNextPath.startsWith("/") && !rawNextPath.startsWith("//") ? rawNextPath : undefined;
 
   return (
     <AppLayout containerClassName="mx-auto max-w-6xl">
       {user ? <PostLoginRoadmap userId={user.id} /> : null}
-      <NewHomeContent locale={locale} isAuthenticated={!!user} />
+      <NewHomeContent
+        locale={locale}
+        isAuthenticated={!!user}
+        authNotice={authNotice}
+        loginNextPath={nextPath}
+      />
     </AppLayout>
   );
 }

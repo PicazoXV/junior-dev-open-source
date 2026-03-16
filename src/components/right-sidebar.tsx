@@ -202,7 +202,7 @@ export default function RightSidebar({
       <aside className="group fixed bottom-3 right-3 z-40 hidden lg:block lg:right-8 lg:top-1/2 lg:bottom-auto lg:-translate-y-1/2">
         <nav
           aria-label={locale === "en" ? "Main navigation" : "Navegación principal"}
-          className={`sidebar-shell sidebar-scroll w-[min(92vw,20rem)] max-h-[70vh] overflow-hidden overflow-y-auto rounded-3xl p-3 pr-1 backdrop-blur transition-all duration-300 lg:max-h-[92vh] ${desktopWidthClass}`}
+          className={`sidebar-shell flex h-[min(92vh,760px)] w-[min(92vw,20rem)] flex-col overflow-hidden rounded-3xl p-3 backdrop-blur transition-all duration-300 ${desktopWidthClass}`}
         >
           <div className="mb-3 flex min-h-14 items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5 [@media(max-height:860px)]:mb-2">
             <div className="min-w-0 flex-1">
@@ -230,7 +230,7 @@ export default function RightSidebar({
             <ThemeModeToggle initialTheme={currentTheme} />
           </div>
 
-          <div className="space-y-3 [@media(max-height:860px)]:space-y-2">
+          <div className="sidebar-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1 [@media(max-height:860px)]:space-y-2">
             {visibleGroups.map((group) => (
               <div key={group.id} className="space-y-2 [@media(max-height:860px)]:space-y-1.5">
                 <p

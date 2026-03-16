@@ -600,6 +600,11 @@ html[data-theme="light"] .app-bg [class~="border-white"] {
     box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 760px;
+}
+
 .cta-primary {
   border: 2px solid rgba(251, 146, 60, 0.68);
   background: linear-gradient(180deg, rgba(251, 146, 60, 0.35), rgba(249, 115, 22, 0.3));

@@ -63,13 +63,14 @@ function getBaseUrl() {
 export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   const locale = await getCurrentLocale();
   const user = await createProfileIfNeeded();
-
-  if (!user) {
-    redirect("/");
-  }
-
   const resolvedParams = await params;
   const id = resolvedParams?.id;
+
+  if (!user) {
+    const safeId = id && typeof id === "string" ? id : "";
+    const nextPath = safeId ? `/tasks/${safeId}` : "/buena-primera-issue";
+    redirect(`/?notice=login-required&next=${encodeURIComponent(nextPath)}`);
+  }
 
   if (!id || typeof id !== "string") {
     notFound();

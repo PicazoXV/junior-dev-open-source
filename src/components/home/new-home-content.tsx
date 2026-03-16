@@ -27,6 +27,8 @@ import type { AppLocale } from "@/lib/i18n/types";
 type NewHomeContentProps = {
   locale: AppLocale;
   isAuthenticated: boolean;
+  authNotice?: boolean;
+  loginNextPath?: string;
 };
 
 type TechCategory = "frontend" | "backend" | "database" | "cloud" | "devops" | "ai" | "tools";
@@ -124,7 +126,12 @@ function getTechIcon(category: TechCategory) {
   return Wrench;
 }
 
-export default function NewHomeContent({ locale, isAuthenticated }: NewHomeContentProps) {
+export default function NewHomeContent({
+  locale,
+  isAuthenticated,
+  authNotice = false,
+  loginNextPath,
+}: NewHomeContentProps) {
   const isEn = locale === "en";
   const flow = isEn
     ? ["Find issue", "Request task", "Open PR", "Get merged", "Build portfolio"]
@@ -193,6 +200,16 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
 
   return (
     <div className="space-y-8">
+      {authNotice ? (
+        <SectionCard className="surface-accent p-4">
+          <p className="text-sm text-gray-100">
+            {isEn
+              ? "You need to sign in before using that action. Continue with GitHub to proceed."
+              : "Necesitas iniciar sesión antes de usar esa acción. Continúa con GitHub para seguir."}
+          </p>
+        </SectionCard>
+      ) : null}
+
       <SectionCard className="surface-accent relative overflow-hidden p-8 md:p-12">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.2),transparent_45%)]" />
         <div className="mx-auto max-w-4xl text-center">
@@ -222,6 +239,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
               <GitHubLoginButton
                 label={isEn ? "Sign in with GitHub" : "Entrar con GitHub"}
                 className="rounded-xl px-7 py-3 text-sm font-semibold"
+                nextPath={loginNextPath}
               />
             )}
             <Link
@@ -293,7 +311,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="p-8">
+      <SectionCard className="content-visibility-auto p-8">
         <h2 className="text-2xl font-semibold text-white md:text-3xl">
           {isEn ? "Technologies you can contribute with" : "Tecnologías con las que puedes contribuir"}
         </h2>
@@ -330,7 +348,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="surface-card relative overflow-hidden p-8 md:p-10">
+      <SectionCard className="content-visibility-auto surface-card relative overflow-hidden p-8 md:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(251,146,60,0.16),transparent_58%)]" />
         <div className="relative">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -397,7 +415,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="surface-card relative overflow-hidden p-8 md:p-10">
+      <SectionCard className="content-visibility-auto surface-card relative overflow-hidden p-8 md:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(251,146,60,0.14),transparent_52%)]" />
         <div className="relative grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
           <div>
@@ -466,7 +484,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="surface-card relative overflow-hidden p-8 md:p-10">
+      <SectionCard className="content-visibility-auto surface-card relative overflow-hidden p-8 md:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(251,146,60,0.14),transparent_50%)]" />
         <div className="relative grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <div>
@@ -563,6 +581,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
             <GitHubLoginButton
               label={isEn ? "View certifications" : "Ver certificaciones"}
               className="rounded-lg px-3 py-2 text-sm font-medium"
+              nextPath={loginNextPath}
             />
           )}
           <Link
@@ -574,7 +593,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
         </div>
       </SectionCard>
 
-      <SectionCard className="surface-accent p-8 text-center md:p-10">
+      <SectionCard className="content-visibility-auto surface-accent p-8 text-center md:p-10">
         <Layers className="mx-auto h-7 w-7 text-orange-300" />
         <h2 className="mt-3 text-2xl font-semibold text-white md:text-3xl">
           {isEn ? "Start your first open source contribution today." : "Empieza tu primera contribución open source hoy."}
@@ -591,6 +610,7 @@ export default function NewHomeContent({ locale, isAuthenticated }: NewHomeConte
             <GitHubLoginButton
               label={isEn ? "Sign in with GitHub" : "Entrar con GitHub"}
               className="rounded-xl px-8 py-3 text-sm font-semibold"
+              nextPath={loginNextPath}
             />
           )}
         </div>

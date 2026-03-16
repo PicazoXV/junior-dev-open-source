@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Send } from "lucide-react";
 import { requestTaskAction, type RequestTaskResult } from "@/app/tasks/[id]/actions";
 import { useI18n } from "@/lib/i18n/client";
+import GitHubLoginButton from "@/components/github-login-button";
 
 type RequestTaskFormProps = {
   taskId: string;
@@ -18,6 +19,9 @@ const initialState: RequestTaskResult = {
 export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormProps) {
   const { locale } = useI18n();
   const [state, formAction, pending] = useActionState(requestTaskAction, initialState);
+  const requiresLogin =
+    state.status === "error" &&
+    /(iniciar sesión|sign in)/i.test(state.message);
 
   return (
     <form action={formAction} className="surface-subcard rounded-2xl border border-orange-500/30 p-6">
@@ -32,11 +36,25 @@ export default function RequestTaskForm({ taskId, isTaskOpen }: RequestTaskFormP
       {state.message ? (
         <p
           className={`mb-3 text-sm ${
-            state.status === "success" ? "text-emerald-300" : "text-gray-300"
+            state.status === "success"
+              ? "text-emerald-300"
+              : requiresLogin
+                ? "text-orange-200"
+                : "text-gray-300"
           }`}
         >
           {state.message}
         </p>
+      ) : null}
+
+      {requiresLogin ? (
+        <div className="mb-4">
+          <GitHubLoginButton
+            label={locale === "en" ? "Sign in to continue" : "Inicia sesión para continuar"}
+            className="w-full rounded-xl px-5 py-3 text-sm font-semibold"
+            nextPath={`/tasks/${taskId}`}
+          />
+        </div>
       ) : null}
 
       {!isTaskOpen && !state.message ? (
