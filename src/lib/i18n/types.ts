@@ -48,6 +48,12 @@ export type MessageDictionary = {
     dark: string;
     light: string;
   };
+  footer: {
+    contactLabel: string;
+    githubLabel: string;
+    addProjectCta: string;
+    rights: string;
+  };
   hero: {
     heading: string;
     description: string;

@@ -48,6 +48,12 @@ export const enMessages: MessageDictionary = {
     dark: "DARK MODE",
     light: "LIGHT MODE",
   },
+  footer: {
+    contactLabel: "Contact",
+    githubLabel: "GitHub organization",
+    addProjectCta: "Add project",
+    rights: "All rights reserved.",
+  },
   hero: {
     heading: "Join us and build verifiable experience",
     description:

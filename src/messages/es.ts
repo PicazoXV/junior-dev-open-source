@@ -48,6 +48,12 @@ export const esMessages: MessageDictionary = {
     dark: "MODO CLARO",
     light: "MODO OSCURO",
   },
+  footer: {
+    contactLabel: "Contacto",
+    githubLabel: "Organización GitHub",
+    addProjectCta: "Añadir proyecto",
+    rights: "Todos los derechos reservados.",
+  },
   hero: {
     heading: "Únete a nosotros y gana experiencia demostrable",
     description:
