@@ -1,0 +1,34 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	"name": "miprimerissue",
+	"compatibility_date": "2026-03-12",
+	"compatibility_flags": [
+		"nodejs_compat",
+		"global_fetch_strictly_public"
+	],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"vars": {
+		"GITHUB_APP_ID": "3057768",
+		"NEXT_PUBLIC_SUPABASE_URL": "https://uukzkxidkqzumkhbcyki.supabase.co",
+		"NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_vzGxqiIGmcCjvgkDLh6QyQ_Q1CPYUJa",
+		"NEXT_PUBLIC_APP_URL": "https://miprimerissue.dev",
+		"PLATFORM_BASE_URL": "https://miprimerissue.dev"
+	},
+	"services": [
+		{
+			// Self-reference service binding, the service name must match the worker name
+			// see https://opennext.js.org/cloudflare/caching
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "miprimerissue"
+		}
+	],
+	"images": {
+		// Enable image optimization
+		// see https://opennext.js.org/cloudflare/howtos/image
+		"binding": "IMAGES"
+	}
+}
